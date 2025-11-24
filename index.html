@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>הטיול של עפרי ועמי - המתכנן המלא</title>
+    <title>הטיול של עפרי ועמי - מתכנן חכם</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Assistant', sans-serif; direction: rtl; background-color: #F5F0E6; color: #4D453E; -webkit-tap-highlight-color: transparent; }
@@ -17,39 +17,75 @@
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
         .nav-link { white-space: nowrap; flex-shrink: 0; transition: all 0.2s ease; border-bottom: 3px solid transparent; opacity: 0.6; font-weight: 600; }
         .nav-link.active { border-bottom-color: #4D453E; color: #4D453E; opacity: 1; }
-        .day-card { background: white; border: 1px solid #E5E0D8; border-radius: 1rem; padding: 1rem; transition: all 0.2s ease; cursor: pointer; position: relative; }
-        .day-card:active { transform: scale(0.98); }
+        
+        /* Sticky Note Styles */
+        .notes-area { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 15px; 
+            margin-top: 20px; 
+            padding-top: 20px;
+            border-top: 2px dashed #D8CFC7;
+        }
+        .sticky-note {
+            background-color: #FEF3C7; /* Yellow-100 */
+            color: #4D453E;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+            font-family: 'Kalam', cursive; /* Handwritten feel */
+            font-size: 0.95rem;
+            line-height: 1.3;
+            position: relative;
+            transform: rotate(-1deg);
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sticky-note:nth-child(even) { transform: rotate(1deg); background-color: #FFF9C4; }
+        .sticky-note:hover { transform: scale(1.02) rotate(0deg); z-index: 10; box-shadow: 5px 5px 15px rgba(0,0,0,0.15); }
+        .sticky-note textarea { 
+            background: transparent; width: 100%; height: 100%; resize: none; outline: none; border: none; font-family: inherit; 
+            flex-grow: 1;
+        }
+        .delete-note { 
+            position: absolute; top: 2px; left: 5px; cursor: pointer; color: #9CA3AF; font-family: sans-serif; font-size: 14px; 
+        }
+        .delete-note:hover { color: #EF4444; }
+
+        /* Existing Styles */
+        .day-card { background: white; border: 1px solid #E5E0D8; border-radius: 1rem; padding: 1rem; cursor: pointer; }
         .day-badge { background-color: #4D453E; color: white; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: bold; }
-        #day-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(77, 69, 62, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 1rem; }
-        .day-modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: #F5F0E6; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        
+        /* Modals & Overlays */
+        #day-overlay, #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        #day-overlay { background-color: rgba(77, 69, 62, 0.8); backdrop-filter: blur(4px); display: none; }
+        #login-screen { background: #F5F0E6; z-index: 4000; }
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
-        .edit-input { width: 100%; background: transparent; border-bottom: 1px dashed #A2B8C4; padding: 2px 0; outline: none; transition: border 0.3s; }
+        
+        .day-modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; padding: 1.5rem; }
+        .edit-input { width: 100%; background: transparent; border-bottom: 1px dashed #A2B8C4; padding: 2px 0; outline: none; }
         .edit-input:focus { border-bottom: 2px solid #4D453E; background: rgba(0,0,0,0.02); }
-        .timeline-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .timeline-time { width: 60px; font-weight: bold; color: #4D453E; }
-        .timeline-desc { flex-grow: 1; }
+        
+        .info-card { background: #fff; border: 1px solid #E5E0D8; padding: 1rem; border-radius: 0.75rem; position: relative; margin-bottom: 1rem; }
+        .info-card .card-title { font-weight: bold; border-bottom: 1px dashed #E5E0D8; width: 100%; margin-bottom: 5px;}
+        .info-card textarea { width: 100%; resize: none; outline: none; font-size: 0.9rem; color: #555; }
+        
+        .add-note-btn { 
+            background: #FBBF24; color: #4D453E; font-weight: bold; padding: 6px 12px; border-radius: 20px; 
+            font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; 
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1); margin-top: 10px;
+        }
+        .add-note-btn:hover { transform: translateY(-1px); }
+        
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4D453E; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.8; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.9); padding: 4px 8px; rounded: 6px; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.8; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.9); padding: 4px 8px; rounded: 6px; }
         .sync-green { color: green; } .sync-red { color: red; }
-        
-        /* Specific Styles */
-        .info-card { background: #fff; border: 1px solid #E5E0D8; padding: 1rem; border-radius: 0.75rem; position: relative; margin-bottom: 1rem; transition: shadow 0.2s; }
-        .info-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-color: #A2B8C4; }
-        .info-card input, .info-card textarea { width: 100%; background: transparent; outline: none; }
-        .info-card .card-title { font-weight: bold; color: #4D453E; font-size: 1.1rem; margin-bottom: 0.5rem; border-bottom: 1px dashed #E5E0D8; }
-        .info-card .card-desc { font-size: 0.95rem; color: #5C544D; line-height: 1.5; resize: none; }
-        .info-card .card-meta { font-size: 0.85rem; color: #8A7F77; margin-top: 0.5rem; background: #F5F0E6; padding: 4px 8px; rounded; display: inline-block; }
-        .delete-btn-abs { position: absolute; top: 10px; left: 10px; color: #e5e7eb; cursor: pointer; transition: color 0.2s; }
-        .info-card:hover .delete-btn-abs { color: #ef4444; }
-        .section-title { font-size: 1.25rem; font-weight: bold; color: #4D453E; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #D8CFC7; margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .link-btn { display: inline-flex; align-items: center; gap: 4px; background: #4D453E; color: white; padding: 4px 10px; rounded-lg; font-size: 0.8rem; text-decoration: none; margin-top: 8px; }
-        .link-btn:hover { background: #3a342f; }
-        .price-tag { float: left; font-weight: bold; color: #16a34a; }
     </style>
 </head>
 <body class="bg-[#F5F0E6] min-h-screen pb-safe">
@@ -57,7 +93,7 @@
     <!-- Loading -->
     <div id="loading-screen">
         <div class="loader mb-4"></div>
-        <p class="text-[#4D453E] font-bold">טוען את תוכנית המסע...</p>
+        <p class="text-[#4D453E] font-bold">מכין את הפתקיות...</p>
     </div>
 
     <!-- Login -->
@@ -65,7 +101,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-xl text-center w-full max-w-[320px]">
             <div class="text-4xl mb-2">❄️</div>
             <h2 class="text-2xl font-bold text-[#4D453E] mb-1">הטיול של עפרי ועמי</h2>
-            <p class="text-[#8A7F77] text-sm mb-6">ינואר 2026</p>
+            <p class="text-[#8A7F77] text-sm mb-6">התחברו לתכנון</p>
             <input type="password" id="passcode-input" placeholder="הזן קוד" inputmode="numeric" pattern="[0-9]*" maxlength="4" 
                    class="w-full text-center text-2xl p-3 border-2 border-[#D8CFC7] rounded-xl focus:border-[#4D453E] mb-4 tracking-widest bg-gray-50 outline-none">
             <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:bg-[#3a342f] active:scale-95 transition-all">
@@ -81,26 +117,16 @@
             <button id="close-day-btn" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-xl">✕</button>
             
             <div class="mb-6 border-b border-gray-100 pb-4">
-                <div class="flex items-center gap-2 mb-2">
-                    <span id="modal-date-display" class="bg-[#A2B8C4] text-white px-3 py-1 rounded-full text-sm font-bold"></span>
-                </div>
+                <span id="modal-date-display" class="bg-[#A2B8C4] text-white px-3 py-1 rounded-full text-sm font-bold mb-2 inline-block"></span>
                 <input type="text" id="modal-title-input" class="edit-input text-2xl font-bold text-[#4D453E]" placeholder="כותרת היום">
                 <input type="text" id="modal-summary-input" class="edit-input text-[#8A7F77] mt-2 text-sm" placeholder="תיאור קצר">
             </div>
 
             <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז ומיקומים:</div>
             <div id="modal-timeline-container" class="space-y-2 mb-4"></div>
+            <button id="add-timeline-btn" class="text-sm text-[#A2B8C4] hover:text-[#4D453E] font-bold">+ הוסף שורה</button>
             
-            <button id="add-timeline-btn" class="text-sm text-[#A2B8C4] hover:text-[#4D453E] font-bold mb-6 flex items-center gap-1">
-                + הוסף פעילות
-            </button>
-            
-            <div class="bg-yellow-50 p-3 rounded-xl mb-6">
-                <label class="block text-xs font-bold text-[#4D453E] mb-1">טיפ / הערה יומית:</label>
-                <textarea id="modal-tip-input" class="w-full bg-transparent border-b border-yellow-200 text-sm text-gray-700 outline-none resize-none" rows="3"></textarea>
-            </div>
-
-            <button id="save-day-btn" class="w-full bg-[#4D453E] text-white py-3 rounded-xl font-bold shadow-md hover:bg-[#3a342f] active:scale-95 transition-all">
+            <button id="save-day-btn" class="w-full bg-[#4D453E] text-white py-3 rounded-xl font-bold shadow-md hover:bg-[#3a342f] active:scale-95 transition-all mt-6">
                 שמור שינויים ☁️
             </button>
         </div>
@@ -119,71 +145,91 @@
             <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 items-center md:justify-center">
                 <button class="nav-link active" data-tab="grid-view">📅 לוח מסע</button>
                 <button class="nav-link" data-tab="logistics">🚗 לוגיסטיקה</button>
-                <button class="nav-link" data-tab="checklist">🎒 ציוד</button>
+                <button class="nav-link" data-tab="checklist">🎒 ציוד ולבוש</button>
                 <button class="nav-link" data-tab="budget">💰 תקציב</button>
             </nav>
         </div>
 
         <main class="container mx-auto max-w-5xl p-4 pb-24">
             
-            <!-- 1. Itinerary Grid -->
+            <!-- 1. Grid View (Itinerary) -->
             <section id="grid-view" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="calendar-grid"></div>
+                
+                <!-- Notes Area -->
+                <div class="mt-8">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-[#4D453E] text-lg">📌 פתקיות ללו"ז</h3>
+                        <button onclick="window.addStickyNote('grid-view')" class="add-note-btn">+ פתקית חדשה</button>
+                    </div>
+                    <div id="notes-grid-view" class="notes-area"></div>
+                </div>
             </section>
 
-            <!-- 2. Logistics (Flights, Car, Accommodation) -->
+            <!-- 2. Logistics -->
             <section id="logistics" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
                     
-                    <!-- Flights Section -->
-                    <div class="section-title">
-                        <span>טיסות (AMS ⇄ TOS)</span>
-                        <button onclick="window.addLogisticsItem('flights')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg mb-2 flex justify-between">
+                            <span>✈️ טיסות</span>
+                            <button onclick="window.addLogisticsItem('flights')" class="text-xs text-gray-400 border px-2 rounded">+ הוסף</button>
+                        </h3>
+                        <div id="flights-container"></div>
                     </div>
-                    <div id="flights-container"></div>
 
-                    <!-- Car Rental Section -->
-                    <div class="section-title">
-                        <span>רכב שכור (4x4 חובה!)</span>
-                        <button onclick="window.addLogisticsItem('cars')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg mb-2 flex justify-between">
+                            <span>🚗 רכב שכור</span>
+                            <button onclick="window.addLogisticsItem('cars')" class="text-xs text-gray-400 border px-2 rounded">+ הוסף</button>
+                        </h3>
+                        <div id="cars-container"></div>
                     </div>
-                    <div class="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-800">
-                        ℹ️ <b>טיפ:</b> לא צריך להחליף רכב למעבורת. עולים עם הרכב לסניה. מומלץ לוודא שיש AutoPASS (כבישי אגרה) כלול.
-                    </div>
-                    <div id="cars-container"></div>
 
-                    <!-- Accommodation Section -->
-                    <div class="section-title">
-                        <span>לינה וסופרמרקטים</span>
-                        <button onclick="window.addLogisticsItem('housing')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg mb-2 flex justify-between">
+                            <span>🏠 לינה וסופרמרקטים</span>
+                            <button onclick="window.addLogisticsItem('housing')" class="text-xs text-gray-400 border px-2 rounded">+ הוסף</button>
+                        </h3>
+                        <div id="housing-container"></div>
                     </div>
-                    <div id="housing-container"></div>
 
+                    <!-- Notes Area -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-[#4D453E] text-lg">📌 טיפים ללוגיסטיקה</h3>
+                            <button onclick="window.addStickyNote('logistics')" class="add-note-btn">+ פתקית חדשה</button>
+                        </div>
+                        <div id="notes-logistics" class="notes-area"></div>
+                    </div>
                 </div>
             </section>
 
-            <!-- 3. Checklist & Tips -->
+            <!-- 3. Checklist -->
             <section id="checklist" class="tab-content">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 mb-4">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט חורף</h2>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט</h2>
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none focus:border-[#4D453E]">
+                        <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none">
                         <button id="add-item-btn" class="bg-[#4D453E] text-white px-4 py-2 rounded-lg font-bold">+</button>
                     </div>
                     <div class="space-y-2" id="checklist-container"></div>
-                </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">טיפים ומידע כללי</h2>
-                    <div id="generaltips-container"></div>
-                    <button onclick="window.addLogisticsItem('generalTips')" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50">+ הוסף טיפ חדש</button>
+                    <!-- Notes Area -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-[#4D453E] text-lg">📌 טיפים ללבוש וציוד</h3>
+                            <button onclick="window.addStickyNote('checklist')" class="add-note-btn">+ פתקית חדשה</button>
+                        </div>
+                        <div id="notes-checklist" class="notes-area"></div>
+                    </div>
                 </div>
             </section>
 
             <!-- 4. Budget -->
             <section id="budget" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב (25k יעד)</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">תקציב (25k יעד)</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <div class="space-y-4" id="budget-inputs"></div>
@@ -195,6 +241,15 @@
                         <div class="h-[250px] md:h-[300px] w-full relative">
                             <canvas id="budgetChart"></canvas>
                         </div>
+                    </div>
+
+                    <!-- Notes Area -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-bold text-[#4D453E] text-lg">📌 טיפים לחיסכון וכסף</h3>
+                            <button onclick="window.addStickyNote('budget')" class="add-note-btn">+ פתקית חדשה</button>
+                        </div>
+                        <div id="notes-budget" class="notes-area"></div>
                     </div>
                 </div>
             </section>
@@ -225,64 +280,62 @@
             app = initializeApp(firebaseConfig);
             const analytics = getAnalytics(app);
             db = getFirestore(app);
-            tripRef = doc(db, "trips", "ofri_ami_data_2026"); 
+            tripRef = doc(db, "trips", "ofri_ami_data_2026_v2"); // Version 2 data structure
         } catch (e) {
             console.error("Firebase Init Error:", e);
             document.getElementById('sync-status').textContent = "שגיאת אתחול";
         }
 
-        // --- DATA STRUCTURE WITH RESEARCHED CONTENT ---
+        // --- Data Structure ---
         const defaultData = {
             title: "הטיול של עפרי ועמי 👫",
             days: [
-                { id: 1, date: '13/1', day: 'יום ג\'', title: 'נחיתה והתארגנות', icon: '✈️', summary: 'נוחתים ב-10:20 AMS, טיסה ל-TOS, רכב וסופר.', timeline: [{time:'10:20', desc:'נחיתה ב-AMS'}, {time:'14:00', desc:'המראה ל-TOS (דרך OSL)'}, {time:'18:00', desc:'נחיתה בטרומסו ואיסוף רכב'}, {time:'19:30', desc:'סופרמרקט REMA 1000 Kvaløysletta (פתוח עד 23:00)'}], tip: 'לקנות אוכל ליומיים הראשונים. מים מהברז מצוינים.' },
-                { id: 2, date: '14/1', day: 'יום ד\'', title: 'העיר טרומסו', icon: '🏙️', summary: 'רכבל, קתדרלה, סיור עיר', timeline: [{time:'10:00', desc:'נסיעה למרכז, חניה במנהרה'}, {time:'11:30', desc:'רכבל Fjellheisen (אור דמדומים)'}, {time:'14:00', desc:'ארוחת צהריים ב-Rakettkiosken'}, {time:'20:00', desc:'ציד זוהר ב-Ersfjordbotn'}], tip: 'להוריד אפליקציית EasyPark לחניה בעיר.' },
-                { id: 3, date: '15/1', day: 'יום ה\'', title: 'כלבים וטבע', icon: '🐕', summary: 'מזחלות האסקי וסאונה', timeline: [{time:'09:00', desc:'הגעה למרכז הכלבים (Villmarkssenter)'}, {time:'13:00', desc:'חזרה לבקתה למנוחה'}, {time:'17:00', desc:'סאונה פרטית/ציבורית'}, {time:'21:00', desc:'בדיקת אפליקציית Aurora'}], tip: 'להתלבש הכי חם שיש למזחלות.' },
-                { id: 4, date: '16/1', day: 'יום ו\'', title: 'מעבר לסניה', icon: '⛴️', summary: 'נסיעה למעבורת והגעה לאי סניה', timeline: [{time:'09:30', desc:'יציאה לכיוון Brensholmen'}, {time:'11:00', desc:'מעבורת ל-Botnhamn (לבדוק לו"ז!)'}, {time:'13:00', desc:'נקודת תצפית Tungeneset'}, {time:'15:00', desc:'צק אין במלון Mefjord Brygge'}], tip: 'אם המעבורת מבוטלת בגלל מזג אוויר, הנסיעה מסביב לוקחת 3 שעות.' },
-                { id: 5, date: '17/1', day: 'יום שבת', title: 'האי Senja', icon: '🏔️', summary: 'פיורדים פראיים ונופים', timeline: [{time:'10:00', desc:'חוף Ersfjord (השני)'}, {time:'12:00', desc:'תצפית Bergsbotn'}, {time:'14:00', desc:'ארוחה עצמית מול הנוף'}, {time:'20:00', desc:'זוהר בחושך מוחלט של סניה'}], tip: 'בסניה יש מעט מאוד סופרים, וודאו שקניתם הכל בטרומסו או בדרך.' },
-                { id: 6, date: '18/1', day: 'יום א\'', title: 'חזרה לציביליזציה', icon: '🚗', summary: 'חזרה לטרומסו/סומרוי', timeline: [{time:'10:00', desc:'יציאה מסניה'}, {time:'12:00', desc:'מעבורת חזרה או נסיעה יבשתית'}, {time:'15:00', desc:'עצירה ב-Sommarøy (חופים לבנים)'}, {time:'19:00', desc:'בירה ב-Ølhallen (נסגר מוקדם בא\')'}], tip: 'יום ראשון - הכל סגור חוץ ממסעדות ומעט סופרים קטנים (Joker).' },
-                { id: 7, date: '19/1', day: 'יום ב\'', title: 'פרידה מהעיר', icon: '🛍️', summary: 'מזכרות וארוחת ערב', timeline: [{time:'11:00', desc:'קניית מזכרות וסוודרים'}, {time:'13:00', desc:'מוזיאון פולאריה'}, {time:'18:00', desc:'ארוחת ערב חגיגית'}, {time:'22:00', desc:'ניסיון זוהר אחרון'}], tip: 'לקנות גבינה חומה הביתה.' },
-                { id: 8, date: '20/1', day: 'יום ג\'', title: 'טסים ל-AMS', icon: '🇳🇱', summary: 'טיסה ולינה בשדה', timeline: [{time:'10:00', desc:'החזרת רכב ב-TOS'}, {time:'12:00', desc:'טיסה לאמסטרדם'}, {time:'16:00', desc:'נחיתה והגעה למלון ב-AMS'}, {time:'19:00', desc:'ערב חופשי באמסטרדם'}], tip: 'לישון במלון CitizenM או Sheraton בצמוד לטרמינל.' },
-                { id: 9, date: '21/1', day: 'יום ד\'', title: 'הביתה', icon: '🇮🇱', summary: 'טיסה לישראל', timeline: [{time:'09:00', desc:'הליכה לטרמינל'}, {time:'11:30', desc:'המראה לתל אביב'}], tip: 'טיסה נעימה!' }
+                { id: 1, date: '13/1', day: 'יום ג\'', title: 'נחיתה והתארגנות', icon: '✈️', summary: 'נוחתים ב-10:20 AMS, טיסה ל-TOS, רכב וסופר.', timeline: [{time:'10:20', desc:'נחיתה ב-AMS'}, {time:'14:00', desc:'המראה ל-TOS (דרך OSL)'}, {time:'18:00', desc:'נחיתה בטרומסו ואיסוף רכב'}, {time:'19:30', desc:'סופרמרקט REMA 1000'}] },
+                { id: 2, date: '14/1', day: 'יום ד\'', title: 'העיר טרומסו', icon: '🏙️', summary: 'רכבל, קתדרלה, סיור עיר', timeline: [{time:'10:00', desc:'נסיעה למרכז, חניה במנהרה'}, {time:'11:30', desc:'רכבל Fjellheisen'}, {time:'20:00', desc:'ציד זוהר ב-Ersfjordbotn'}] },
+                { id: 3, date: '15/1', day: 'יום ה\'', title: 'כלבים וטבע', icon: '🐕', summary: 'מזחלות האסקי וסאונה', timeline: [{time:'09:00', desc:'מרכז הכלבים Villmarkssenter'}, {time:'17:00', desc:'סאונה פרטית'}, {time:'21:00', desc:'בדיקת אפליקציית Aurora'}] },
+                { id: 4, date: '16/1', day: 'יום ו\'', title: 'מעבר לסניה', icon: '⛴️', summary: 'נסיעה למעבורת והגעה לאי סניה', timeline: [{time:'09:30', desc:'יציאה ל-Brensholmen'}, {time:'11:00', desc:'מעבורת ל-Botnhamn'}, {time:'15:00', desc:'צק אין Mefjord Brygge'}] },
+                { id: 5, date: '17/1', day: 'יום שבת', title: 'האי Senja', icon: '🏔️', summary: 'פיורדים פראיים ונופים', timeline: [{time:'10:00', desc:'חוף Ersfjord'}, {time:'12:00', desc:'תצפית Bergsbotn'}, {time:'20:00', desc:'זוהר בחושך מוחלט'}] },
+                { id: 6, date: '18/1', day: 'יום א\'', title: 'חזרה לציביליזציה', icon: '🚗', summary: 'חזרה לטרומסו/סומרוי', timeline: [{time:'10:00', desc:'יציאה מסניה'}, {time:'15:00', desc:'עצירה ב-Sommarøy'}, {time:'19:00', desc:'בירה ב-Ølhallen'}] },
+                { id: 7, date: '19/1', day: 'יום ב\'', title: 'פרידה מהעיר', icon: '🛍️', summary: 'מזכרות וארוחת ערב', timeline: [{time:'11:00', desc:'קניית מזכרות'}, {time:'13:00', desc:'פולאריה'}, {time:'18:00', desc:'ארוחת ערב חגיגית'}] },
+                { id: 8, date: '20/1', day: 'יום ג\'', title: 'טסים ל-AMS', icon: '🇳🇱', summary: 'טיסה ולינה בשדה', timeline: [{time:'10:00', desc:'החזרת רכב'}, {time:'12:00', desc:'טיסה ל-AMS'}, {time:'19:00', desc:'ערב באמסטרדם'}] },
+                { id: 9, date: '21/1', day: 'יום ד\'', title: 'הביתה', icon: '🇮🇱', summary: 'טיסה לישראל', timeline: [{time:'09:00', desc:'לטרמינל'}, {time:'11:30', desc:'המראה לתל אביב'}] }
             ],
             budget: [
-                { label: 'לינה (Airbnb+מלון)', value: 7200, color: '#4D453E' },
+                { label: 'לינה', value: 7200, color: '#4D453E' },
                 { label: 'טיסות', value: 4500, color: '#8A7F77' },
-                { label: 'רכב ודלק', value: 4000, color: '#A2B8C4' },
+                { label: 'רכב', value: 4000, color: '#A2B8C4' },
                 { label: 'פעילויות', value: 4000, color: '#D8CFC7' },
                 { label: 'אוכל', value: 2800, color: '#BFAFA2' },
                 { label: 'ביטחון', value: 2500, color: '#F5F0E6' }
             ],
             checklist: [
-                { text: 'ביגוד תרמי (2 סטים לפחות)', done: false },
-                { text: 'חצובה למצלמה (חובה לזוהר)', done: false },
-                { text: 'מטען נייד (סוללות נגמרות מהר)', done: false },
-                { text: 'כפפות עבות + כפפות דקות (טאץ\')', done: false },
-                { text: 'קרמפונים (דוקרנים לנעליים)', done: false },
-                { text: 'שקיות חימום לידיים/רגליים', done: false },
-                { text: 'רישיון נהיגה בינלאומי', done: false }
+                { text: 'ביגוד תרמי (2 סטים)', done: false },
+                { text: 'חצובה למצלמה', done: false },
+                { text: 'מטען נייד', done: false },
+                { text: 'כפפות עבות + דקות', done: false },
+                { text: 'קרמפונים', done: false },
+                { text: 'שקיות חימום', done: false },
+                { text: 'רישיון בינלאומי', done: false }
             ],
-            // --- NEW: Detailed Logistics ---
             flights: [
-                { title: "הלוך: AMS -> TOS", desc: "SAS/Norwegian. המראה סביב 13:00-14:00. קונקשיין באוסלו. מחיר ~200€ לאדם.", url: "https://www.skyscanner.co.il/transport/flights/ams/tos/260113/" },
-                { title: "חזור: TOS -> AMS", desc: "ב-20/1. עדיף טיסת צהריים. לינה ב-CitizenM Schiphol.", url: "https://www.booking.com/airport/nl/ams.he.html" },
-                { title: "חזור: AMS -> TLV", desc: "ב-21/1 המראה ב-11:30. אל על/KLM.", url: "" }
+                { title: "הלוך: AMS -> TOS", desc: "SAS/Norwegian. קונקשיין באוסלו. ~200€ לאדם.", url: "https://www.skyscanner.co.il/" },
+                { title: "חזור: TOS -> AMS", desc: "טיסת צהריים ב-20/1. לינה בשדה.", url: "" }
             ],
             cars: [
-                { title: "Hertz / Avis (בשדה)", desc: "הכי נוח אבל יקר. Toyota RAV4 או דומה. כולל צמיגי חורף. ~4500 ש\"ח.", url: "https://www.rentalcars.com/search-results?coordinates=69.6833%2C18.9167&doDay=20&doHour=10&doMinute=0&doMonth=1&doYear=2026&driversAge=30&dropOffLocation=Troms%C3%B8%20Airport%2C%20Langnes&dropOffLocationCode=TOS&filter_car_class=suv&puDay=13&puHour=18&puMinute=0&puMonth=1&puYear=2026&searchType=airport" },
-                { title: "Rent-A-Wreck", desc: "זול משמעותית. רכבים משומשים אך אמינים. סניף קרוב לשדה (מונית קצרה).", url: "https://www.rent-a-wreck.no/en/location/norway/tromso/" },
-                { title: "Sixt", desc: "רכבים חדשים, לפעמים יש דילים טובים על 4x4.", url: "https://www.sixt.com/" }
+                { title: "Hertz / Avis", desc: "הכי נוח ויקר. Toyota RAV4. כולל צמיגי חורף.", url: "https://www.rentalcars.com" },
+                { title: "Rent-A-Wreck", desc: "זול משמעותית. רכבים משומשים. סניף קרוב לשדה.", url: "https://www.rent-a-wreck.no" }
             ],
             housing: [
-                { title: "Kvaløya - Ersfjordbotn", desc: "המיקום הכי טוב לזוהר. קרוב לסופר REMA 1000 Kvaløysletta (10 דק' נסיעה).", url: "https://www.airbnb.com/s/Ersfjordbotn--Troms%C3%B8--Norway/homes?refinement_paths%5B%5D=%2Fhomes&date_picker_type=calendar&checkin=2026-01-13&checkout=2026-01-16&adults=2&price_max=1000" },
-                { title: "Senja - Mefjord Brygge", desc: "מלון/בקתות בלב הפיורדים. יש מסעדה במקום. סופר קרוב: Joker Skaland.", url: "https://www.mefjordbrygge.no/" },
-                { title: "Sommarøy Arctic Hotel", desc: "בקצה המערבי. בקתות על המים. יקר אבל חוויה.", url: "https://sommaroy.no/" }
+                { title: "Kvaløya - Ersfjordbotn", desc: "המיקום הכי טוב לזוהר.", url: "https://www.airbnb.com" },
+                { title: "Senja - Mefjord Brygge", desc: "בלב הפיורדים.", url: "https://www.mefjordbrygge.no" }
             ],
-            generalTips: [
-                { title: "מעבורת לסניה (Brensholmen)", desc: "בחורף הלו\"ז מצומצם ולפעמים מתבטל. לבדוק בוקר מראש באפליקציית 'Troms Reise'.", url: "https://fylkestrafikk.no/" },
-                { title: "שיטת השכבות (לבוש)", desc: "שכבה 1: צמר מרינו. שכבה 2: פליז/צמר עבה. שכבה 3: מעיל רוח ומים. לא ג'ינס!", url: "" },
-                { title: "אלכוהול", desc: "יקר. לקנות בדיוטי ב-AMS. בנורבגיה: בירה בסופר עד 20:00 (שבת עד 18:00). יין רק ב-Vinmonopolet.", url: "" },
-                { title: "חניה בטרומסו", desc: "חובה להוריד EasyPark. רוב החניה במנהרות מתחת לאדמה.", url: "https://easypark.com/en" }
+            // New Sticky Notes Structure (Distributed Tips)
+            stickyNotes: [
+                { id: 1, tab: 'logistics', text: 'מעבורת לסניה (Brensholmen): בחורף הלו"ז מצומצם. לבדוק יום מראש באפליקציית Troms Reise.' },
+                { id: 2, tab: 'logistics', text: 'חניה בטרומסו: חובה להוריד אפליקציית EasyPark. רוב החניה במנהרות.' },
+                { id: 3, tab: 'checklist', text: 'שיטת השכבות: שכבה 1 מרינו (צמוד), שכבה 2 פליז (מבודד), שכבה 3 מעיל רוח/מים. לא ג\'ינס!' },
+                { id: 4, tab: 'budget', text: 'אלכוהול: יקר בטירוף. לקנות בדיוטי ב-AMS. יין רק ב-Vinmonopolet, בירה בסופר עד 20:00.' },
+                { id: 5, tab: 'grid-view', text: 'אפליקציות חובה: My Aurora Forecast (זוהר), Yr.no (מזג אוויר).' }
             ]
         };
 
@@ -291,7 +344,7 @@
         let currentEditingIndex = -1;
         const CORRECT_CODE = '8989';
 
-        // --- Login Logic ---
+        // --- Auth ---
         window.attemptLogin = function() {
             const passInput = document.getElementById('passcode-input');
             const errorMsg = document.getElementById('login-error');
@@ -314,7 +367,7 @@
             }
         };
 
-        // --- Sync Logic ---
+        // --- Sync ---
         function startRealtimeListener(onFirstLoad) {
             onSnapshot(tripRef, async (docSnap) => {
                 const statusEl = document.getElementById('sync-status');
@@ -322,13 +375,9 @@
                 statusEl.className = 'sync-green';
 
                 if (docSnap.exists()) {
-                    // Merge DB data with default structure to ensure new fields appear
-                    const data = docSnap.data();
-                    appData = { ...defaultData, ...data };
-                    // Ensure arrays exist
-                    ['flights', 'cars', 'housing', 'generalTips'].forEach(key => {
-                        if(!appData[key]) appData[key] = defaultData[key];
-                    });
+                    appData = { ...defaultData, ...docSnap.data() };
+                    // Ensure stickyNotes array exists
+                    if(!appData.stickyNotes) appData.stickyNotes = defaultData.stickyNotes;
                 } else {
                     await setDoc(tripRef, defaultData);
                     appData = defaultData;
@@ -362,8 +411,6 @@
             document.getElementById('close-day-btn').addEventListener('click', () => {
                 document.getElementById('day-overlay').style.display = 'none';
             });
-            
-            // Add listeners for new buttons if they exist
         }
 
         function refreshUI() {
@@ -371,61 +418,84 @@
             renderGrid();
             renderBudget();
             renderChecklist();
-            
-            // Render Logistics Sections
             renderInfoCards('flights', 'flights-container');
             renderInfoCards('cars', 'cars-container');
             renderInfoCards('housing', 'housing-container');
-            renderInfoCards('generalTips', 'generaltips-container');
+            
+            // Render Sticky Notes for ALL tabs
+            renderStickyNotes('grid-view');
+            renderStickyNotes('logistics');
+            renderStickyNotes('checklist');
+            renderStickyNotes('budget');
         }
 
-        // --- Generic Info Cards Render (Editable) ---
-        function renderInfoCards(dataKey, containerId) {
-            const container = document.getElementById(containerId);
+        // --- Sticky Notes Logic ---
+        function renderStickyNotes(tabId) {
+            const container = document.getElementById(`notes-${tabId}`);
             if(!container) return;
             container.innerHTML = '';
-            
-            (appData[dataKey] || []).forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'info-card';
-                
-                const linkDisplay = item.url ? `<a href="${item.url}" target="_blank" class="link-btn">🔗 פתח לינק/חיפוש</a>` : '';
-                const priceDisplay = item.price ? `<span class="price-tag">${item.price}</span>` : '';
 
+            const notes = (appData.stickyNotes || []).filter(note => note.tab === tabId);
+
+            notes.forEach((note) => {
+                const div = document.createElement('div');
+                div.className = 'sticky-note';
                 div.innerHTML = `
-                    <span class="delete-btn-abs" onclick="window.deleteInfoCard('${dataKey}', ${index})">✕</span>
-                    <input type="text" class="card-title" value="${item.title}" placeholder="כותרת" onchange="window.updateInfoCard('${dataKey}', ${index}, 'title', this.value)">
-                    <textarea class="card-desc" rows="2" placeholder="פירוט..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'desc', this.value)">${item.desc}</textarea>
-                    <input type="text" class="card-link" value="${item.url || ''}" placeholder="הדבק לינק (URL)..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'url', this.value)">
-                    <div class="flex justify-between items-end mt-2">
-                         ${linkDisplay}
-                    </div>
+                    <span class="delete-note" onclick="window.deleteStickyNote(${note.id})">x</span>
+                    <textarea onchange="window.updateStickyNote(${note.id}, this.value)">${note.text}</textarea>
                 `;
                 container.appendChild(div);
             });
         }
 
-        // --- Window Global Functions for HTML onClick ---
-        window.updateInfoCard = function(dataKey, index, field, value) {
-            appData[dataKey][index][field] = value;
+        window.addStickyNote = function(tabId) {
+            if(!appData.stickyNotes) appData.stickyNotes = [];
+            const newId = Date.now();
+            appData.stickyNotes.push({ id: newId, tab: tabId, text: "" });
             saveToCloud();
-            if (field === 'url') refreshUI(); 
         }
 
-        window.deleteInfoCard = function(dataKey, index) {
-            if(confirm('למחוק את הכרטיס הזה?')) {
-                appData[dataKey].splice(index, 1);
+        window.updateStickyNote = function(id, text) {
+            const note = appData.stickyNotes.find(n => n.id === id);
+            if(note) {
+                note.text = text;
                 saveToCloud();
             }
         }
 
-        window.addLogisticsItem = function(dataKey) {
-            if(!appData[dataKey]) appData[dataKey] = [];
-            appData[dataKey].push({ title: "", desc: "", url: "" });
-            saveToCloud();
+        window.deleteStickyNote = function(id) {
+            if(confirm("למחוק את הפתקית?")) {
+                appData.stickyNotes = appData.stickyNotes.filter(n => n.id !== id);
+                saveToCloud();
+            }
         }
 
-        // --- Grid & Timeline ---
+
+        // --- Logistics Cards ---
+        function renderInfoCards(dataKey, containerId) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.innerHTML = '';
+            (appData[dataKey] || []).forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'info-card';
+                const linkDisplay = item.url ? `<a href="${item.url}" target="_blank" class="text-xs text-blue-500 mt-1 block">🔗 לינק</a>` : '';
+                div.innerHTML = `
+                    <span class="delete-btn-abs" onclick="window.deleteInfoCard('${dataKey}', ${index})">✕</span>
+                    <input type="text" class="card-title" value="${item.title}" placeholder="כותרת" onchange="window.updateInfoCard('${dataKey}', ${index}, 'title', this.value)">
+                    <textarea class="w-full text-sm outline-none resize-none text-gray-600" rows="2" placeholder="פירוט..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'desc', this.value)">${item.desc}</textarea>
+                    <input type="text" class="w-full text-xs border-t border-gray-100 mt-1 pt-1 outline-none text-gray-400" value="${item.url || ''}" placeholder="URL..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'url', this.value)">
+                    ${linkDisplay}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.updateInfoCard = (key, idx, field, val) => { appData[key][idx][field] = val; saveToCloud(); if(field==='url') refreshUI(); }
+        window.deleteInfoCard = (key, idx) => { if(confirm('למחוק?')) { appData[key].splice(idx,1); saveToCloud(); } }
+        window.addLogisticsItem = (key) => { if(!appData[key]) appData[key]=[]; appData[key].push({title:'',desc:'',url:''}); saveToCloud(); }
+
+        // --- Grid & Modal ---
         function renderGrid() {
             const container = document.getElementById('calendar-grid');
             container.innerHTML = '';
@@ -449,52 +519,33 @@
             currentEditingIndex = index;
             const day = appData.days[index];
             const overlay = document.getElementById('day-overlay');
-            
             document.getElementById('modal-date-display').textContent = `${day.day} | ${day.date}`;
             document.getElementById('modal-title-input').value = day.title;
             document.getElementById('modal-summary-input').value = day.summary;
-            document.getElementById('modal-tip-input').value = day.tip || '';
-            
             const container = document.getElementById('modal-timeline-container');
             container.innerHTML = '';
-            (day.timeline || []).forEach(item => {
-                renderTimelineRow(container, item.time, item.desc);
-            });
+            (day.timeline || []).forEach(item => renderTimelineRow(container, item.time, item.desc));
             overlay.style.display = 'flex';
         }
 
         function renderTimelineRow(container, timeVal, descVal) {
             const row = document.createElement('div');
             row.className = 'timeline-row';
-            row.innerHTML = `
-                <input type="time" class="timeline-time edit-input" value="${timeVal}">
-                <input type="text" class="timeline-desc edit-input" value="${descVal}">
-                <span class="text-red-400 cursor-pointer px-2" onclick="this.parentElement.remove()">×</span>
-            `;
+            row.innerHTML = `<input type="time" class="timeline-time edit-input" value="${timeVal}"><input type="text" class="timeline-desc edit-input" value="${descVal}"><span class="text-red-400 cursor-pointer px-2" onclick="this.parentElement.remove()">×</span>`;
             container.appendChild(row);
         }
-
-        function addTimelineRow() {
-            renderTimelineRow(document.getElementById('modal-timeline-container'), "12:00", "");
-        }
-
+        function addTimelineRow() { renderTimelineRow(document.getElementById('modal-timeline-container'), "12:00", ""); }
         async function saveDayEdit() {
             if (currentEditingIndex === -1) return;
             const day = appData.days[currentEditingIndex];
             day.title = document.getElementById('modal-title-input').value;
             day.summary = document.getElementById('modal-summary-input').value;
-            day.tip = document.getElementById('modal-tip-input').value;
-            
             const newTimeline = [];
             document.querySelectorAll('#modal-timeline-container .timeline-row').forEach(row => {
-                newTimeline.push({
-                    time: row.querySelector('.timeline-time').value,
-                    desc: row.querySelector('.timeline-desc').value
-                });
+                newTimeline.push({ time: row.querySelector('.timeline-time').value, desc: row.querySelector('.timeline-desc').value });
             });
             newTimeline.sort((a,b) => a.time.localeCompare(b.time));
             day.timeline = newTimeline;
-
             await saveToCloud();
             document.getElementById('day-overlay').style.display = 'none';
         }
@@ -508,22 +559,13 @@
                 total += parseInt(item.value);
                 const row = document.createElement('div');
                 row.className = 'flex items-center gap-4 bg-gray-50 p-2 rounded-lg';
-                row.innerHTML = `
-                    <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${item.color}"></div>
-                    <span class="font-bold text-sm w-24">${item.label}</span>
-                    <input type="number" class="flex-grow bg-white border border-gray-200 rounded p-1 text-left" 
-                           value="${item.value}" onchange="window.updateBudget(${index}, this.value)">
-                    <span class="text-xs text-gray-500">₪</span>
-                `;
+                row.innerHTML = `<div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${item.color}"></div><span class="font-bold text-sm w-24">${item.label}</span><input type="number" class="flex-grow bg-white border border-gray-200 rounded p-1 text-left" value="${item.value}" onchange="window.updateBudget(${index}, this.value)"><span class="text-xs text-gray-500">₪</span>`;
                 container.appendChild(row);
             });
             document.getElementById('total-budget-display').textContent = total.toLocaleString() + ' ₪';
             updateChart();
         }
-        window.updateBudget = function(index, val) {
-            appData.budget[index].value = parseInt(val) || 0;
-            saveToCloud();
-        }
+        window.updateBudget = function(index, val) { appData.budget[index].value = parseInt(val) || 0; saveToCloud(); }
         function updateChart() {
             const ctx = document.getElementById('budgetChart').getContext('2d');
             const dataValues = (appData.budget || []).map(b => b.value);
@@ -538,20 +580,13 @@
             (appData.checklist || []).forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'flex items-center gap-3 p-2 bg-gray-50 rounded-lg group';
-                div.innerHTML = `
-                    <input type="checkbox" class="w-5 h-5 accent-[#4D453E] cursor-pointer" ${item.done ? 'checked' : ''} onchange="window.toggleCheck(${index})">
-                    <span class="flex-grow text-sm ${item.done ? 'line-through text-gray-400' : 'text-[#4D453E]'}">${item.text}</span>
-                    <button onclick="window.deleteCheckItem(${index})" class="text-gray-300 hover:text-red-500 px-2">🗑️</button>
-                `;
+                div.innerHTML = `<input type="checkbox" class="w-5 h-5 accent-[#4D453E] cursor-pointer" ${item.done ? 'checked' : ''} onchange="window.toggleCheck(${index})"><span class="flex-grow text-sm ${item.done ? 'line-through text-gray-400' : 'text-[#4D453E]'}">${item.text}</span><button onclick="window.deleteCheckItem(${index})" class="text-gray-300 hover:text-red-500 px-2">🗑️</button>`;
                 container.appendChild(div);
             });
         }
         window.toggleCheck = (index) => { appData.checklist[index].done = !appData.checklist[index].done; saveToCloud(); }
         window.deleteCheckItem = (index) => { appData.checklist.splice(index, 1); saveToCloud(); }
-        async function addChecklistItem() {
-            const input = document.getElementById('new-item-input');
-            if(input.value.trim()) { if(!appData.checklist) appData.checklist = []; appData.checklist.push({ text: input.value.trim(), done: false }); input.value = ''; await saveToCloud(); }
-        }
+        async function addChecklistItem() { const input = document.getElementById('new-item-input'); if(input.value.trim()) { if(!appData.checklist) appData.checklist = []; appData.checklist.push({ text: input.value.trim(), done: false }); input.value = ''; await saveToCloud(); } }
 
         function setupTabs() {
             const navLinks = document.querySelectorAll('.nav-link');
