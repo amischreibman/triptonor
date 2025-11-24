@@ -6,235 +6,220 @@
     <title>הטיול של עפרי ועמי 🏳️‍🌈</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Assistant', sans-serif; background-color: #F5F0E6; color: #4D453E; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Assistant', sans-serif; background-color: #F3F4F6; color: #1F2937; -webkit-tap-highlight-color: transparent; }
         
-        /* Toggle Switch */
-        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
-        
-        /* View vs Edit Mode Visibility */
+        /* State Visibility classes */
         body:not(.editing) .edit-only { display: none !important; }
         body.editing .view-only { display: none !important; }
+        body.editing .editable-container { border: 1px dashed #9CA3AF; padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.5); }
+
+        /* Inputs */
+        input, textarea, select { background: transparent; border-bottom: 1px solid #D1D5DB; outline: none; transition: border 0.3s; width: 100%; }
+        body.editing input:focus, body.editing textarea:focus { border-bottom: 2px solid #4F46E5; background: #fff; }
+
+        /* Timeline */
+        .timeline-row { position: relative; padding-right: 20px; border-right: 2px solid #E5E7EB; padding-bottom: 20px; }
+        .timeline-row:last-child { border-right: none; }
+        .timeline-dot { position: absolute; right: -6px; top: 0; width: 10px; height: 10px; background: #4F46E5; border-radius: 50%; border: 2px solid white; }
         
-        /* Inputs in Edit Mode */
-        body.editing input, body.editing textarea { 
-            background: rgba(255,255,255,0.5); 
-            border-bottom: 1px dashed #A2B8C4; 
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-        body.editing input:focus, body.editing textarea:focus { 
-            background: #fff; 
-            border-bottom: 2px solid #4D453E; 
-            outline: none; 
-        }
+        /* Booked Badge */
+        .badge-booked { background-color: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #86EFAC; }
+        .badge-pending { background-color: #F3F4F6; color: #6B7280; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; border: 1px solid #D1D5DB; }
+
+        /* Option Card (Selected vs Alternative) */
+        .option-card { border: 1px solid #E5E7EB; padding: 10px; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s; background: white; }
+        .option-card.selected { border: 2px solid #4F46E5; background: #EEF2FF; }
+        .option-card:not(.selected) { opacity: 0.7; }
+        .option-card:not(.selected):hover { opacity: 1; border-color: #A5B4FC; cursor: pointer; }
 
         /* Sticky Notes */
-        .note-trigger { cursor: pointer; color: #F59E0B; transition: transform 0.2s; }
-        .note-trigger:hover { transform: scale(1.2); }
-        
-        .sticky-note-card {
-            display: none; /* Hidden by default */
-            background-color: #FEF3C7;
-            color: #4D453E;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 3px 3px 10px rgba(0,0,0,0.15);
-            font-family: 'Kalam', cursive;
-            margin-top: 8px;
-            position: relative;
-            animation: fadeIn 0.2s;
-            border: 1px solid #FCD34D;
-        }
-        .sticky-note-card.visible { display: block; }
-        
-        /* Timeline & Grid */
-        .timeline-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start; border-left: 2px solid #E5E0D8; padding-right: 15px; position: relative; }
-        .timeline-dot { position: absolute; right: -6px; top: 6px; width: 10px; height: 10px; background: #A2B8C4; border-radius: 50%; }
-        .timeline-time { min-width: 60px; font-weight: bold; color: #4D453E; font-size: 0.9rem; }
-        
-        /* Layout */
+        .note-trigger { color: #F59E0B; cursor: pointer; }
+        .sticky-note { background: #FEF3C7; padding: 8px; border-radius: 6px; font-family: 'Kalam', cursive; font-size: 0.9rem; margin-top: 5px; border: 1px solid #FCD34D; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+
+        /* Tabs */
+        .tab-btn.active { color: #4F46E5; border-bottom: 2px solid #4F46E5; }
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Loader */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4D453E; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Sync Status */
-        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.75rem; background: white; padding: 4px 8px; rounded: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; }
-        .sync-green { color: green; } .sync-red { color: red; }
+        /* Loader */
+        #loading-screen { position: fixed; inset: 0; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4F46E5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-[#F5F0E6] min-h-screen pb-24">
+<body class="pb-24">
 
     <!-- Loading & Login -->
-    <div id="loading-screen" style="display: none;"><div class="loader mb-4"></div><p>טוען נתונים...</p></div>
-    <div id="login-screen" class="fixed inset-0 bg-[#F5F0E6] flex flex-col items-center justify-center z-50">
+    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">טוען את הטיול...</p></div>
+    
+    <div id="login-screen" class="fixed inset-0 bg-gray-100 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-8 rounded-2xl shadow-xl text-center w-80">
-            <div class="text-4xl mb-2">👬</div>
-            <h2 class="text-2xl font-bold text-[#4D453E]">הטיול של עפרי ועמי</h2>
-            <input type="password" id="passcode-input" placeholder="הזן קוד" class="w-full text-center text-2xl p-3 border-2 border-[#D8CFC7] rounded-xl my-4 outline-none">
-            <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold py-3 rounded-xl shadow-lg">כניסה</button>
+            <div class="text-4xl mb-4">👬</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">הטיול של עפרי ועמי</h2>
+            <input type="password" id="passcode-input" placeholder="הזן קוד" class="w-full text-center text-2xl p-3 border-2 border-gray-200 rounded-xl mb-4 focus:border-indigo-500">
+            <button id="login-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow hover:bg-indigo-700 transition">כניסה</button>
             <p id="login-error" class="text-red-500 text-sm mt-2 hidden">קוד שגוי</p>
         </div>
     </div>
 
-    <!-- Header & Controls -->
+    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3">
-            <div class="flex justify-between items-center mb-2">
-                <h1 class="text-xl font-bold text-[#4D453E]">🇳🇴 טרומסו 2026</h1>
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🇳🇴</span>
+                    <h1 class="text-lg font-bold text-gray-800 leading-tight">טרומסו 2026<br><span class="text-xs text-gray-500 font-normal">עפרי & עמי</span></h1>
+                </div>
                 
-                <!-- Controls -->
-                <div class="flex gap-3 items-center">
+                <div class="flex gap-2">
                     <!-- Currency Toggle -->
-                    <div class="flex items-center bg-gray-100 rounded-lg p-1">
-                        <button id="btn-ils" class="px-2 py-1 rounded text-sm font-bold bg-white shadow text-[#4D453E]">₪</button>
-                        <button id="btn-eur" class="px-2 py-1 rounded text-sm font-bold text-gray-400">€</button>
-                    </div>
-                    
-                    <!-- Edit Mode Toggle -->
-                    <button id="edit-mode-btn" class="text-[#4D453E] border border-[#4D453E] px-3 py-1 rounded-lg text-sm font-bold hover:bg-[#4D453E] hover:text-white transition">
-                        <i class="fa-solid fa-pen"></i> <span class="hidden md:inline">עריכה</span>
+                    <button id="currency-btn" class="bg-gray-100 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200 shadow-sm" onclick="toggleCurrency()">
+                        ₪ <span class="text-gray-400 mx-1">|</span> €
+                    </button>
+                    <!-- Edit Toggle -->
+                    <button id="edit-btn" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-sm font-bold border border-indigo-200" onclick="toggleEditMode()">
+                        ✏️ עריכה
                     </button>
                 </div>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex overflow-x-auto gap-6 text-sm md:text-base font-semibold text-gray-500 no-scrollbar pb-1">
-                <button class="nav-link active text-[#4D453E] border-b-2 border-[#4D453E]" data-tab="itinerary">📅 לוח מסע</button>
-                <button class="nav-link" data-tab="flights">✈️ טיסות</button>
-                <button class="nav-link" data-tab="car">🚗 רכב</button>
-                <button class="nav-link" data-tab="accommodation">🏠 לינה</button>
-                <button class="nav-link" data-tab="supermarkets">🛒 סופר</button>
-                <button class="nav-link" data-tab="budget">💰 תקציב</button>
-                <button class="nav-link" data-tab="checklist">🎒 ציוד</button>
+            <nav class="flex overflow-x-auto gap-6 text-sm font-medium text-gray-500 no-scrollbar pb-1 border-b border-gray-100">
+                <button class="tab-btn active whitespace-nowrap pb-2" onclick="switchTab('itinerary')">📅 לוח מסע</button>
+                <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('logistics')">✈️ לוגיסטיקה ולינה</button>
+                <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('checklist')">🎒 ציוד</button>
+                <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('budget')">💰 תקציב</button>
             </nav>
         </div>
     </header>
 
     <main class="container mx-auto max-w-4xl p-4">
 
-        <!-- 1. Itinerary Tab -->
+        <!-- TAB 1: ITINERARY -->
         <section id="itinerary" class="tab-content active">
-            <div id="days-container" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <!-- Day Cards Injected Here -->
+            <div id="days-container" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+            <button class="edit-only w-full py-3 mt-4 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl font-bold hover:bg-white hover:border-indigo-300" onclick="addDay()">+ הוסף יום חדש</button>
+        </section>
+
+        <!-- TAB 2: LOGISTICS (Accommodation, Flights, Car, Markets) -->
+        <section id="logistics" class="tab-content">
+            
+            <!-- Flights Section -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">✈️ טיסות</h2>
+                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('flights')">+ טיסה</button>
+                </div>
+                <div id="flights-container" class="space-y-4"></div>
+            </div>
+
+            <!-- Accommodation Section (Sorted by date) -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">🏠 לינה (לפי סדר המסע)</h2>
+                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('housing')">+ מקום לינה</button>
+                </div>
+                <div id="housing-container" class="space-y-4"></div>
+            </div>
+
+            <!-- Car Section -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">🚗 רכב שכור</h2>
+                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('cars')">+ רכב</button>
+                </div>
+                <div id="cars-container" class="space-y-4"></div>
+            </div>
+
+            <!-- Markets Section -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">🛒 סופרמרקטים</h2>
+                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('markets')">+ סופר</button>
+                </div>
+                <div id="markets-container" class="space-y-4"></div>
             </div>
         </section>
 
-        <!-- 2. Flights Tab -->
-        <section id="flights" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">פרטי טיסות</h2>
-                    <button class="edit-only bg-green-500 text-white px-2 py-1 rounded text-sm" onclick="addItem('flights')">+ טיסה</button>
+        <!-- TAB 3: CHECKLIST -->
+        <section id="checklist" class="tab-content">
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 text-gray-800">רשימת ציוד חורף</h2>
+                <div class="flex gap-2 mb-4 edit-only">
+                    <input type="text" id="new-item-text" placeholder="פריט..." class="border rounded px-2 py-1 text-sm">
+                    <input type="number" id="new-item-price" placeholder="מחיר" class="border rounded px-2 py-1 text-sm w-20">
+                    <button onclick="addCheckItem()" class="bg-indigo-600 text-white px-3 rounded font-bold">+</button>
                 </div>
-                <div id="flights-list" class="space-y-4"></div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-2 py-2 text-right">סטטוס</th>
+                                <th scope="col" class="px-2 py-2 text-right">פריט</th>
+                                <th scope="col" class="px-2 py-2 text-right">מקור/הערה</th>
+                                <th scope="col" class="px-2 py-2 text-right">עלות</th>
+                                <th scope="col" class="px-2 py-2 edit-only"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="checklist-table-body"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <!-- 3. Car Rental Tab -->
-        <section id="car" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">השכרת רכב</h2>
-                    <button class="edit-only bg-green-500 text-white px-2 py-1 rounded text-sm" onclick="addItem('cars')">+ רכב</button>
-                </div>
-                <div class="bg-blue-50 p-3 rounded mb-4 text-sm">
-                    <i class="fa-solid fa-info-circle"></i> חובה רכב 4x4. מומלץ לוודא שיש AutoPASS לכבישי אגרה.
-                </div>
-                <div id="cars-list" class="space-y-4"></div>
-            </div>
-        </section>
-
-        <!-- 4. Accommodation Tab -->
-        <section id="accommodation" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">מקומות לינה</h2>
-                    <button class="edit-only bg-green-500 text-white px-2 py-1 rounded text-sm" onclick="addItem('housing')">+ מקום</button>
-                </div>
-                <div id="housing-list" class="space-y-6"></div>
-            </div>
-        </section>
-
-        <!-- 5. Supermarkets Tab -->
-        <section id="supermarkets" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">סופרמרקטים ואוכל</h2>
-                    <button class="edit-only bg-green-500 text-white px-2 py-1 rounded text-sm" onclick="addItem('markets')">+ סופר</button>
-                </div>
-                <div class="bg-yellow-50 p-3 rounded mb-4 text-sm">
-                    <i class="fa-solid fa-basket-shopping"></i> REMA 1000 ו-KIWI הם הזולים ביותר. ביום ראשון הכל סגור חוץ מ-Joker (יקר).
-                </div>
-                <div id="markets-list" class="space-y-4"></div>
-            </div>
-        </section>
-
-        <!-- 6. Budget Tab -->
+        <!-- TAB 4: BUDGET -->
         <section id="budget" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <h2 class="text-xl font-bold mb-4">סיכום תקציב</h2>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <div id="budget-breakdown" class="space-y-2 text-lg"></div>
-                        <div class="mt-4 pt-4 border-t text-xl font-bold flex justify-between">
-                            <span>סה"כ:</span>
-                            <span id="total-budget">0</span>
-                        </div>
-                    </div>
-                    <div class="h-64">
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <h2 class="text-xl font-bold mb-6 text-gray-800">ניהול תקציב</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-center mb-8">
+                    <div class="h-64 w-full flex justify-center">
                         <canvas id="budgetChart"></canvas>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 7. Checklist Tab -->
-        <section id="checklist" class="tab-content">
-            <div class="bg-white rounded-xl shadow p-5">
-                <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">רשימת ציוד</h2>
-                    <div class="flex gap-2 edit-only">
-                        <input type="text" id="new-check-item" placeholder="פריט חדש..." class="border rounded px-2 py-1 text-sm">
-                        <button onclick="addCheckItem()" class="bg-green-500 text-white px-2 rounded">+</button>
+                    <div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 mb-3">
+                            <span class="block text-sm text-green-600 font-bold">שולם / הוזמן ✅</span>
+                            <span id="total-paid" class="text-2xl font-bold text-green-700">0</span>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
+                            <span class="block text-sm text-gray-500 font-bold">נותר לשלם 🕒</span>
+                            <span id="total-future" class="text-2xl font-bold text-gray-700">0</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <span class="block text-sm text-gray-400">סך הכל משוער</span>
+                            <span id="total-sum" class="text-3xl font-bold text-indigo-600">0</span>
+                        </div>
                     </div>
                 </div>
-                <div id="checklist-container" class="space-y-2"></div>
+                
+                <div id="budget-details" class="space-y-2 text-sm"></div>
             </div>
         </section>
 
     </main>
 
-    <!-- Edit Item Modal (Generic) -->
-    <div id="day-edit-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 class="text-xl font-bold mb-4" id="modal-title">עריכת יום</h3>
-            <div id="modal-content" class="space-y-4"></div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closeModal()" class="px-4 py-2 text-gray-500">ביטול</button>
-                <button id="save-modal-btn" class="px-4 py-2 bg-[#4D453E] text-white rounded-lg">שמור</button>
-            </div>
+    <!-- Generic Item Modal (For Timeline Details) -->
+    <div id="details-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h3 id="modal-title" class="text-xl font-bold mb-2 text-gray-800">פרטים</h3>
+            <div id="modal-content" class="text-gray-600 mb-6 space-y-3"></div>
+            <button onclick="closeModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-xl">סגור</button>
         </div>
     </div>
 
-    <div id="sync-status">ממתין...</div>
+    <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow px-3 py-1 rounded-full text-xs font-bold text-gray-400 z-50">מסונכרן</div>
 
-    <!-- Scripts -->
+    <!-- Firebase Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w",
             authDomain: "tromso-trip.firebaseapp.com",
@@ -245,359 +230,460 @@
             measurementId: "G-976T7D2Q1Z"
         };
 
-        let db, tripRef;
+        let app, db, tripRef;
         try {
-            const app = initializeApp(firebaseConfig);
+            app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            tripRef = doc(db, "trips", "ofri_ami_final_v1");
+            tripRef = doc(db, "trips", "ofri_ami_v3_final"); 
         } catch (e) { console.error(e); }
 
-        // --- App State ---
-        let appData = {};
-        let isEditMode = false;
-        let currency = 'ILS'; // 'ILS' or 'EUR'
-        const ILS_TO_EUR = 4.0; // 1 Euro = 4 ILS (approx for calculation)
-        let chartInstance = null;
-
-        // --- Default Data (The Research) ---
-        const defaultData = {
+        // --- DATA STRUCTURE ---
+        // Structure: days[], logistics{ flights[], housing[], cars[], markets[] }, checklist[]
+        // Each Logistic Group: { id, title, date, options: [ {id, name, desc, cost, booked, link, bookingInfo} ], selectedOptionId }
+        
+        let appData = {
+            currency: 'ILS',
             days: [
-                { id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', cost: 200, currency: 'ILS', timeline: [
-                    { time: '10:20', text: 'נחיתה ב-AMS', sub: 'לאסוף כבודה ולעבור לטיסת המשך' },
-                    { time: '14:00', text: 'טיסה לטרומסו (דרך OSL)', sub: 'SAS SK4414' },
-                    { time: '18:00', text: 'נחיתה בטרומסו', sub: 'איסוף רכב מ-Hertz בשדה' },
-                    { time: '19:30', text: 'קניות ב-REMA 1000', sub: 'ליד השדה' }
-                ], note: 'לקנות מים ואוכל ליומיים הראשונים.' },
-                { id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', cost: 450, currency: 'ILS', timeline: [
-                    { time: '10:00', text: 'חניה במרכז', sub: 'מנהרת Fjellet P-hus' },
-                    { time: '11:30', text: 'רכבל Fjellheisen', sub: 'נוף דמדומים' },
-                    { time: '14:00', text: 'צהריים ב-Rakettkiosken', sub: 'הנקניקייה המפורסמת' },
-                    { time: '20:00', text: 'ציד זוהר עצמאי', sub: 'נסיעה ל-Ersfjordbotn' }
-                ] },
-                { id: 3, date: '15/1 (ה\')', title: 'כלבים וטבע', cost: 1800, currency: 'ILS', timeline: [
-                    { time: '09:00', text: 'מזחלות כלבים', sub: 'Villmarkssenter' },
-                    { time: '13:00', text: 'מנוחה בבקתה', sub: '' },
-                    { time: '18:00', text: 'סאונה בנמל (Pust)', sub: 'להזמין מראש!' }
-                ] },
-                { id: 4, date: '16/1 (ו\')', title: 'מעבר לסניה', cost: 600, currency: 'ILS', timeline: [
-                    { time: '09:30', text: 'נסיעה ל-Brensholmen', sub: 'כ-55 ק"מ, שעה נסיעה' },
-                    { time: '11:00', text: 'מעבורת ל-Botnhamn', sub: 'לוודא שהיא פעילה בבוקר!' },
-                    { time: '13:00', text: 'תצפית Tungeneset', sub: 'הסלעים המשוננים' },
-                    { time: '15:00', text: 'צק אין Mefjord Brygge', sub: '' }
-                ] },
-                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', cost: 0, currency: 'ILS', timeline: [
-                    { time: '10:00', text: 'חוף Ersfjord', sub: 'החוף של סניה' },
-                    { time: '12:00', text: 'תצפית Bergsbotn', sub: 'המרפסת התלויה' },
-                    { time: '20:00', text: 'זוהר בחושך מוחלט', sub: 'אין זיהום אור בסניה' }
-                ] },
-                { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', cost: 400, currency: 'ILS', timeline: [
-                    { time: '10:00', text: 'יציאה מסניה', sub: 'דרך היבשה או מעבורת' },
-                    { time: '14:00', text: 'Sommarøy', sub: 'אי הקיץ - חופים לבנים' },
-                    { time: '19:00', text: 'פאב Ølhallen', sub: 'הפאב הוותיק ביותר' }
-                ] },
-                { id: 7, date: '19/1 (ב\')', title: 'פרידה', cost: 800, currency: 'ILS', timeline: [
-                    { time: '11:00', text: 'קניות מזכרות', sub: 'רחוב Storgata' },
-                    { time: '13:00', text: 'מוזיאון פולאריה', sub: '' },
-                    { time: '19:00', text: 'ארוחת ערב חגיגית', sub: 'מסעדת Fiskekompaniet' }
-                ] },
-                { id: 8, date: '20/1 (ג\')', title: 'טיסה לאמסטרדם', cost: 200, currency: 'ILS', timeline: [
-                    { time: '10:00', text: 'החזרת רכב בשדה', sub: '' },
-                    { time: '12:00', text: 'טיסה ל-AMS', sub: '' },
-                    { time: '18:00', text: 'מלון בשדה התעופה', sub: 'CitizenM' }
-                ] }
+                { id: 1, date: '13/1 (ג\')', title: 'נחיתה', timeline: [
+                    { id: 101, time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS דרך אוסלו', cost: 0, booked: true, info: 'PNR: ABC1234' },
+                    { id: 102, time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה', cost: 0, booked: false, info: '' }
+                ], summaryCost: 0 },
+                { id: 2, date: '14/1 (ד\')', title: 'טרומסו', timeline: [
+                    { id: 201, time: '11:00', title: 'רכבל Fjellheisen', desc: 'כרטיס זוגי', cost: 250, booked: false, info: '' }
+                ], summaryCost: 0 }
             ],
-            flights: [
-                { title: "הלוך: AMS -> TOS", desc: "SAS, קונקשיין באוסלו. 13/1.", cost: 1800, note: "כולל כבודה 23 ק\"ג" },
-                { title: "חזור: TOS -> AMS", desc: "Norwegian, 20/1 צהריים.", cost: 1600, note: "" },
-                { title: "חזור: AMS -> TLV", desc: "אל על, 21/1 ב-11:30.", cost: 2000, note: "" }
-            ],
-            cars: [
-                { title: "Hertz Tromso Airport", desc: "Toyota RAV4 4x4 (חובה!).", cost: 4500, note: "כולל ביטול השתתפות עצמית. איסוף 13/1 18:00." },
-                { title: "דלק ואגרות", desc: "הערכה ל-800 ק\"מ + מעבורות.", cost: 1500, note: "תשלום דרך AutoPass ברכב" }
-            ],
-            housing: [
-                { title: "Kvaløya - Ersfjordbotn", desc: "בקתה על המים, 3 לילות.", cost: 3200, address: "Ersfjordbotn Brygge", link: "https://airbnb.com" },
-                { title: "Senja - Mefjord Brygge", desc: "דירת נופש, 2 לילות.", cost: 2400, address: "Mefjordvær", link: "https://mefjordbrygge.no" },
-                { title: "Tromso City - Smart Hotel", desc: "לילה אחרון בעיר.", cost: 800, address: "Vestregata 6", link: "" },
-                { title: "AMS Airport - CitizenM", desc: "לילה לפני טיסה לארץ.", cost: 900, address: "Schiphol", link: "" }
-            ],
-            markets: [
-                { title: "REMA 1000 Kvaløysletta", desc: "הזול והגדול ביותר ביציאה מהעיר.", cost: 1200, note: "לקנות הכל כאן!" },
-                { title: "Joker Skaland (Senja)", desc: "סופר קטן ויקר בסניה.", cost: 300, note: "רק להשלמות" },
-                { title: "Eurospar", desc: "מבחר גדול של בשר טרי.", cost: 0, note: "" }
-            ],
+            logistics: {
+                flights: [
+                    { id: 'f1', title: 'טיסות הלוך חזור', options: [
+                        { id: 'o1', name: 'SAS + Norwegian', desc: 'שעות נוחות', cost: 3500, booked: true, link: '', info: 'הוזמן דרך Skyscanner' }
+                    ], selectedId: 'o1' }
+                ],
+                housing: [
+                    { id: 'h1', title: 'לינה בטרומסו (ימים 1-3)', date: '2026-01-13', options: [
+                        { id: 'opt1', name: 'Airbnb Ersfjord', desc: 'בקתה על המים', cost: 3200, booked: false, link: 'https://airbnb.com', info: '' },
+                        { id: 'opt2', name: 'Clarion Hotel', desc: 'במרכז העיר', cost: 4000, booked: false, link: '', info: '' }
+                    ], selectedId: 'opt1' }
+                ],
+                cars: [
+                    { id: 'c1', title: 'רכב לכל התקופה', options: [
+                        { id: 'o1', name: 'Toyota RAV4', desc: 'Hertz', cost: 4500, booked: false, link: '', info: '' },
+                        { id: 'o2', name: 'Suzuki Vitara', desc: 'Sixt', cost: 3800, booked: false, link: '', info: '' }
+                    ], selectedId: 'o1' }
+                ],
+                markets: [
+                    { id: 'm1', title: 'קניות להגעה', date: '2026-01-13', options: [
+                        { id: 'o1', name: 'REMA 1000', desc: 'ליד השדה', cost: 800, booked: false, info: '' }
+                    ], selectedId: 'o1'}
+                ]
+            },
             checklist: [
-                { text: "ביגוד תרמי (2 סטים)", done: false, note: "מרינו בלבד" },
-                { text: "חצובה למצלמה", done: false, note: "חובה לזוהר" },
-                { text: "רישיון נהיגה בינלאומי", done: false, note: "בנוסף לפלסטיק" },
-                { text: "מטען נייד", done: false, note: "סוללות מתות בקור" },
-                { text: "אלכוהול מהדיוטי", done: false, note: "יקר מאוד שם" }
+                { id: 1, text: 'ביגוד תרמי', source: 'דקטלון', cost: 400, gotIt: true },
+                { id: 2, text: 'קרמפונים', source: 'אמזון', cost: 100, gotIt: false }
             ]
         };
 
-        // --- Formatters ---
-        function formatPrice(ilsValue) {
-            if (!ilsValue) return currency === 'ILS' ? '0 ₪' : '0 €';
-            if (currency === 'ILS') return `₪${parseInt(ilsValue).toLocaleString()}`;
-            return `€${(parseInt(ilsValue) / ILS_TO_EUR).toFixed(0)}`;
+        let isEditMode = false;
+        let currentCurrency = 'ILS';
+        const EUR_RATE = 4;
+        let chartInstance = null;
+
+        // --- STATE & HELPERS ---
+        window.toggleEditMode = () => {
+            isEditMode = !isEditMode;
+            document.body.classList.toggle('editing', isEditMode);
+            document.getElementById('edit-btn').innerHTML = isEditMode ? '✅ סיום עריכה' : '✏️ עריכה';
+            document.getElementById('edit-btn').classList.toggle('bg-green-100', isEditMode);
+            document.getElementById('edit-btn').classList.toggle('text-green-700', isEditMode);
+            renderAll();
+        };
+
+        window.toggleCurrency = () => {
+            currentCurrency = currentCurrency === 'ILS' ? 'EUR' : 'ILS';
+            const btn = document.getElementById('currency-btn');
+            btn.innerHTML = currentCurrency === 'ILS' ? '<b>₪</b> <span class="text-gray-400 mx-1">|</span> €' : '₪ <span class="text-gray-400 mx-1">|</span> <b>€</b>';
+            renderAll();
+        };
+
+        function formatPrice(ils) {
+            if (!ils) return currentCurrency === 'ILS' ? '0 ₪' : '0 €';
+            if (currentCurrency === 'ILS') return `₪${parseInt(ils).toLocaleString()}`;
+            return `€${(parseInt(ils) / EUR_RATE).toFixed(0)}`;
         }
 
-        // --- Render Logic ---
-        
-        // 1. ITINERARY
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        };
+
+        // --- RENDERERS ---
+
+        // 1. Itinerary Renderer
         function renderItinerary() {
             const container = document.getElementById('days-container');
             container.innerHTML = '';
             
-            (appData.days || []).forEach((day, index) => {
+            appData.days.forEach((day, dayIdx) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition';
+                card.className = 'bg-white rounded-xl shadow-sm border border-gray-200 p-4';
                 
-                // Timeline HTML
-                let timelineHtml = '';
-                if (day.timeline) {
-                    timelineHtml = day.timeline.map((t, tIndex) => `
-                        <div class="timeline-row group">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-time">${t.time}</div>
-                            <div class="flex-1">
-                                <div class="font-medium view-only">${t.text}</div>
-                                <input class="edit-only w-full mb-1" value="${t.text}" onchange="updateTimeline(${index}, ${tIndex}, 'text', this.value)">
-                                
-                                <div class="text-xs text-gray-500 view-only">${t.sub || ''}</div>
-                                <input class="edit-only w-full text-xs" value="${t.sub || ''}" placeholder="פירוט" onchange="updateTimeline(${index}, ${tIndex}, 'sub', this.value)">
+                let dailyTotal = 0;
+                
+                const timelineHtml = day.timeline.map((item, itemIdx) => {
+                    dailyTotal += parseInt(item.cost || 0);
+                    const bookedBadge = item.booked ? 
+                        `<span class="badge-booked" onclick="showDetails('${item.info || 'הוזמן'}')">✔️ הוזמן</span>` : 
+                        `<span class="badge-pending hidden">לא הוזמן</span>`; // Only show booked in view mode usually, but user asked for info
+                    
+                    const editControls = `
+                        <div class="edit-only mt-2 bg-gray-50 p-2 rounded border border-dashed border-gray-300">
+                            <div class="flex gap-2 mb-1">
+                                <input type="time" value="${item.time}" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'time', this.value)" class="w-20">
+                                <input type="text" value="${item.title}" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'title', this.value)" class="font-bold">
                             </div>
-                            <button class="edit-only text-red-400 hover:text-red-600" onclick="removeTimelineItem(${index}, ${tIndex})"><i class="fa-solid fa-trash"></i></button>
+                            <input type="text" value="${item.desc}" placeholder="תיאור" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'desc', this.value)" class="text-xs mb-1">
+                            <div class="flex gap-2 items-center">
+                                <input type="number" value="${item.cost}" placeholder="מחיר" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'cost', this.value)" class="w-20 text-xs">
+                                <label class="flex items-center gap-1 text-xs cursor-pointer">
+                                    <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'booked', this.checked)">
+                                    הוזמן?
+                                </label>
+                            </div>
+                            <input type="text" value="${item.info || ''}" placeholder="פרטי הזמנה/מידע נוסף" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'info', this.value)" class="text-xs mt-1 w-full border rounded px-1">
+                            <button onclick="deleteTimelineItem(${dayIdx}, ${itemIdx})" class="text-red-500 text-xs mt-1">מחק</button>
                         </div>
-                    `).join('');
-                }
+                    `;
 
-                // Note HTML
-                const noteHtml = `
-                    <div class="relative inline-block">
-                        <i class="fa-regular fa-note-sticky note-trigger text-lg" onclick="toggleNote('day-${index}')"></i>
-                        <div id="note-day-${index}" class="sticky-note-card ${day.note ? '' : 'hidden'}">
-                            <textarea class="bg-transparent w-full h-full outline-none resize-none text-sm" 
-                                      ${isEditMode ? '' : 'readonly'} 
-                                      onchange="updateDay(${index}, 'note', this.value)">${day.note || ''}</textarea>
-                            ${isEditMode ? `<div class="text-xs text-gray-400 mt-1 text-left cursor-pointer" onclick="updateDay(${index}, 'note', '')">נקה</div>` : ''}
+                    return `
+                        <div class="timeline-row pb-4">
+                            <div class="timeline-dot"></div>
+                            <div class="flex justify-between items-start cursor-pointer view-only hover:bg-gray-50 p-1 rounded" onclick="showTimelineDetails(${dayIdx}, ${itemIdx})">
+                                <div>
+                                    <span class="font-bold text-indigo-900">${item.time}</span>
+                                    <span class="font-bold mr-2">${item.title}</span>
+                                    <div class="text-sm text-gray-600 pr-12">${item.desc}</div>
+                                    <div class="pr-12 mt-1 flex gap-2 items-center">
+                                        ${bookedBadge}
+                                        ${item.cost > 0 ? `<span class="text-xs bg-gray-100 px-2 rounded">${formatPrice(item.cost)}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            ${editControls}
                         </div>
-                    </div>
-                `;
-
-                // Cost Input
-                const costInput = `
-                    <div class="mt-3 pt-3 border-t flex justify-between items-center">
-                        <div class="text-sm font-bold text-green-600 view-only">${formatPrice(day.cost)}</div>
-                        <div class="flex items-center gap-1 edit-only">
-                            <span class="text-xs">עלות:</span>
-                            <input type="number" value="${day.cost || 0}" class="w-20 text-sm" onchange="updateDay(${index}, 'cost', this.value)">
-                        </div>
-                        ${noteHtml}
-                    </div>
-                `;
+                    `;
+                }).join('');
 
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="bg-[#4D453E] text-white px-2 py-1 rounded text-sm font-bold">${day.date}</span>
-                        ${isEditMode ? `<button class="text-red-500 text-sm" onclick="deleteDay(${index})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    <div class="flex justify-between items-start mb-4 border-b pb-2">
+                        <div>
+                            <input class="font-bold text-lg text-gray-800 bg-transparent edit-only" value="${day.title}" onchange="updateDay(${dayIdx}, 'title', this.value)">
+                            <h3 class="font-bold text-lg text-gray-800 view-only">${day.title}</h3>
+                            <div class="text-xs text-gray-500">${day.date}</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-xs text-gray-400">יומי</span>
+                            <span class="font-bold text-indigo-600">${formatPrice(dailyTotal)}</span>
+                        </div>
+                        <button class="edit-only text-red-400" onclick="deleteDay(${dayIdx})">🗑️</button>
                     </div>
-                    
-                    <h3 class="text-lg font-bold text-[#4D453E] mb-1 view-only">${day.title}</h3>
-                    <input class="edit-only text-lg font-bold text-[#4D453E] w-full mb-2" value="${day.title}" onchange="updateDay(${index}, 'title', this.value)">
-                    
-                    <div class="mt-4">${timelineHtml}</div>
-                    
-                    <button class="edit-only w-full mt-2 text-sm text-gray-400 border border-dashed border-gray-300 rounded py-1" onclick="addTimelineItem(${index})">+ הוסף פעילות</button>
-                    
-                    ${costInput}
+                    <div class="pl-2">${timelineHtml}</div>
+                    <button class="edit-only w-full mt-2 text-xs border border-dashed border-gray-300 p-1 rounded text-gray-400" onclick="addTimelineItem(${dayIdx})">+ פעילות</button>
                 `;
                 container.appendChild(card);
             });
-            
-            if(isEditMode) {
-                const addBtn = document.createElement('button');
-                addBtn.className = 'w-full py-4 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl font-bold hover:bg-gray-50';
-                addBtn.textContent = '+ הוסף יום חדש';
-                addBtn.onclick = () => {
-                    appData.days.push({date: 'תאריך', title: 'יום חדש', timeline: [], cost: 0});
-                    saveData();
-                };
-                container.appendChild(addBtn);
-            }
         }
 
-        // 2. GENERIC LIST RENDERER (Flights, Cars, Housing, Markets)
-        function renderList(key, containerId, iconClass) {
+        // 2. Logistics Renderer (Generic for all groups)
+        function renderLogisticsGroup(type, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            
-            (appData[key] || []).forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex flex-col p-3 border-b border-gray-100 last:border-0 relative group hover:bg-gray-50 rounded transition';
+            const groups = appData.logistics[type] || [];
+
+            // Sort housing by date
+            if(type === 'housing' || type === 'markets') {
+                groups.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+            }
+
+            groups.forEach((group, gIdx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bg-white border border-gray-200 rounded-xl p-4 mb-4';
                 
-                // Determine display classes based on mode
-                const viewClass = isEditMode ? 'hidden' : 'block';
-                const editClass = isEditMode ? 'block' : 'hidden';
-
-                // Note Logic
-                const noteId = `${key}-${index}`;
-                const noteHtml = `
-                    <div class="mt-2">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-regular fa-note-sticky note-trigger text-sm" onclick="toggleNote('${noteId}')"></i>
-                            <span class="text-xs text-gray-400 ${!item.note ? 'hidden' : ''} view-only">יש הערה</span>
+                // Header
+                let header = `
+                    <div class="flex justify-between mb-2">
+                        <div class="w-full">
+                            <input class="font-bold text-lg bg-transparent edit-only w-full" value="${group.title}" onchange="updateGroup('${type}', ${gIdx}, 'title', this.value)">
+                            <h3 class="font-bold text-lg view-only flex items-center gap-2">
+                                ${group.title} 
+                                ${group.date ? `<span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 rounded">${group.date}</span>` : ''}
+                            </h3>
+                            ${isEditMode ? `<input type="date" value="${group.date || ''}" class="text-xs w-32 mb-2" onchange="updateGroup('${type}', ${gIdx}, 'date', this.value)">` : ''}
                         </div>
-                        <div id="note-${noteId}" class="sticky-note-card ${item.note ? '' : 'hidden'}">
-                            <textarea class="bg-transparent w-full outline-none resize-none text-sm" 
-                                      rows="2" ${!isEditMode ? 'readonly' : ''}
-                                      onchange="updateItem('${key}', ${index}, 'note', this.value)">${item.note || ''}</textarea>
-                        </div>
+                        <button class="edit-only text-red-400" onclick="deleteGroup('${type}', ${gIdx})">🗑️</button>
                     </div>
                 `;
 
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="font-bold text-[#4D453E] view-only text-lg">${item.title}</div>
-                            <input class="edit-only font-bold text-[#4D453E] w-full text-lg" value="${item.title}" onchange="updateItem('${key}', ${index}, 'title', this.value)">
-                            
-                            <div class="text-sm text-gray-600 view-only mt-1">${item.desc || ''}</div>
-                            <textarea class="edit-only w-full text-sm mt-1" rows="2" onchange="updateItem('${key}', ${index}, 'desc', this.value)">${item.desc || ''}</textarea>
-                            
-                            ${item.address ? `<div class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-location-dot"></i> ${item.address}</div>` : ''}
-                            ${isEditMode && key === 'housing' ? `<input class="edit-only w-full text-xs mt-1" placeholder="כתובת" value="${item.address || ''}" onchange="updateItem('${key}', ${index}, 'address', this.value)">` : ''}
-                            
-                            ${item.link ? `<a href="${item.link}" target="_blank" class="text-xs text-blue-500 mt-1 inline-block view-only">🔗 לינק להזמנה</a>` : ''}
-                            <input class="edit-only w-full text-xs mt-1" placeholder="URL להזמנה" value="${item.link || ''}" onchange="updateItem('${key}', ${index}, 'link', this.value)">
-                        </div>
-                        
-                        <div class="text-left pl-2 min-w-[80px]">
-                            <div class="font-bold text-green-600 view-only">${formatPrice(item.cost)}</div>
-                            <input type="number" class="edit-only w-20 text-sm" value="${item.cost || 0}" onchange="updateItem('${key}', ${index}, 'cost', this.value)">
-                            ${isEditMode ? `<button class="text-red-400 text-xs mt-2 block w-full text-right" onclick="deleteItem('${key}', ${index})">מחק</button>` : ''}
-                        </div>
-                    </div>
-                    ${noteHtml}
-                `;
-                container.appendChild(div);
+                // Options logic
+                let optionsHtml = '';
+                group.options.forEach((opt, oIdx) => {
+                    const isSelected = group.selectedId === opt.id;
+                    const bookedBadge = opt.booked ? `<span class="badge-booked">הוזמן</span>` : '';
+                    
+                    // View Mode: Click to select (if alternatives exist)
+                    // Edit Mode: Full edit form
+                    
+                    if (isEditMode) {
+                        optionsHtml += `
+                            <div class="option-card ${isSelected ? 'selected' : ''} p-3 relative">
+                                <div class="absolute top-2 left-2 flex gap-2">
+                                    <input type="radio" name="grp-${type}-${gIdx}" ${isSelected ? 'checked' : ''} onchange="selectOption('${type}', ${gIdx}, '${opt.id}')">
+                                    <button class="text-red-400 text-xs" onclick="deleteOption('${type}', ${gIdx}, ${oIdx})">x</button>
+                                </div>
+                                <input class="font-bold text-sm mb-1" value="${opt.name}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'name', this.value)">
+                                <textarea class="text-xs mb-1" rows="2" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'desc', this.value)">${opt.desc}</textarea>
+                                <div class="flex gap-2 mb-1">
+                                    <input type="number" class="w-20 text-xs" value="${opt.cost}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'cost', this.value)">
+                                    <input type="text" class="flex-1 text-xs" placeholder="לינק" value="${opt.link || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'link', this.value)">
+                                </div>
+                                <div class="flex gap-2 items-center bg-gray-50 p-1 rounded">
+                                    <label class="text-xs flex items-center gap-1"><input type="checkbox" ${opt.booked ? 'checked' : ''} onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'booked', this.checked)"> הוזמן</label>
+                                    <input class="text-xs flex-1" placeholder="פרטי הזמנה" value="${opt.info || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'info', this.value)">
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // View Mode - Show all options, highlight selected. Allow clicking to swap.
+                        optionsHtml += `
+                            <div class="option-card ${isSelected ? 'selected' : ''} flex justify-between items-center p-3" onclick="selectOption('${type}', ${gIdx}, '${opt.id}')">
+                                <div>
+                                    <div class="font-bold text-sm flex items-center gap-2">
+                                        ${opt.name} 
+                                        ${bookedBadge}
+                                        ${isSelected ? '<span class="text-indigo-600 text-xs border border-indigo-200 px-1 rounded">נבחר</span>' : ''}
+                                    </div>
+                                    <div class="text-xs text-gray-600 mt-1">${opt.desc}</div>
+                                    ${opt.link ? `<a href="${opt.link}" target="_blank" class="text-xs text-blue-500 underline mt-1 block" onclick="event.stopPropagation()">קישור להזמנה</a>` : ''}
+                                    ${opt.booked && opt.info ? `<div class="text-xs bg-green-50 text-green-800 p-1 mt-1 rounded border border-green-100">${opt.info}</div>` : ''}
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-indigo-700">${formatPrice(opt.cost)}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                wrapper.innerHTML = header + `<div class="space-y-2">${optionsHtml}</div>` + (isEditMode ? `<button class="w-full text-xs border border-dashed p-1 mt-2 text-gray-400" onclick="addOption('${type}', ${gIdx})">+ הוסף אופציה</button>` : '');
+                container.appendChild(wrapper);
             });
         }
 
-        // 3. BUDGET
+        // 3. Checklist Renderer
+        function renderChecklist() {
+            const tbody = document.getElementById('checklist-table-body');
+            tbody.innerHTML = '';
+            
+            appData.checklist.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white border-b hover:bg-gray-50';
+                
+                const statusCell = `
+                    <td class="px-2 py-3">
+                        <input type="checkbox" class="w-5 h-5 accent-indigo-600 cursor-pointer" ${item.gotIt ? 'checked' : ''} onchange="updateChecklist(${idx}, 'gotIt', this.checked)">
+                    </td>
+                `;
+                
+                const nameCell = `
+                    <td class="px-2 py-3 font-medium text-gray-900">
+                        <span class="view-only ${item.gotIt ? 'line-through text-gray-400' : ''}">${item.text}</span>
+                        <input class="edit-only" value="${item.text}" onchange="updateChecklist(${idx}, 'text', this.value)">
+                    </td>
+                `;
+                
+                const sourceCell = `
+                    <td class="px-2 py-3 text-xs">
+                        <span class="view-only">${item.source || '-'}</span>
+                        <input class="edit-only" value="${item.source || ''}" placeholder="מקור" onchange="updateChecklist(${idx}, 'source', this.value)">
+                    </td>
+                `;
+                
+                const costCell = `
+                    <td class="px-2 py-3 font-bold text-indigo-600">
+                        <span class="view-only">${formatPrice(item.cost)}</span>
+                        <input type="number" class="edit-only w-20" value="${item.cost}" onchange="updateChecklist(${idx}, 'cost', this.value)">
+                    </td>
+                `;
+                
+                const actionsCell = `
+                    <td class="px-2 py-3 edit-only">
+                        <button class="text-red-400" onclick="deleteChecklist(${idx})">🗑️</button>
+                    </td>
+                `;
+
+                tr.innerHTML = statusCell + nameCell + sourceCell + costCell + actionsCell;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 4. Budget Renderer
         function renderBudget() {
-            const breakdown = document.getElementById('budget-breakdown');
-            let total = 0;
-            const categories = {
-                days: { label: 'אטרקציות ושונות (יומי)', sum: 0, color: '#F59E0B' },
-                flights: { label: 'טיסות', sum: 0, color: '#3B82F6' },
-                cars: { label: 'רכב ודלק', sum: 0, color: '#EF4444' },
-                housing: { label: 'לינה', sum: 0, color: '#10B981' },
-                markets: { label: 'אוכל וסופר', sum: 0, color: '#8B5CF6' }
+            let paidTotal = 0;
+            let futureTotal = 0;
+            
+            // Helper to process item cost
+            const processCost = (cost, isBooked) => {
+                const val = parseInt(cost || 0);
+                if(isBooked) paidTotal += val;
+                else futureTotal += val;
+                return val;
             };
 
-            // Calculate
-            (appData.days || []).forEach(d => { total += parseInt(d.cost || 0); categories.days.sum += parseInt(d.cost || 0); });
-            ['flights', 'cars', 'housing', 'markets'].forEach(cat => {
-                (appData[cat] || []).forEach(i => {
-                    total += parseInt(i.cost || 0);
-                    categories[cat].sum += parseInt(i.cost || 0);
+            // Days
+            appData.days.forEach(d => {
+                d.timeline.forEach(t => processCost(t.cost, t.booked));
+            });
+
+            // Logistics (Only selected options count!)
+            ['flights', 'housing', 'cars', 'markets'].forEach(type => {
+                (appData.logistics[type] || []).forEach(group => {
+                    const selected = group.options.find(o => o.id === group.selectedId);
+                    if(selected) processCost(selected.cost, selected.booked);
                 });
             });
 
-            // Render Text
-            breakdown.innerHTML = Object.values(categories).map(cat => `
-                <div class="flex justify-between border-b border-gray-100 py-1">
-                    <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${cat.color}"></div> ${cat.label}</span>
-                    <span>${formatPrice(cat.sum)}</span>
-                </div>
-            `).join('');
-            
-            document.getElementById('total-budget').textContent = formatPrice(total);
+            // Checklist
+            appData.checklist.forEach(c => processCost(c.cost, c.gotIt));
 
-            // Render Chart
+            // Update UI
+            document.getElementById('total-paid').textContent = formatPrice(paidTotal);
+            document.getElementById('total-future').textContent = formatPrice(futureTotal);
+            document.getElementById('total-sum').textContent = formatPrice(paidTotal + futureTotal);
+
+            // Chart
             const ctx = document.getElementById('budgetChart').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
+            if(window.myChart) window.myChart.destroy();
+            window.myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.values(categories).map(c => c.label),
+                    labels: ['שולם/הוזמן', 'עתידי'],
                     datasets: [{
-                        data: Object.values(categories).map(c => c.sum),
-                        backgroundColor: Object.values(categories).map(c => c.color),
+                        data: [paidTotal, futureTotal],
+                        backgroundColor: ['#4ade80', '#e5e7eb'],
                         borderWidth: 0
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // 4. CHECKLIST
-        function renderChecklist() {
-            const container = document.getElementById('checklist-container');
-            container.innerHTML = '';
-            (appData.checklist || []).forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-start gap-3 p-2 border-b border-gray-100';
-                div.innerHTML = `
-                    <input type="checkbox" class="mt-1" ${item.done ? 'checked' : ''} onchange="toggleCheck(${index})">
-                    <div class="flex-1">
-                        <span class="${item.done ? 'line-through text-gray-400' : ''} text-lg view-only">${item.text}</span>
-                        <input class="edit-only w-full" value="${item.text}" onchange="updateCheck(${index}, 'text', this.value)">
-                        
-                        <div class="text-xs text-gray-500 ${!item.note ? 'hidden' : ''} view-only">💡 ${item.note}</div>
-                        <input class="edit-only w-full text-xs mt-1 text-gray-500" placeholder="הערה..." value="${item.note || ''}" onchange="updateCheck(${index}, 'note', this.value)">
+        // --- ACTIONS ---
+        
+        // Timeline
+        window.addDay = () => { appData.days.push({id: Date.now(), date: 'תאריך', title: 'יום חדש', timeline: []}); saveData(); renderAll(); }
+        window.deleteDay = (idx) => { if(confirm('למחוק?')) { appData.days.splice(idx, 1); saveData(); renderAll(); } }
+        window.updateDay = (idx, field, val) => { appData.days[idx][field] = val; saveData(); renderAll(); }
+        
+        window.addTimelineItem = (dIdx) => { appData.days[dIdx].timeline.push({time:'12:00', title:'פעילות', desc:'', cost:0, booked:false}); saveData(); renderAll(); }
+        window.deleteTimelineItem = (dIdx, tIdx) => { appData.days[dIdx].timeline.splice(tIdx, 1); saveData(); renderAll(); }
+        window.updateTimeline = (dIdx, tIdx, field, val) => { appData.days[dIdx].timeline[tIdx][field] = val; saveData(); renderAll(); }
+        window.showTimelineDetails = (dIdx, tIdx) => {
+            if(isEditMode) return;
+            const item = appData.days[dIdx].timeline[tIdx];
+            const content = `
+                <div class="font-bold text-xl mb-2 text-indigo-900">${item.title}</div>
+                <div class="bg-gray-100 p-2 rounded mb-4 font-mono text-sm">${item.time} | ${dayData.date}</div>
+                <p class="mb-4">${item.desc || 'אין תיאור'}</p>
+                <div class="border-t pt-4">
+                    <div class="flex justify-between mb-2">
+                        <span>עלות:</span>
+                        <span class="font-bold">${formatPrice(item.cost)}</span>
                     </div>
-                    ${isEditMode ? `<button class="text-red-400" onclick="deleteCheck(${index})">🗑️</button>` : ''}
-                `;
-                container.appendChild(div);
-            });
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
+                        <span>סטטוס:</span>
+                        ${item.booked ? '<span class="badge-booked">הוזמן ✅</span>' : '<span class="text-gray-500">טרם הוזמן</span>'}
+                    </div>
+                    ${item.booked && item.info ? `<div class="mt-4 bg-green-50 p-3 rounded border border-green-100 text-sm"><div class="font-bold text-green-800 mb-1">פרטי הזמנה:</div>${item.info}</div>` : ''}
+                </div>
+            `;
+            // Getting day date for context
+            const dayData = appData.days[dIdx];
+            document.getElementById('modal-content').innerHTML = content.replace('undefined', dayData.date); // fix date ref
+            document.getElementById('details-modal').classList.remove('hidden');
+            document.getElementById('details-modal').classList.add('flex');
         }
 
-        // --- Global Actions ---
-        window.toggleNote = (id) => {
-            const el = document.getElementById(`note-${id}`);
-            el.classList.toggle('visible');
-            // If edit mode, focus textarea
-            if (isEditMode && el.classList.contains('visible')) {
-                el.querySelector('textarea').focus();
+        // Logistics Groups
+        window.addGroup = (type) => { 
+            if(!appData.logistics[type]) appData.logistics[type] = [];
+            const newId = 'opt' + Date.now();
+            appData.logistics[type].push({ id: Date.now(), title: 'חדש', date: '', options: [{id: newId, name:'אופציה 1', cost:0, booked:false}], selectedId: newId });
+            saveData(); renderAll(); 
+        }
+        window.deleteGroup = (type, idx) => { if(confirm('למחוק?')) { appData.logistics[type].splice(idx, 1); saveData(); renderAll(); } }
+        window.updateGroup = (type, idx, field, val) => { appData.logistics[type][idx][field] = val; saveData(); renderAll(); }
+        
+        // Options
+        window.addOption = (type, gIdx) => {
+            const newId = 'opt' + Date.now();
+            appData.logistics[type][gIdx].options.push({ id: newId, name: 'אופציה חדשה', cost: 0, booked: false });
+            saveData(); renderAll();
+        }
+        window.deleteOption = (type, gIdx, oIdx) => {
+            const group = appData.logistics[type][gIdx];
+            const optId = group.options[oIdx].id;
+            // Prevent deleting the only option or the selected one without logic handling
+            if(group.options.length <= 1) return alert('חייבת להיות לפחות אופציה אחת');
+            
+            group.options.splice(oIdx, 1);
+            if(group.selectedId === optId) group.selectedId = group.options[0].id; // Select first if deleted selected
+            
+            saveData(); renderAll();
+        }
+        window.updateOption = (type, gIdx, oIdx, field, val) => {
+            appData.logistics[type][gIdx].options[oIdx][field] = val;
+            saveData(); renderAll();
+        }
+        window.selectOption = (type, gIdx, optId) => {
+            appData.logistics[type][gIdx].selectedId = optId;
+            saveData(); renderAll(); // Re-render updates budget and UI highlighting
+        }
+
+        // Checklist
+        window.addCheckItem = () => {
+            const text = document.getElementById('new-item-text').value;
+            const cost = document.getElementById('new-item-price').value;
+            if(text) {
+                appData.checklist.push({ id: Date.now(), text: text, cost: cost || 0, gotIt: false });
+                document.getElementById('new-item-text').value = '';
+                document.getElementById('new-item-price').value = '';
+                saveData(); renderAll();
             }
-        };
+        }
+        window.updateChecklist = (idx, field, val) => { appData.checklist[idx][field] = val; saveData(); renderAll(); }
+        window.deleteChecklist = (idx) => { appData.checklist.splice(idx, 1); saveData(); renderAll(); }
 
-        // Data Update Wrappers
-        window.updateDay = (idx, field, val) => { appData.days[idx][field] = val; saveData(); renderItinerary(); renderBudget(); };
-        window.updateTimeline = (dIdx, tIdx, field, val) => { appData.days[dIdx].timeline[tIdx][field] = val; saveData(); };
-        window.addTimelineItem = (dIdx) => { if(!appData.days[dIdx].timeline) appData.days[dIdx].timeline=[]; appData.days[dIdx].timeline.push({time:'', text:''}); saveData(); renderItinerary(); };
-        window.removeTimelineItem = (dIdx, tIdx) => { appData.days[dIdx].timeline.splice(tIdx, 1); saveData(); renderItinerary(); };
-        window.deleteDay = (idx) => { if(confirm('למחוק יום?')) { appData.days.splice(idx, 1); saveData(); renderItinerary(); renderBudget(); } };
-
-        window.updateItem = (key, idx, field, val) => { appData[key][idx][field] = val; saveData(); renderBudget(); }; // Note: No re-render needed usually for input change, but needed for price format updates
-        window.deleteItem = (key, idx) => { if(confirm('למחוק?')) { appData[key].splice(idx, 1); saveData(); refreshAll(); } };
-        window.addItem = (key) => { if(!appData[key]) appData[key]=[]; appData[key].push({title:'', desc:'', cost:0}); saveData(); refreshAll(); };
-
-        window.toggleCheck = (idx) => { appData.checklist[idx].done = !appData.checklist[idx].done; saveData(); renderChecklist(); };
-        window.updateCheck = (idx, field, val) => { appData.checklist[idx][field] = val; saveData(); };
-        window.deleteCheck = (idx) => { appData.checklist.splice(idx, 1); saveData(); renderChecklist(); };
-        window.addCheckItem = () => { const inp = document.getElementById('new-check-item'); if(inp.value) { appData.checklist.push({text: inp.value, done: false}); inp.value=''; saveData(); renderChecklist(); } };
-
-        function refreshAll() {
+        // Global
+        window.renderAll = () => {
             renderItinerary();
-            renderList('flights', 'flights-list');
-            renderList('cars', 'cars-list');
-            renderList('housing', 'housing-list');
-            renderList('markets', 'markets-list');
-            renderBudget();
+            renderLogisticsGroup('flights', 'flights-container');
+            renderLogisticsGroup('housing', 'housing-container');
+            renderLogisticsGroup('cars', 'cars-container');
+            renderLogisticsGroup('markets', 'markets-container');
             renderChecklist();
+            renderBudget();
         }
 
-        // --- Core Logic ---
         async function saveData() {
-            document.getElementById('sync-status').textContent = 'שומר...';
-            try { await updateDoc(tripRef, appData); document.getElementById('sync-status').textContent = 'סונכרן'; } 
-            catch (e) { console.error(e); }
+            try { await updateDoc(tripRef, appData); } catch(e) { console.error(e); }
         }
 
-        // Auth
+        window.closeModal = () => {
+            document.getElementById('details-modal').classList.add('hidden');
+            document.getElementById('details-modal').classList.remove('flex');
+        }
+
+        // Init Logic
         const CORRECT_CODE = '8989';
         document.getElementById('login-btn').addEventListener('click', () => {
             if(document.getElementById('passcode-input').value === CORRECT_CODE) {
@@ -610,55 +696,17 @@
 
         function initFirebaseListener() {
             onSnapshot(tripRef, async (docSnap) => {
+                document.getElementById('loading-screen').style.display = 'none';
                 if (docSnap.exists()) {
                     appData = docSnap.data();
+                    // Ensure structure exists
+                    if(!appData.logistics) appData.logistics = { flights: [], housing: [], cars: [], markets: [] };
                 } else {
-                    await setDoc(tripRef, defaultData); // Upload default if empty
-                    appData = defaultData;
+                    await setDoc(tripRef, appData); // Save initial structure if empty
                 }
-                refreshAll();
+                renderAll();
             });
         }
-
-        // UI Toggles
-        const btnIls = document.getElementById('btn-ils');
-        const btnEur = document.getElementById('btn-eur');
-        
-        function setCurrency(c) {
-            currency = c;
-            if(c === 'ILS') {
-                btnIls.className = "px-2 py-1 rounded text-sm font-bold bg-white shadow text-[#4D453E]";
-                btnEur.className = "px-2 py-1 rounded text-sm font-bold text-gray-400";
-            } else {
-                btnEur.className = "px-2 py-1 rounded text-sm font-bold bg-white shadow text-[#4D453E]";
-                btnIls.className = "px-2 py-1 rounded text-sm font-bold text-gray-400";
-            }
-            refreshAll(); // Re-render prices
-        }
-        btnIls.onclick = () => setCurrency('ILS');
-        btnEur.onclick = () => setCurrency('EUR');
-
-        const editBtn = document.getElementById('edit-mode-btn');
-        editBtn.onclick = () => {
-            isEditMode = !isEditMode;
-            document.body.classList.toggle('editing', isEditMode);
-            editBtn.innerHTML = isEditMode ? '<i class="fa-solid fa-check"></i> <span class="hidden md:inline">סיום</span>' : '<i class="fa-solid fa-pen"></i> <span class="hidden md:inline">עריכה</span>';
-            editBtn.className = isEditMode ? "bg-[#4D453E] text-white px-3 py-1 rounded-lg text-sm font-bold" : "text-[#4D453E] border border-[#4D453E] px-3 py-1 rounded-lg text-sm font-bold";
-            refreshAll(); // Re-render to show/hide inputs
-        };
-
-        // Tab Navigation
-        const navLinks = document.querySelectorAll('.nav-link');
-        const tabs = document.querySelectorAll('.tab-content');
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.forEach(n => { n.classList.remove('active'); n.classList.remove('border-b-2'); n.classList.remove('text-[#4D453E]'); });
-                tabs.forEach(t => t.classList.remove('active'));
-                
-                link.classList.add('active', 'border-b-2', 'border-[#4D453E]', 'text-[#4D453E]');
-                document.getElementById(link.dataset.tab).classList.add('active');
-            });
-        });
 
     </script>
 </body>
