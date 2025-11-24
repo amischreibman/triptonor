@@ -213,7 +213,10 @@
         </div>
     </div>
 
-    <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow px-3 py-1 rounded-full text-xs font-bold text-gray-400 z-50">מסונכרן</div>
+    <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow px-3 py-1 rounded-full text-xs font-bold text-gray-400 z-50 flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-gray-400" id="sync-dot"></div>
+        <span id="sync-text">ממתין...</span>
+    </div>
 
     <!-- Firebase Logic -->
     <script type="module">
@@ -238,9 +241,6 @@
         } catch (e) { console.error(e); }
 
         // --- DATA STRUCTURE ---
-        // Structure: days[], logistics{ flights[], housing[], cars[], markets[] }, checklist[]
-        // Each Logistic Group: { id, title, date, options: [ {id, name, desc, cost, booked, link, bookingInfo} ], selectedOptionId }
-        
         let appData = {
             currency: 'ILS',
             days: [
@@ -286,6 +286,65 @@
         let currentCurrency = 'ILS';
         const EUR_RATE = 4;
         let chartInstance = null;
+        const CACHE_KEY = 'tromso_app_cache';
+
+        // --- AUTH & INIT ---
+        const CORRECT_CODE = '8989';
+        
+        // Check LocalStorage Login
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            document.getElementById('login-screen').style.display = 'none';
+            loadFromCache();
+            initFirebaseListener();
+        } else {
+            document.getElementById('loading-screen').style.display = 'none';
+        }
+
+        document.getElementById('login-btn').addEventListener('click', () => {
+            if(document.getElementById('passcode-input').value === CORRECT_CODE) {
+                localStorage.setItem('isLoggedIn', 'true');
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('loading-screen').style.display = 'flex';
+                loadFromCache();
+                initFirebaseListener();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        function loadFromCache() {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                appData = JSON.parse(cached);
+                renderAll();
+                updateSyncStatus('טוען מהזיכרון...', 'gray');
+                document.getElementById('loading-screen').style.display = 'none';
+            }
+        }
+
+        function initFirebaseListener() {
+            onSnapshot(tripRef, async (docSnap) => {
+                document.getElementById('loading-screen').style.display = 'none';
+                if (docSnap.exists()) {
+                    appData = docSnap.data();
+                    // Validate structure integrity
+                    if(!appData.logistics) appData.logistics = { flights: [], housing: [], cars: [], markets: [] };
+                    
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
+                    renderAll();
+                    updateSyncStatus('מסונכרן לענן', 'green');
+                } else {
+                    await setDoc(tripRef, appData); // Save initial if empty
+                }
+            });
+        }
+
+        function updateSyncStatus(text, color) {
+            const dot = document.getElementById('sync-dot');
+            const txt = document.getElementById('sync-text');
+            txt.textContent = text;
+            dot.className = `w-2 h-2 rounded-full bg-${color}-500`;
+        }
 
         // --- STATE & HELPERS ---
         window.toggleEditMode = () => {
@@ -590,6 +649,7 @@
         window.showTimelineDetails = (dIdx, tIdx) => {
             if(isEditMode) return;
             const item = appData.days[dIdx].timeline[tIdx];
+            const dayData = appData.days[dIdx];
             const content = `
                 <div class="font-bold text-xl mb-2 text-indigo-900">${item.title}</div>
                 <div class="bg-gray-100 p-2 rounded mb-4 font-mono text-sm">${item.time} | ${dayData.date}</div>
@@ -606,9 +666,7 @@
                     ${item.booked && item.info ? `<div class="mt-4 bg-green-50 p-3 rounded border border-green-100 text-sm"><div class="font-bold text-green-800 mb-1">פרטי הזמנה:</div>${item.info}</div>` : ''}
                 </div>
             `;
-            // Getting day date for context
-            const dayData = appData.days[dIdx];
-            document.getElementById('modal-content').innerHTML = content.replace('undefined', dayData.date); // fix date ref
+            document.getElementById('modal-content').innerHTML = content; 
             document.getElementById('details-modal').classList.remove('hidden');
             document.getElementById('details-modal').classList.add('flex');
         }
@@ -675,37 +733,17 @@
         }
 
         async function saveData() {
-            try { await updateDoc(tripRef, appData); } catch(e) { console.error(e); }
+            updateSyncStatus('שומר...', 'yellow');
+            try { 
+                await updateDoc(tripRef, appData); 
+                localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
+                updateSyncStatus('מסונכרן לענן', 'green');
+            } catch(e) { console.error(e); }
         }
 
         window.closeModal = () => {
             document.getElementById('details-modal').classList.add('hidden');
             document.getElementById('details-modal').classList.remove('flex');
-        }
-
-        // Init Logic
-        const CORRECT_CODE = '8989';
-        document.getElementById('login-btn').addEventListener('click', () => {
-            if(document.getElementById('passcode-input').value === CORRECT_CODE) {
-                document.getElementById('login-screen').style.display = 'none';
-                initFirebaseListener();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        });
-
-        function initFirebaseListener() {
-            onSnapshot(tripRef, async (docSnap) => {
-                document.getElementById('loading-screen').style.display = 'none';
-                if (docSnap.exists()) {
-                    appData = docSnap.data();
-                    // Ensure structure exists
-                    if(!appData.logistics) appData.logistics = { flights: [], housing: [], cars: [], markets: [] };
-                } else {
-                    await setDoc(tripRef, appData); // Save initial structure if empty
-                }
-                renderAll();
-            });
         }
 
     </script>
