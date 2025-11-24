@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>הטיול של עפרי ועמי - מתכנן מלא</title>
+    <title>הטיול של עפרי ועמי - המתכנן המלא</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,16 +37,19 @@
         #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.8; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.9); padding: 4px 8px; rounded: 6px; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .sync-green { color: green; } .sync-red { color: red; }
         
-        /* New Styles for Editable Cards */
-        .info-card { background: #fff; border: 1px solid #E5E0D8; padding: 1rem; border-radius: 0.75rem; position: relative; margin-bottom: 1rem; }
+        /* Specific Styles */
+        .info-card { background: #fff; border: 1px solid #E5E0D8; padding: 1rem; border-radius: 0.75rem; position: relative; margin-bottom: 1rem; transition: shadow 0.2s; }
+        .info-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-color: #A2B8C4; }
         .info-card input, .info-card textarea { width: 100%; background: transparent; outline: none; }
         .info-card .card-title { font-weight: bold; color: #4D453E; font-size: 1.1rem; margin-bottom: 0.5rem; border-bottom: 1px dashed #E5E0D8; }
         .info-card .card-desc { font-size: 0.95rem; color: #5C544D; line-height: 1.5; resize: none; }
-        .info-card .card-link { font-size: 0.85rem; color: #A2B8C4; margin-top: 0.5rem; display: block; }
+        .info-card .card-meta { font-size: 0.85rem; color: #8A7F77; margin-top: 0.5rem; background: #F5F0E6; padding: 4px 8px; rounded; display: inline-block; }
         .delete-btn-abs { position: absolute; top: 10px; left: 10px; color: #e5e7eb; cursor: pointer; transition: color 0.2s; }
         .info-card:hover .delete-btn-abs { color: #ef4444; }
-        .link-preview { display: inline-block; background: #4D453E; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-decoration: none; margin-top: 4px; }
-        .link-preview:hover { background: #3a342f; }
+        .section-title { font-size: 1.25rem; font-weight: bold; color: #4D453E; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #D8CFC7; margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .link-btn { display: inline-flex; align-items: center; gap: 4px; background: #4D453E; color: white; padding: 4px 10px; rounded-lg; font-size: 0.8rem; text-decoration: none; margin-top: 8px; }
+        .link-btn:hover { background: #3a342f; }
+        .price-tag { float: left; font-weight: bold; color: #16a34a; }
     </style>
 </head>
 <body class="bg-[#F5F0E6] min-h-screen pb-safe">
@@ -54,7 +57,7 @@
     <!-- Loading -->
     <div id="loading-screen">
         <div class="loader mb-4"></div>
-        <p class="text-[#4D453E] font-bold">טוען את המסע...</p>
+        <p class="text-[#4D453E] font-bold">טוען את תוכנית המסע...</p>
     </div>
 
     <!-- Login -->
@@ -62,7 +65,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-xl text-center w-full max-w-[320px]">
             <div class="text-4xl mb-2">❄️</div>
             <h2 class="text-2xl font-bold text-[#4D453E] mb-1">הטיול של עפרי ועמי</h2>
-            <p class="text-[#8A7F77] text-sm mb-6">לפלנד זה כאן</p>
+            <p class="text-[#8A7F77] text-sm mb-6">ינואר 2026</p>
             <input type="password" id="passcode-input" placeholder="הזן קוד" inputmode="numeric" pattern="[0-9]*" maxlength="4" 
                    class="w-full text-center text-2xl p-3 border-2 border-[#D8CFC7] rounded-xl focus:border-[#4D453E] mb-4 tracking-widest bg-gray-50 outline-none">
             <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:bg-[#3a342f] active:scale-95 transition-all">
@@ -85,25 +88,25 @@
                 <input type="text" id="modal-summary-input" class="edit-input text-[#8A7F77] mt-2 text-sm" placeholder="תיאור קצר">
             </div>
 
-            <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז (לחץ לעריכה):</div>
+            <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז ומיקומים:</div>
             <div id="modal-timeline-container" class="space-y-2 mb-4"></div>
             
             <button id="add-timeline-btn" class="text-sm text-[#A2B8C4] hover:text-[#4D453E] font-bold mb-6 flex items-center gap-1">
-                + הוסף פעילות ללו"ז
+                + הוסף פעילות
             </button>
             
             <div class="bg-yellow-50 p-3 rounded-xl mb-6">
-                <label class="block text-xs font-bold text-[#4D453E] mb-1">טיפ ליום זה:</label>
+                <label class="block text-xs font-bold text-[#4D453E] mb-1">טיפ / הערה יומית:</label>
                 <textarea id="modal-tip-input" class="w-full bg-transparent border-b border-yellow-200 text-sm text-gray-700 outline-none resize-none" rows="3"></textarea>
             </div>
 
             <button id="save-day-btn" class="w-full bg-[#4D453E] text-white py-3 rounded-xl font-bold shadow-md hover:bg-[#3a342f] active:scale-95 transition-all">
-                שמור שינויים לענן ☁️
+                שמור שינויים ☁️
             </button>
         </div>
     </div>
 
-    <!-- Main App Content -->
+    <!-- App Content -->
     <div id="app-content" style="display: none;">
         
         <header class="text-center pt-6 pb-2 px-4">
@@ -111,43 +114,58 @@
             <p class="text-lg text-[#8A7F77] mt-1">ינואר 2026 | טרומסו</p>
         </header>
 
-        <!-- Sticky Navigation -->
+        <!-- Navigation -->
         <div class="sticky top-0 z-40 bg-[#F5F0E6]/95 backdrop-blur-sm border-b border-[#D8CFC7]">
             <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 items-center md:justify-center">
-                <button class="nav-link active" data-tab="grid-view">📅 לוח יומי</button>
-                <button class="nav-link" data-tab="logistics">✈️ לוגיסטיקה</button>
-                <button class="nav-link" data-tab="checklist">💡 טיפים וציוד</button>
+                <button class="nav-link active" data-tab="grid-view">📅 לוח מסע</button>
+                <button class="nav-link" data-tab="logistics">🚗 לוגיסטיקה</button>
+                <button class="nav-link" data-tab="checklist">🎒 ציוד</button>
                 <button class="nav-link" data-tab="budget">💰 תקציב</button>
             </nav>
         </div>
 
         <main class="container mx-auto max-w-5xl p-4 pb-24">
             
-            <!-- 1. Grid View Tab -->
+            <!-- 1. Itinerary Grid -->
             <section id="grid-view" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="calendar-grid"></div>
             </section>
 
-            <!-- 2. Logistics Tab (Editable) -->
+            <!-- 2. Logistics (Flights, Car, Accommodation) -->
             <section id="logistics" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">מידע והזמנות</h2>
-                    <p class="text-sm text-gray-500 mb-4">כאן נמצאים כל פרטי הטיסות, רכב, ומעבורות. ניתן לערוך הכל.</p>
                     
-                    <div id="logistics-container">
-                        <!-- Dynamic logistics cards go here -->
+                    <!-- Flights Section -->
+                    <div class="section-title">
+                        <span>טיסות (AMS ⇄ TOS)</span>
+                        <button onclick="window.addLogisticsItem('flights')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
                     </div>
-                    
-                    <button id="add-logistics-btn" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50 hover:text-[#4D453E] transition-colors">
-                        + הוסף כרטיס מידע חדש
-                    </button>
+                    <div id="flights-container"></div>
+
+                    <!-- Car Rental Section -->
+                    <div class="section-title">
+                        <span>רכב שכור (4x4 חובה!)</span>
+                        <button onclick="window.addLogisticsItem('cars')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-lg mb-4 text-sm text-blue-800">
+                        ℹ️ <b>טיפ:</b> לא צריך להחליף רכב למעבורת. עולים עם הרכב לסניה. מומלץ לוודא שיש AutoPASS (כבישי אגרה) כלול.
+                    </div>
+                    <div id="cars-container"></div>
+
+                    <!-- Accommodation Section -->
+                    <div class="section-title">
+                        <span>לינה וסופרמרקטים</span>
+                        <button onclick="window.addLogisticsItem('housing')" class="text-sm text-[#A2B8C4] hover:text-[#4D453E]">+ הוסף</button>
+                    </div>
+                    <div id="housing-container"></div>
+
                 </div>
             </section>
 
-            <!-- 3. Tips & Checklist Tab (Editable) -->
+            <!-- 3. Checklist & Tips -->
             <section id="checklist" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 mb-4">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט ציוד</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט חורף</h2>
                     <div class="flex gap-2 mb-6">
                         <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none focus:border-[#4D453E]">
                         <button id="add-item-btn" class="bg-[#4D453E] text-white px-4 py-2 rounded-lg font-bold">+</button>
@@ -156,23 +174,16 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">טיפים ולינקים חשובים</h2>
-                    <p class="text-sm text-gray-500 mb-4">מידע על לבוש, אפליקציות, אוכל ומיקומים.</p>
-                    
-                    <div id="generaltips-container">
-                        <!-- Dynamic tips cards go here -->
-                    </div>
-
-                    <button id="add-tip-btn" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50 hover:text-[#4D453E] transition-colors">
-                        + הוסף טיפ חדש
-                    </button>
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">טיפים ומידע כללי</h2>
+                    <div id="generaltips-container"></div>
+                    <button onclick="window.addLogisticsItem('generalTips')" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50">+ הוסף טיפ חדש</button>
                 </div>
             </section>
 
-            <!-- 4. Budget Tab -->
+            <!-- 4. Budget -->
             <section id="budget" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב (25k יעד)</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <div class="space-y-4" id="budget-inputs"></div>
@@ -220,22 +231,22 @@
             document.getElementById('sync-status').textContent = "שגיאת אתחול";
         }
 
-        // --- Rich Default Data (With Tips & Logistics) ---
+        // --- DATA STRUCTURE WITH RESEARCHED CONTENT ---
         const defaultData = {
             title: "הטיול של עפרי ועמי 👫",
             days: [
-                { id: 1, date: '13/1', day: 'יום ג\'', title: 'נחיתה והתארגנות', icon: '✈️', summary: 'נחיתה, רכב, סופרמרקט', timeline: [{time:'18:00', desc:'נחיתה ורכב'}, {time:'19:30', desc:'קניות ב-REMA'}], tip: 'לקנות אוכל לכמה ימים.' },
-                { id: 2, date: '14/1', day: 'יום ד\'', title: 'העיר טרומסו', icon: '🏙️', summary: 'רכבל, קתדרלה, סיור עיר', timeline: [{time:'11:00', desc:'רכבל Fjellheisen'}, {time:'20:00', desc:'ציד זוהר'}], tip: 'הנוף מהרכבל יפה בדמדומים.' },
-                { id: 3, date: '15/1', day: 'יום ה\'', title: 'כלבים וטבע', icon: '🐕', summary: 'מזחלות האסקי וסאונה', timeline: [{time:'10:00', desc:'מזחלות כלבים'}, {time:'17:00', desc:'סאונה'}], tip: 'ביגוד תרמי חובה.' },
-                { id: 4, date: '16/1', day: 'יום ו\'', title: 'רוד טריפ', icon: '🚗', summary: 'נסיעה לסומרוי', timeline: [{time:'10:00', desc:'יציאה לסומרוי'}, {time:'18:00', desc:'סאונת Pust'}], tip: 'סעו בזהירות.' },
-                { id: 5, date: '17/1', day: 'יום שבת', title: 'האי Senja', icon: '🏔️', summary: 'יום טיול ארוך', timeline: [{time:'09:00', desc:'מעבורת לסניה'}, {time:'20:00', desc:'זוהר בחושך'}], tip: 'למלא דלק.' },
-                { id: 6, date: '18/1', day: 'יום א\'', title: 'רוגע ארקטי', icon: '❄️', summary: 'דיג קרח / מנוחה', timeline: [{time:'12:00', desc:'דיג באגם'}, {time:'19:00', desc:'פאב Ølhallen'}], tip: 'לנוח לקראת הלילה.' },
-                { id: 7, date: '19/1', day: 'יום ב\'', title: 'פרידה מהעיר', icon: '🛍️', summary: 'מזכרות וארוחת ערב', timeline: [{time:'11:00', desc:'מזכרות'}, {time:'18:00', desc:'מסעדה'}], tip: 'לקנות גבינה חומה.' },
-                { id: 8, date: '20/1', day: 'יום ג\'', title: 'טסים ל-AMS', icon: '🇳🇱', summary: 'טיסה ולינה בשדה', timeline: [{time:'13:00', desc:'טיסה ל-AMS'}, {time:'18:30', desc:'מלון בשדה'}], tip: 'צק אין מוקדם.' },
-                { id: 9, date: '21/1', day: 'יום ד\'', title: 'הביתה', icon: '🇮🇱', summary: 'טיסה לישראל', timeline: [{time:'11:30', desc:'המראה לתל אביב'}], tip: 'ברוכים השבים!' }
+                { id: 1, date: '13/1', day: 'יום ג\'', title: 'נחיתה והתארגנות', icon: '✈️', summary: 'נוחתים ב-10:20 AMS, טיסה ל-TOS, רכב וסופר.', timeline: [{time:'10:20', desc:'נחיתה ב-AMS'}, {time:'14:00', desc:'המראה ל-TOS (דרך OSL)'}, {time:'18:00', desc:'נחיתה בטרומסו ואיסוף רכב'}, {time:'19:30', desc:'סופרמרקט REMA 1000 Kvaløysletta (פתוח עד 23:00)'}], tip: 'לקנות אוכל ליומיים הראשונים. מים מהברז מצוינים.' },
+                { id: 2, date: '14/1', day: 'יום ד\'', title: 'העיר טרומסו', icon: '🏙️', summary: 'רכבל, קתדרלה, סיור עיר', timeline: [{time:'10:00', desc:'נסיעה למרכז, חניה במנהרה'}, {time:'11:30', desc:'רכבל Fjellheisen (אור דמדומים)'}, {time:'14:00', desc:'ארוחת צהריים ב-Rakettkiosken'}, {time:'20:00', desc:'ציד זוהר ב-Ersfjordbotn'}], tip: 'להוריד אפליקציית EasyPark לחניה בעיר.' },
+                { id: 3, date: '15/1', day: 'יום ה\'', title: 'כלבים וטבע', icon: '🐕', summary: 'מזחלות האסקי וסאונה', timeline: [{time:'09:00', desc:'הגעה למרכז הכלבים (Villmarkssenter)'}, {time:'13:00', desc:'חזרה לבקתה למנוחה'}, {time:'17:00', desc:'סאונה פרטית/ציבורית'}, {time:'21:00', desc:'בדיקת אפליקציית Aurora'}], tip: 'להתלבש הכי חם שיש למזחלות.' },
+                { id: 4, date: '16/1', day: 'יום ו\'', title: 'מעבר לסניה', icon: '⛴️', summary: 'נסיעה למעבורת והגעה לאי סניה', timeline: [{time:'09:30', desc:'יציאה לכיוון Brensholmen'}, {time:'11:00', desc:'מעבורת ל-Botnhamn (לבדוק לו"ז!)'}, {time:'13:00', desc:'נקודת תצפית Tungeneset'}, {time:'15:00', desc:'צק אין במלון Mefjord Brygge'}], tip: 'אם המעבורת מבוטלת בגלל מזג אוויר, הנסיעה מסביב לוקחת 3 שעות.' },
+                { id: 5, date: '17/1', day: 'יום שבת', title: 'האי Senja', icon: '🏔️', summary: 'פיורדים פראיים ונופים', timeline: [{time:'10:00', desc:'חוף Ersfjord (השני)'}, {time:'12:00', desc:'תצפית Bergsbotn'}, {time:'14:00', desc:'ארוחה עצמית מול הנוף'}, {time:'20:00', desc:'זוהר בחושך מוחלט של סניה'}], tip: 'בסניה יש מעט מאוד סופרים, וודאו שקניתם הכל בטרומסו או בדרך.' },
+                { id: 6, date: '18/1', day: 'יום א\'', title: 'חזרה לציביליזציה', icon: '🚗', summary: 'חזרה לטרומסו/סומרוי', timeline: [{time:'10:00', desc:'יציאה מסניה'}, {time:'12:00', desc:'מעבורת חזרה או נסיעה יבשתית'}, {time:'15:00', desc:'עצירה ב-Sommarøy (חופים לבנים)'}, {time:'19:00', desc:'בירה ב-Ølhallen (נסגר מוקדם בא\')'}], tip: 'יום ראשון - הכל סגור חוץ ממסעדות ומעט סופרים קטנים (Joker).' },
+                { id: 7, date: '19/1', day: 'יום ב\'', title: 'פרידה מהעיר', icon: '🛍️', summary: 'מזכרות וארוחת ערב', timeline: [{time:'11:00', desc:'קניית מזכרות וסוודרים'}, {time:'13:00', desc:'מוזיאון פולאריה'}, {time:'18:00', desc:'ארוחת ערב חגיגית'}, {time:'22:00', desc:'ניסיון זוהר אחרון'}], tip: 'לקנות גבינה חומה הביתה.' },
+                { id: 8, date: '20/1', day: 'יום ג\'', title: 'טסים ל-AMS', icon: '🇳🇱', summary: 'טיסה ולינה בשדה', timeline: [{time:'10:00', desc:'החזרת רכב ב-TOS'}, {time:'12:00', desc:'טיסה לאמסטרדם'}, {time:'16:00', desc:'נחיתה והגעה למלון ב-AMS'}, {time:'19:00', desc:'ערב חופשי באמסטרדם'}], tip: 'לישון במלון CitizenM או Sheraton בצמוד לטרמינל.' },
+                { id: 9, date: '21/1', day: 'יום ד\'', title: 'הביתה', icon: '🇮🇱', summary: 'טיסה לישראל', timeline: [{time:'09:00', desc:'הליכה לטרמינל'}, {time:'11:30', desc:'המראה לתל אביב'}], tip: 'טיסה נעימה!' }
             ],
             budget: [
-                { label: 'לינה', value: 7200, color: '#4D453E' },
+                { label: 'לינה (Airbnb+מלון)', value: 7200, color: '#4D453E' },
                 { label: 'טיסות', value: 4500, color: '#8A7F77' },
                 { label: 'רכב ודלק', value: 4000, color: '#A2B8C4' },
                 { label: 'פעילויות', value: 4000, color: '#D8CFC7' },
@@ -248,20 +259,30 @@
                 { text: 'מטען נייד (סוללות נגמרות מהר)', done: false },
                 { text: 'כפפות עבות + כפפות דקות (טאץ\')', done: false },
                 { text: 'קרמפונים (דוקרנים לנעליים)', done: false },
-                { text: 'שקיות חימום לידיים/רגליים', done: false }
+                { text: 'שקיות חימום לידיים/רגליים', done: false },
+                { text: 'רישיון נהיגה בינלאומי', done: false }
             ],
-            logistics: [
-                { title: "טיסות הלוך ✈️", desc: "13/1 AMS (10:20) -> OSL -> TOS (17:00). חובה לנחות בצהריים.", url: "" },
-                { title: "רכב שכור 🚗", desc: "חובה 4x4. להוריד אפליקציית 'EasyPark' לחניה בטרומסו. זהירות מאיילים בכביש!", url: "https://www.rentalcars.com" },
-                { title: "מעבורת לסניה ⛴️", desc: "קו Brensholmen-Botnhamn. לבדוק זמנים באפליקציית Troms Fylkestrafikk.", url: "https://fylkestrafikk.no/" },
-                { title: "טיסות חזור 🛫", desc: "20/1 TOS -> AMS (לינה בשדה), 21/1 בוקר לישראל.", url: "" }
+            // --- NEW: Detailed Logistics ---
+            flights: [
+                { title: "הלוך: AMS -> TOS", desc: "SAS/Norwegian. המראה סביב 13:00-14:00. קונקשיין באוסלו. מחיר ~200€ לאדם.", url: "https://www.skyscanner.co.il/transport/flights/ams/tos/260113/" },
+                { title: "חזור: TOS -> AMS", desc: "ב-20/1. עדיף טיסת צהריים. לינה ב-CitizenM Schiphol.", url: "https://www.booking.com/airport/nl/ams.he.html" },
+                { title: "חזור: AMS -> TLV", desc: "ב-21/1 המראה ב-11:30. אל על/KLM.", url: "" }
+            ],
+            cars: [
+                { title: "Hertz / Avis (בשדה)", desc: "הכי נוח אבל יקר. Toyota RAV4 או דומה. כולל צמיגי חורף. ~4500 ש\"ח.", url: "https://www.rentalcars.com/search-results?coordinates=69.6833%2C18.9167&doDay=20&doHour=10&doMinute=0&doMonth=1&doYear=2026&driversAge=30&dropOffLocation=Troms%C3%B8%20Airport%2C%20Langnes&dropOffLocationCode=TOS&filter_car_class=suv&puDay=13&puHour=18&puMinute=0&puMonth=1&puYear=2026&searchType=airport" },
+                { title: "Rent-A-Wreck", desc: "זול משמעותית. רכבים משומשים אך אמינים. סניף קרוב לשדה (מונית קצרה).", url: "https://www.rent-a-wreck.no/en/location/norway/tromso/" },
+                { title: "Sixt", desc: "רכבים חדשים, לפעמים יש דילים טובים על 4x4.", url: "https://www.sixt.com/" }
+            ],
+            housing: [
+                { title: "Kvaløya - Ersfjordbotn", desc: "המיקום הכי טוב לזוהר. קרוב לסופר REMA 1000 Kvaløysletta (10 דק' נסיעה).", url: "https://www.airbnb.com/s/Ersfjordbotn--Troms%C3%B8--Norway/homes?refinement_paths%5B%5D=%2Fhomes&date_picker_type=calendar&checkin=2026-01-13&checkout=2026-01-16&adults=2&price_max=1000" },
+                { title: "Senja - Mefjord Brygge", desc: "מלון/בקתות בלב הפיורדים. יש מסעדה במקום. סופר קרוב: Joker Skaland.", url: "https://www.mefjordbrygge.no/" },
+                { title: "Sommarøy Arctic Hotel", desc: "בקצה המערבי. בקתות על המים. יקר אבל חוויה.", url: "https://sommaroy.no/" }
             ],
             generalTips: [
-                { title: "שיטת הלבוש (חשוב!) 🧥", desc: "שכבה 1: צמר מרינו (על הגוף). שכבה 2: פליז או צמר עבה. שכבה 3: מעיל רוח/גשם איכותי. לא ג'ינס! מכנסי סקי מומלצים.", url: "" },
-                { title: "אפליקציות חובה 📱", desc: "1. My Aurora Forecast (תחזית זוהר). 2. Yr.no (מזג אוויר מדויק). 3. EasyPark (חניה).", url: "https://www.yr.no/en" },
-                { title: "אלכוהול וקניות 🍷", desc: "אלכוהול חזק קונים רק ב-Vinmonopolet (נסגר מוקדם). בירה בסופר רק עד 20:00. סופר מומלץ: REMA 1000.", url: "" },
-                { title: "רכבל Fjellheisen 🚠", desc: "התצפית הכי יפה. לעלות בסביבות 11:00-12:00 לאור דמדומים, או בערב לזוהר.", url: "https://www.fjellheisen.no/en" },
-                { title: "סאונה בנמל (Pust) 🧖‍♂️", desc: "חוויה מטורפת. סאונה רותחת וקפיצה לים הקפוא. חובה להזמין מראש.", url: "https://pust.io/" }
+                { title: "מעבורת לסניה (Brensholmen)", desc: "בחורף הלו\"ז מצומצם ולפעמים מתבטל. לבדוק בוקר מראש באפליקציית 'Troms Reise'.", url: "https://fylkestrafikk.no/" },
+                { title: "שיטת השכבות (לבוש)", desc: "שכבה 1: צמר מרינו. שכבה 2: פליז/צמר עבה. שכבה 3: מעיל רוח ומים. לא ג'ינס!", url: "" },
+                { title: "אלכוהול", desc: "יקר. לקנות בדיוטי ב-AMS. בנורבגיה: בירה בסופר עד 20:00 (שבת עד 18:00). יין רק ב-Vinmonopolet.", url: "" },
+                { title: "חניה בטרומסו", desc: "חובה להוריד EasyPark. רוב החניה במנהרות מתחת לאדמה.", url: "https://easypark.com/en" }
             ]
         };
 
@@ -301,8 +322,13 @@
                 statusEl.className = 'sync-green';
 
                 if (docSnap.exists()) {
-                    // Merge with default to ensure new fields (like generalTips) exist if DB is old
-                    appData = { ...defaultData, ...docSnap.data() };
+                    // Merge DB data with default structure to ensure new fields appear
+                    const data = docSnap.data();
+                    appData = { ...defaultData, ...data };
+                    // Ensure arrays exist
+                    ['flights', 'cars', 'housing', 'generalTips'].forEach(key => {
+                        if(!appData[key]) appData[key] = defaultData[key];
+                    });
                 } else {
                     await setDoc(tripRef, defaultData);
                     appData = defaultData;
@@ -333,11 +359,11 @@
             document.getElementById('save-day-btn').addEventListener('click', saveDayEdit);
             document.getElementById('add-timeline-btn').addEventListener('click', addTimelineRow);
             document.getElementById('add-item-btn').addEventListener('click', addChecklistItem);
-            document.getElementById('add-logistics-btn').addEventListener('click', () => addInfoCard('logistics'));
-            document.getElementById('add-tip-btn').addEventListener('click', () => addInfoCard('generalTips'));
             document.getElementById('close-day-btn').addEventListener('click', () => {
                 document.getElementById('day-overlay').style.display = 'none';
             });
+            
+            // Add listeners for new buttons if they exist
         }
 
         function refreshUI() {
@@ -345,38 +371,44 @@
             renderGrid();
             renderBudget();
             renderChecklist();
-            renderInfoCards('logistics', 'logistics-container');
+            
+            // Render Logistics Sections
+            renderInfoCards('flights', 'flights-container');
+            renderInfoCards('cars', 'cars-container');
+            renderInfoCards('housing', 'housing-container');
             renderInfoCards('generalTips', 'generaltips-container');
         }
 
-        // --- Generic Info Cards (Logistics & Tips) ---
+        // --- Generic Info Cards Render (Editable) ---
         function renderInfoCards(dataKey, containerId) {
             const container = document.getElementById(containerId);
+            if(!container) return;
             container.innerHTML = '';
             
-            if (!appData[dataKey]) appData[dataKey] = [];
-
-            appData[dataKey].forEach((item, index) => {
+            (appData[dataKey] || []).forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'info-card';
                 
-                const linkDisplay = item.url ? `<a href="${item.url}" target="_blank" class="link-preview">🔗 פתח לינק</a>` : '';
+                const linkDisplay = item.url ? `<a href="${item.url}" target="_blank" class="link-btn">🔗 פתח לינק/חיפוש</a>` : '';
+                const priceDisplay = item.price ? `<span class="price-tag">${item.price}</span>` : '';
 
                 div.innerHTML = `
                     <span class="delete-btn-abs" onclick="window.deleteInfoCard('${dataKey}', ${index})">✕</span>
                     <input type="text" class="card-title" value="${item.title}" placeholder="כותרת" onchange="window.updateInfoCard('${dataKey}', ${index}, 'title', this.value)">
                     <textarea class="card-desc" rows="2" placeholder="פירוט..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'desc', this.value)">${item.desc}</textarea>
-                    <input type="text" class="card-link" value="${item.url || ''}" placeholder="הדבק לינק כאן (URL)..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'url', this.value)">
-                    ${linkDisplay}
+                    <input type="text" class="card-link" value="${item.url || ''}" placeholder="הדבק לינק (URL)..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'url', this.value)">
+                    <div class="flex justify-between items-end mt-2">
+                         ${linkDisplay}
+                    </div>
                 `;
                 container.appendChild(div);
             });
         }
 
+        // --- Window Global Functions for HTML onClick ---
         window.updateInfoCard = function(dataKey, index, field, value) {
             appData[dataKey][index][field] = value;
             saveToCloud();
-            // אם עדכן לינק, נרצה לרענן כדי לראות את הכפתור החדש
             if (field === 'url') refreshUI(); 
         }
 
@@ -387,12 +419,13 @@
             }
         }
 
-        window.addInfoCard = function(dataKey) {
+        window.addLogisticsItem = function(dataKey) {
+            if(!appData[dataKey]) appData[dataKey] = [];
             appData[dataKey].push({ title: "", desc: "", url: "" });
             saveToCloud();
         }
 
-        // --- Grid & Modal ---
+        // --- Grid & Timeline ---
         function renderGrid() {
             const container = document.getElementById('calendar-grid');
             container.innerHTML = '';
@@ -448,7 +481,6 @@
         async function saveDayEdit() {
             if (currentEditingIndex === -1) return;
             const day = appData.days[currentEditingIndex];
-            
             day.title = document.getElementById('modal-title-input').value;
             day.summary = document.getElementById('modal-summary-input').value;
             day.tip = document.getElementById('modal-tip-input').value;
@@ -467,7 +499,7 @@
             document.getElementById('day-overlay').style.display = 'none';
         }
 
-        // --- Budget & Checklist (Existing Logic) ---
+        // --- Budget & Checklist ---
         function renderBudget() {
             const container = document.getElementById('budget-inputs');
             container.innerHTML = '';
@@ -521,7 +553,6 @@
             if(input.value.trim()) { if(!appData.checklist) appData.checklist = []; appData.checklist.push({ text: input.value.trim(), done: false }); input.value = ''; await saveToCloud(); }
         }
 
-        // --- Tabs ---
         function setupTabs() {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
