@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>הטיול הארקטי שלנו | טרומסו 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,90 +10,77 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Chosen Palette: Grounded & Calm (Beige: #F5F0E6, Light Warm Gray: #D8CFC7, Deep Brown: #4D453E, Muted Blue: #A2B8C4, Mid-Tone Brown: #8A7F77) -->
-    <!-- Application Structure Plan: 
-        מבנה: אפליקציית עמוד יחיד (SPA) מבוססת טאבים (לשוניות). ניווט עליון קבוע מאפשר למשתמש לעבור בין מקטעי תוכן עיקריים (ראשי, לוגיסטיקה, לינה, פעילויות, תקציב, מסלול, טיפים) המוצגים ומוסתרים דינמית.
-        אינטראקציות: 
-        1. לחיצה על כפתורי ניווט מציגה את מקטע התוכן הרלוונטי. 
-        2. גרף דונאט אינטראקטיבי (Chart.js) במקטע התקציב.
-        3. רשימות צ'ק-ליסט אינטראקטיביות (HTML/JS) ללוגיסטיקה ולציוד.
-        זרימת משתמש: המשתמש נוחת בעמוד "ראשי" עם סקירה כללית. הוא יכול לדלג ישירות ל"תקציב" כדי לראות את הפירוט, ואז ל"פעילויות" כדי להבין מה כלול בתקציב, או ל"לוגיסטיקה" כדי להתחיל לתכנן. 
-        למה המבנה הזה? הדוח המקורי הוא מדריך תכנון. מבנה טאבים הופך את המדריך מכלי קריאה פסיבי לכלי תכנון אקטיבי ואינטראקטיבי. הוא מאפשר הצלבת מידע קלה (לדוגמה, השוואת תקציב לפעילויות) וניווט מהיר וידידותי למשתמש.
-    -->
-    <!-- Visualization & Content Choices: 
-        1. דוח: פירוט תקציב (טיסות, לינה, רכב, פעילויות, אוכל). 
-           מטרה: מידע (הצגת הרכב התקציב). 
-           ייצוג: גרף דונאט (Doughnut Chart). 
-           אינטראקציה: ריחוף (Hover) להצגת סכומים. 
-           הצדקה: מציג חזותית את יחס ההוצאות, קריטי לתקציב מוגבל. 
-           ספרייה: Chart.js (Canvas).
-        2. דוח: מסלול טיול לדוגמה (יום 1, יום 2...). 
-           מטרה: ארגון (ציר זמן). 
-           ייצוג: ציר זמן / רשימה מעוצבת (HTML/Tailwind). 
-           אינטראקציה: תצוגה סטטית. 
-           הצדקה: הדרך הברורה ביותר להציג לוח זמנים. 
-           ספרייה: HTML/Tailwind.
-        3. דוח: משימות לוגיסטיקה ורשימת ציוד. 
-           מטרה: ארגון (רשימת משימות). 
-           ייצוג: רשימת צ'ק-ליסט (HTML <input type="checkbox">). 
-           אינטראקציה: לחיצה לסימון (צד-לקוח). 
-           הצדקה: הופך את התוכנית לכלי עבודה שמיש למעקב התקדמות. 
-           ספרייה: HTML/Tailwind/JS (לעיצוב).
-        4. דוח: שלבים לצפייה בזוהר. 
-           מטרה: ארגון (תהליך). 
-           ייצוג: רשימה ממוספרת ומעוצבת. 
-           אינטראקציה: תצוגה סטטית. 
-           הצדקה: רשימת שלבים ברורה היא הדרך הטובה ביותר. 
-           ספרייה: HTML/Tailwind.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
+    <!-- Chosen Palette: Grounded & Calm -->
+    <!-- Application Structure Plan: Mobile-First Scrollable Tabs SPA -->
+    
     <style>
         body {
             font-family: 'Assistant', sans-serif;
             direction: rtl;
             background-color: #F5F0E6;
             color: #4D453E;
+            -webkit-tap-highlight-color: transparent; /* הסרת הבהוב בלחיצה במובייל */
         }
+
+        /* הסתרת פס גלילה בתפריט הניווט אך שמירה על יכולת גלילה */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         .tab-content {
             display: none;
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.4s ease-in-out;
         }
         .tab-content.active {
             display: block;
         }
+
         .nav-link {
+            white-space: nowrap; /* מונע שבירת שורות בכפתורים */
+            flex-shrink: 0;      /* מונע כיווץ כפתורים */
             transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
+            opacity: 0.7;
         }
         .nav-link.active {
-            border-bottom-color: #A2B8C4;
+            border-bottom-color: #4D453E;
             color: #4D453E;
-            font-weight: 600;
+            font-weight: 700;
+            opacity: 1;
         }
-        .nav-link:hover {
-            border-bottom-color: #D8CFC7;
-        }
+
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 450px;
-            margin: 1.5rem auto;
-            height: 300px;
-            max-height: 400px;
+            height: 300px; /* גובה קבוע למובייל */
+            margin: 1rem auto;
         }
         @media (min-width: 768px) {
             .chart-container {
-                height: 400px;
+                height: 400px; /* גובה לדסקטופ */
+                max-width: 500px;
             }
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .checklist-item:has(input:checked) {
+
+        .checklist-item {
+            transition: background-color 0.2s;
+        }
+        .checklist-item:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .checklist-item:has(input:checked) span {
             text-decoration: line-through;
             color: #8A7F77;
+            opacity: 0.7;
         }
         
         /* סגנונות מסך כניסה */
@@ -102,22 +89,23 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100dvh; /* שימוש ב-dvh למובייל */
             background-color: #F5F0E6;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: 1rem;
         }
         .login-box {
             background: white;
             padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(77, 69, 62, 0.15);
             text-align: center;
-            max-width: 90%;
-            width: 350px;
+            width: 100%;
+            max-width: 320px;
         }
         
         /* סגנון הודעת שגיאה (Overlay) */
@@ -127,22 +115,22 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* רקע כהה חצי שקוף */
-            z-index: 2000; /* מעל מסך הכניסה */
+            background-color: rgba(77, 69, 62, 0.6); 
+            backdrop-filter: blur(2px);
+            z-index: 2000;
             display: none;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.3s ease;
+            padding: 2rem;
         }
         .error-box {
             background: white;
             padding: 2rem;
-            border-radius: 1rem;
+            border-radius: 1.5rem;
             text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 90%;
-            width: 300px;
-            transform: scale(1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 280px;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes popIn {
@@ -151,128 +139,132 @@
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="bg-[#F5F0E6] min-h-screen pb-safe">
 
     <!-- מסך כניסה -->
     <div id="login-screen">
         <div class="login-box">
-            <h2 class="text-2xl font-bold text-[#4D453E] mb-4">הטיול לטרומסו 🔒</h2>
-            <p class="text-[#8A7F77] mb-6">נא להזין קוד גישה לצפייה בתוכנית</p>
-            <!-- שינוי: Placeholder ללא המספר -->
-            <input type="password" id="passcode-input" placeholder="הזן קוד" maxlength="4" 
-                   class="w-full text-center text-xl p-3 border-2 border-[#D8CFC7] rounded-lg focus:outline-none focus:border-[#A2B8C4] mb-4 tracking-widest">
-            <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold py-3 rounded-lg hover:bg-[#3a342f] transition-colors">
-                כניסה
+            <div class="text-4xl mb-2">🏔️</div>
+            <h2 class="text-2xl font-bold text-[#4D453E] mb-2">הטיול לטרומסו</h2>
+            <p class="text-[#8A7F77] text-sm mb-6">לצפייה בתוכנית הטיול</p>
+            
+            <input type="password" id="passcode-input" placeholder="הזן קוד" inputmode="numeric" pattern="[0-9]*" maxlength="4" 
+                   class="w-full text-center text-2xl p-4 border-2 border-[#D8CFC7] rounded-xl focus:outline-none focus:border-[#4D453E] focus:ring-1 focus:ring-[#4D453E] mb-4 tracking-widest bg-[#FAFAFA]">
+            
+            <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-4 rounded-xl hover:bg-[#3a342f] active:scale-95 transition-all shadow-lg shadow-[#4D453E]/20">
+                כניסה למערכת
             </button>
         </div>
     </div>
 
-    <!-- Overlay הודעת שגיאה (חדש) -->
+    <!-- Overlay הודעת שגיאה -->
     <div id="error-overlay">
         <div class="error-box">
-            <div class="text-5xl mb-4">⚠️</div>
-            <h3 class="text-xl font-bold text-red-600 mb-2">שגיאה</h3>
-            <p class="text-[#4D453E] mb-6 font-semibold">קוד לא נכון</p>
-            <button id="close-error-btn" class="w-full bg-[#4D453E] text-white font-bold py-2 rounded-lg hover:bg-[#3a342f] transition-colors">
+            <div class="text-5xl mb-4">✋</div>
+            <h3 class="text-xl font-bold text-[#4D453E] mb-2">אופס!</h3>
+            <p class="text-[#8A7F77] mb-6 font-medium">הקוד שהזנת שגוי.</p>
+            <button id="close-error-btn" class="w-full bg-[#ef4444] text-white font-bold py-3 rounded-xl hover:bg-[#dc2626] transition-colors shadow-lg shadow-red-500/20">
                 נסה שנית
             </button>
         </div>
     </div>
 
     <!-- תוכן האתר (מוסתר בהתחלה) -->
-    <div id="app-content" class="container mx-auto max-w-6xl p-4" style="display: none;">
+    <div id="app-content" style="display: none;">
         
-        <!-- Header -->
-        <header class="text-center my-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#4D453E]">הטיול הארקטי שלנו</h1>
-            <p class="text-xl md:text-2xl text-[#8A7F77] mt-2">טרומסו, נורבגיה | ינואר 2026</p>
+        <!-- Header קומפקטי יותר -->
+        <header class="text-center pt-8 pb-4 px-4">
+            <h1 class="text-3xl md:text-5xl font-bold text-[#4D453E]">הטיול הארקטי שלנו</h1>
+            <p class="text-lg text-[#8A7F77] mt-1">טרומסו | ינואר 2026</p>
         </header>
 
-        <!-- Navigation -->
-        <nav class="flex flex-wrap justify-center gap-4 md:gap-8 mb-8 border-b border-[#D8CFC7] pb-4">
-            <button class="nav-link active text-lg text-[#8A7F77] py-2 px-1" data-tab="main">ראשי</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="logistics">לוגיסטיקה</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="accommodation">לינה</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="activities">פעילויות</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="budget">תקציב</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="itinerary">מסלול</button>
-            <button class="nav-link text-lg text-[#8A7F77] py-2 px-1" data-tab="tips">טיפים וציוד</button>
-        </nav>
+        <!-- Navigation - Sticky & Scrollable -->
+        <div class="sticky top-0 z-40 bg-[#F5F0E6]/95 backdrop-blur-sm border-b border-[#D8CFC7] shadow-sm">
+            <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 md:justify-center items-center -mb-px">
+                <button class="nav-link active text-lg pb-2" data-tab="main">ראשי</button>
+                <button class="nav-link text-lg pb-2" data-tab="logistics">לוגיסטיקה</button>
+                <button class="nav-link text-lg pb-2" data-tab="accommodation">לינה</button>
+                <button class="nav-link text-lg pb-2" data-tab="activities">פעילויות</button>
+                <button class="nav-link text-lg pb-2" data-tab="budget">תקציב</button>
+                <button class="nav-link text-lg pb-2" data-tab="itinerary">מסלול</button>
+                <button class="nav-link text-lg pb-2" data-tab="tips">ציוד</button>
+            </nav>
+            <!-- מחוון גלילה עדין (גרדיאנט) בצד שמאל לסימון שיש עוד תוכן -->
+            <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#F5F0E6] to-transparent pointer-events-none md:hidden"></div>
+        </div>
 
         <!-- Main Content Wrapper -->
-        <main>
+        <main class="container mx-auto max-w-4xl p-4 pb-20">
+            
             <!-- Tab 1: Main -->
             <section id="main" class="tab-content active">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">ברוכים הבאים לכלי התכנון</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        זוהי אפליקציית התכנון האינטראקטיבית שלכם לטיול החלומי לטרומסו בינואר 2026. המדריך הזה מבוסס על הבקשות שלכם לטיול עצמאי, חסכוני ובלתי נשכח לרדיפה אחרי הזוהר הצפוני. השתמשו בלשוניות הניווט למעלה כדי לדלג בין חלקי התוכנית השונים, מתקציב ועד מסלול מפורט.
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-3 text-[#4D453E]">ברוכים הבאים 👋</h2>
+                    <p class="text-base md:text-lg leading-relaxed mb-6 text-[#5C544D]">
+                        כלי התכנון האינטראקטיבי לטיול החלומות. כאן מרוכז כל המידע לטיול עצמאי וחסכוני בטרומסו.
                     </p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
-                        <div class="bg-[#D8CFC7]/30 rounded-lg p-4 shadow">
-                            <span class="block text-4xl mb-2">📅</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E]">תאריכים</h3>
-                            <p class="text-md text-[#8A7F77]">13 - 21 בינואר 2026</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-[#F9F7F5] rounded-xl p-4 border border-[#EBE6E0] flex items-center md:block text-center gap-4">
+                            <span class="text-3xl block md:mb-2">📅</span>
+                            <div class="text-right md:text-center">
+                                <h3 class="font-bold text-[#4D453E]">תאריכים</h3>
+                                <p class="text-sm text-[#8A7F77]">13-21 ינואר 2026</p>
+                            </div>
                         </div>
-                        <div class="bg-[#D8CFC7]/30 rounded-lg p-4 shadow">
-                            <span class="block text-4xl mb-2">💰</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E]">תקציב יעד</h3>
-                            <p class="text-md text-[#8A7F77]">~ 25,000 ש"ח (זוגי)</p>
+                        <div class="bg-[#F9F7F5] rounded-xl p-4 border border-[#EBE6E0] flex items-center md:block text-center gap-4">
+                            <span class="text-3xl block md:mb-2">💰</span>
+                            <div class="text-right md:text-center">
+                                <h3 class="font-bold text-[#4D453E]">תקציב</h3>
+                                <p class="text-sm text-[#8A7F77]">~25k ש"ח לזוג</p>
+                            </div>
                         </div>
-                        <div class="bg-[#D8CFC7]/30 rounded-lg p-4 shadow">
-                            <span class="block text-4xl mb-2">🌌</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E]">מטרה מרכזית</h3>
-                            <p class="text-md text-[#8A7F77]">הזוהר הצפוני</p>
+                        <div class="bg-[#F9F7F5] rounded-xl p-4 border border-[#EBE6E0] flex items-center md:block text-center gap-4">
+                            <span class="text-3xl block md:mb-2">🌌</span>
+                            <div class="text-right md:text-center">
+                                <h3 class="font-bold text-[#4D453E]">מטרה</h3>
+                                <p class="text-sm text-[#8A7F77]">הזוהר הצפוני</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">מזג אוויר ולילה פולארי</h3>
-                    <p class="text-lg leading-relaxed">
-                        היכונו ללילה פולארי. השמש לא זורחת כלל, אך אל דאגה - בין 10:00 ל-13:00 ישנן שעות "דמדומים" קסומות של אור כחול וורוד, מושלמות לטיולים וצילומים. הטמפרטורות נעות סביב 5- עד 15- מעלות צלזיוס. התלבשו חם!
-                    </p>
                 </div>
             </section>
 
             <!-- Tab 2: Logistics -->
             <section id="logistics" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">לוגיסטיקה: טיסות ורכב</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        תכנון נכון של הטיסות והרכב הוא קריטי. המטרה היא למקסם את הזמן בנורבגיה ולהבטיח שתגיעו לטיסות המפתח שלכם באמסטרדם בנוחות ובלי לחץ.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">לוגיסטיקה וטיסות</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-[#4D453E] mb-2 flex items-center gap-2">🛫 הלוך: 13/01/26</h3>
+                            <p class="text-sm md:text-base">נחיתה ב-AMS ב-10:20. <br><b>חובה:</b> טיסת המשך ל-TOS אחרי 13:30 (דרך OSL).</p>
+                        </div>
 
-                    <h3 class="text-2xl font-semibold mt-6 mb-3">תכנון טיסות (AMS ⇄ TOS)</h3>
-                    <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                        <li><b>טיסת הלוך (13 בינואר):</b> אתם נוחתים ב-AMS ב-10:20. חפשו טיסת המשך לטרומסו (TOS) דרך אוסלו (OSL) עם SAS או Norwegian, המראה לא לפני 13:30. צפי הגעה לטרומסו בערב.</li>
-                        <li><b>טיסת חזור (20 בינואר):</b> הטיסה שלכם חזרה לישראל היא ב-21/1 ב-11:30. <b>אל תיקחו סיכון.</b> הזמינו טיסה מטרומסו (TOS) לאמסטרדם (AMS) ל-20 בינואר אחה"צ.</li>
-                        <li><b>לינה באמסטרדם (20-21 בינואר):</b> הזמינו מלון צמוד לשדה התעופה סכיפהול (למשל CitizenM, Ibis, Sheraton). כך תוכלו לקום בנחת וללכת ברגל לטיסה הביתה.</li>
-                    </ul>
+                        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-[#4D453E] mb-2 flex items-center gap-2">🛬 חזור: 20/01/26</h3>
+                            <p class="text-sm md:text-base">הטיסה לישראל ב-21/1 בבוקר. <br><b>חובה:</b> לטוס ל-AMS ב-20/1 ולישון במלון בשדה.</p>
+                        </div>
 
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">השכרת רכב בטרומסו (TOS)</h3>
-                    <p class="text-lg leading-relaxed mb-4">
-                        רכב הוא חובה לטיול עצמאי ולרדיפה אחר הזוהר. הוא נותן לכם את החופש לברוח מזיהום האור של העיר.
-                    </p>
-                    <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                        <li><b>סוג רכב:</b> חובה להזמין רכב <b>4x4 (AWD)</b>. SUV קומפקטי (כמו RAV4) או סטיישן יספיקו.</li>
-                        <li><b>צמיגים:</b> כל הרכבים מגיעים כסטנדרט עם צמיגי חורף עם מסמרים.</li>
-                        <li><b>חברות:</b> בדקו את Hertz, Avis, Sixt בשדה התעופה.</li>
-                        <li><b>נהיגה:</b> הכבישים הראשיים מפולסים היטב. סעו לאט ובזהירות. היזהרו מאיילים (Moose) על הכביש בחושך.</li>
-                    </ul>
+                        <div class="bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                            <h3 class="font-bold text-[#4D453E] mb-2 flex items-center gap-2">🚗 רכב</h3>
+                            <p class="text-sm md:text-base">חובה 4x4 (כמו RAV4). <br>הזמינו דרך Hertz/Avis ב-TOS.</p>
+                        </div>
+                    </div>
 
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">משימות לוגיסטיקה</h3>
-                    <div class="space-y-3 text-lg">
-                        <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                            <span>הזמנת טיסות AMS ⇄ TOS</span>
+                    <h3 class="text-xl font-bold mt-8 mb-4">צ'ק ליסט לביצוע</h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer border border-transparent hover:border-[#D8CFC7]">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base md:text-lg select-none">הזמנת טיסות AMS ⇄ TOS</span>
                         </label>
-                        <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                            <span>הזמנת מלון ללילה אחרון ב-AMS</span>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer border border-transparent hover:border-[#D8CFC7]">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base md:text-lg select-none">הזמנת מלון בשדה AMS</span>
                         </label>
-                        <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                            <span>הזמנת רכב 4x4 ב-TOS</span>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer border border-transparent hover:border-[#D8CFC7]">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base md:text-lg select-none">הזמנת רכב 4x4</span>
                         </label>
                     </div>
                 </div>
@@ -280,151 +272,118 @@
 
             <!-- Tab 3: Accommodation -->
             <section id="accommodation" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">לינה: בקתות וצפייה</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        כדי לראות את הזוהר מהחלון (או לפחות במרחק הליכה), אתם חייבים להתרחק מזיהום האור של טרומסו. ההמלצה היא לפצל את הלינה: 2-3 לילות בעיר עצמה (לנוחות ובילויים) ו-5 לילות בבקתה מרוחקת עם מטבח.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">לינה ובקתות</h2>
+                    <p class="text-sm md:text-base text-[#5C544D] mb-6">הסוד לחיסכון וזוהר: 2 לילות בעיר, 5 לילות בבקתה מרוחקת עם מטבח.</p>
                     
-                    <h3 class="text-2xl font-semibold mt-6 mb-3">אזורים מומלצים לבקתות (Hytte)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-[#D8CFC7]/30 rounded-lg p-5 shadow">
-                            <h4 class="text-xl font-semibold text-[#4D453E] mb-2">1. האי Kvaløya (אי הלווייתנים)</h4>
-                            <p>האופציה הנוחה והפופולרית. 30-60 דקות נסיעה מטרומסו, אבל עם אזורים חשוכים לחלוטין. חפשו בקתות באזורים כמו <b>Ersfjordbotn</b> (פיורד מדהים), <b>Sommarøy</b> (כפר דייגים בקצה האי), או <b>Grøtfjord</b>.</p>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="border border-[#E5E0D8] rounded-xl p-4">
+                            <h4 class="font-bold text-lg text-[#4D453E] mb-1">📍 Kvaløya (אי הלווייתנים)</h4>
+                            <p class="text-sm text-[#8A7F77]">30 דק' מהעיר, חשוך ומושלם לזוהר. <br>חפשו ב: <b>Ersfjordbotn, Sommarøy</b>.</p>
                         </div>
-                        <div class="bg-[#D8CFC7]/30 rounded-lg p-5 shadow">
-                            <h4 class="text-xl font-semibold text-[#4D453E] mb-2">2. האי Senja</h4>
-                            <p>"נורבגיה במיניאטורה". רחוק יותר (3-4 שעות נהיגה), אבל הנופים פראיים ועוצרי נשימה. שווה לשקול 2-3 לילות כאן אם אתם מחפשים שקט מוחלט ונופים דרמטיים.</p>
+                        <div class="border border-[#E5E0D8] rounded-xl p-4">
+                            <h4 class="font-bold text-lg text-[#4D453E] mb-1">📍 Senja</h4>
+                            <p class="text-sm text-[#8A7F77]">שקט פראי ונוף דרמטי. 3 שעות נסיעה. מומלץ ל-2 לילות.</p>
                         </div>
                     </div>
-
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">איך למצוא ולחסוך?</h3>
-                    <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                        <li><b>פלטפורמות:</b> <b>Airbnb</b> הוא המקור הטוב ביותר לבקתות פרטיות (חפשו "Cabin" או "Hytte"). <b>Booking.com</b> טוב גם הוא לאזורים שצוינו.</li>
-                        <li><b>חיסכון:</b> חפשו בקתה עם <b>מטבח מאובזר</b>. בישול עצמי הוא המפתח לעמידה בתקציב.</li>
-                        <li><b>בונוס:</b> בקתות רבות מגיעות עם <b>סאונה פרטית</b> - חוויה מושלמת אחרי לילה קר של ציד זוהר.</li>
-                    </ul>
                 </div>
             </section>
 
             <!-- Tab 4: Activities -->
             <section id="activities" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">מה עושים? (חוץ מלרעוד מקור)</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        התקציב שלכם דורש איזון. בחרו 1-2 פעילויות יקרות שאתם חייבים לעשות, ואת שאר הזמן מלאו בטיולים עצמאיים ופעילויות חינמיות.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">מה עושים?</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="relative overflow-hidden rounded-xl bg-[#2D3748] text-white p-5">
+                            <div class="relative z-10">
+                                <h3 class="text-xl font-bold mb-2">🌌 ציד הזוהר (לבד!)</h3>
+                                <ul class="text-sm space-y-2 text-gray-300">
+                                    <li>• להוריד אפליקציית My Aurora + Yr.no</li>
+                                    <li>• לנסוע לחוף חשוך ב-Kvaløya</li>
+                                    <li>• להביא תרמוס וביגוד חם בטירוף</li>
+                                    <li>• שעות שיא: 18:00 - 01:00</li>
+                                </ul>
+                            </div>
+                        </div>
 
-                    <h3 class="text-2xl font-semibold mt-6 mb-3">🌌 לצוד את הזוהר (DIY)</h3>
-                    <p class="text-lg leading-relaxed mb-4">אתם לא צריכים סיור יקר. יש לכם רכב 4x4. זה כל מה שאתם צריכים:</p>
-                    <div class="space-y-3 ps-4">
-                        <p class="text-lg flex items-center gap-x-3"><span class="flex-shrink-0 text-xl font-bold text-[#A2B8C4]">1.</span> <b>אפליקציות:</b> הורידו את `My Aurora Forecast` (לתחזית עוצמה) ואת `Yr.no` (לתחזית עננים - הכי חשוב).</p>
-                        <p class="text-lg flex items-center gap-x-3"><span class="flex-shrink-0 text-xl font-bold text-[#A2B8C4]">2.</span> <b>מיקום:</b> סעו לאחד החופים החשוכים ב-Kvaløya (כמו Ersfjordbotn או Grøtfjord). התרחקו מהעיר.</p>
-                        <p class="text-lg flex items-center gap-x-3"><span class="flex-shrink-0 text-xl font-bold text-[#A2B8C4]">3.</span> <b>המתנה:</b> התלבשו חם מאוד (ביגוד תרמי!), הביאו תרמוס תה, כבו אורות וחכו. הזמן הטוב ביותר הוא 18:00 - 01:00.</p>
-                        <p class="text-lg flex items-center gap-x-3"><span class="flex-shrink-0 text-xl font-bold text-[#A2B8C4]">4.</span> <b>צילום:</b> חובה חצובה! הגדרות מומלצות: עדשה רחבה, צמצם פתוח (f/2.8), ISO 1600-3200, חשיפה של 10-25 שניות.</p>
+                        <h3 class="font-bold text-[#4D453E] mt-6">פעילויות בתשלום</h3>
+                        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                            <div class="min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <span class="text-2xl block mb-2">🐕</span>
+                                <h4 class="font-bold">מזחלות כלבים</h4>
+                                <p class="text-xs text-gray-500">נהיגה עצמית, חוויה חובה.</p>
+                            </div>
+                            <div class="min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <span class="text-2xl block mb-2">🚡</span>
+                                <h4 class="font-bold">רכבל Fjellheisen</h4>
+                                <p class="text-xs text-gray-500">תצפית על העיר (זול יחסית).</p>
+                            </div>
+                            <div class="min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <span class="text-2xl block mb-2">🧖‍♂️</span>
+                                <h4 class="font-bold">סאונת Pust</h4>
+                                <p class="text-xs text-gray-500">סאונה צפה בנמל + טבילה בים.</p>
+                            </div>
+                        </div>
                     </div>
-
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">💸 פעילויות יום (יקרות אך שוות)</h3>
-                    <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                        <li><b>מזחלות כלבי האסקי:</b> חוויה של פעם בחיים. אתם נוהגים במזחלת בעצמכם.</li>
-                        <li><b>אופנועי שלג:</b> אדרנלין ונופים מטורפים, לרוב באזור האלפים של לינגן.</li>
-                        <li><b>דיג בקרח (Ice Fishing):</b> חוויה נורבגית אותנטית ושקטה.</li>
-                    </ul>
-
-                    <h3 class="text-2xl font-semibold mt-8 mb-3">🪙 פעילויות חינם / זולות</h3>
-                    <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                        <li><b>רכבל Fjellheisen (חובה!):</b> עלו לתצפית על העיר בשעת הדמדומים (סביב 11:00) לנוף בלתי נשכח.</li>
-                        <li><b>נסיעה נופית ב-Kvaløya:</b> פשוט לנהוג סביב האי ולעצור בפיורדים. חינם ומהמם.</li>
-                        <li><b>ביקור ב-Sommarøy:</b> כפר דייגים עם חופים לבנים ומים בצבע טורקיז (קפואים). סוריאליסטי בשלג.</li>
-                        <li><b>סאונה צפה (Pust):</b> בנמל טרומסו. חוויה מקומית אדירה עם קפיצה לים הארקטי.</li>
-                        <li><b>שייט במעבורת ציבורית:</b> קחו את המעבורת מ-Kvaløya ל-Senja. שייט נופי מדהים במחיר סמלי.</li>
-                    </ul>
                 </div>
             </section>
 
             <!-- Tab 5: Budget -->
             <section id="budget" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">תקציב: 25,000 ש"ח</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        זהו תקציב מאתגר מאוד עבור נורבגיה, אבל הוא <b>אפשרי לחלוטין</b> עם תכנון נכון ובישול עצמי. הגרף מציג פירוט הוצאות מוערך לזוג. הוא כולל מרווח ביטחון של כ-2,500 ש"ח.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-2 text-[#4D453E]">תקציב: 25,000 ש"ח</h2>
+                    <p class="text-sm text-[#8A7F77] mb-6">יעד מאתגר אך אפשרי עם בישול עצמי.</p>
                     
                     <div class="chart-container">
                         <canvas id="budgetChart"></canvas>
                     </div>
 
-                    <div class="text-center mt-6">
-                        <h3 class="text-2xl font-semibold mb-3">פירוט הוצאות מוערך (ב-ש"ח)</h3>
-                        <ul class="list-none space-y-1 text-lg max-w-md mx-auto">
-                            <li class="flex justify-between border-b py-1"><span>טיסות (AMS-TOS-AMS)</span> <span class="font-semibold">~ 4,500</span></li>
-                            <li class="flex justify-between border-b py-1"><span>לינה (בקתה + מלון AMS)</span> <span class="font-semibold">~ 7,200</span></li>
-                            <li class="flex justify-between border-b py-1"><span>רכב (8 ימים + דלק)</span> <span class="font-semibold">~ 4,000</span></li>
-                            <li class="flex justify-between border-b py-1"><span>פעילויות (2 יקרות + שונות)</span> <span class="font-semibold">~ 4,000</span></li>
-                            <li class="flex justify-between border-b py-1"><span>אוכל (בעיקר בישול עצמי)</span> <span class="font-semibold">~ 2,800</span></li>
-                            <li class="flex justify-between border-b py-1 text-[#A2B8C4]"><span class="font-bold">מרווח ביטחון</span> <span class="font-bold">~ 2,500</span></li>
-                            <li class="flex justify-between pt-2 mt-2 border-t-2 border-[#4D453E]">
-                                <span class="font-bold text-xl">סה"כ</span>
-                                <span class="font-bold text-xl">25,000</span>
-                            </li>
-                        </ul>
+                    <div class="mt-6 bg-[#F9F7F5] rounded-xl p-4">
+                        <h3 class="font-bold mb-3 text-center">הערכה לזוג (ש"ח)</h3>
+                        <div class="space-y-2 text-sm md:text-base">
+                            <div class="flex justify-between border-b border-gray-200 pb-1"><span>טיסות</span> <span class="font-semibold">4,500</span></div>
+                            <div class="flex justify-between border-b border-gray-200 pb-1"><span>לינה</span> <span class="font-semibold">7,200</span></div>
+                            <div class="flex justify-between border-b border-gray-200 pb-1"><span>רכב ודלק</span> <span class="font-semibold">4,000</span></div>
+                            <div class="flex justify-between border-b border-gray-200 pb-1"><span>פעילויות</span> <span class="font-semibold">4,000</span></div>
+                            <div class="flex justify-between border-b border-gray-200 pb-1"><span>אוכל</span> <span class="font-semibold">2,800</span></div>
+                            <div class="flex justify-between text-[#A2B8C4] pt-1"><span>מרווח ביטחון</span> <span>2,500</span></div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Tab 6: Itinerary -->
             <section id="itinerary" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">מסלול טיול לדוגמה</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        זהו שלד אפשרי ל-8 ימים, המשלב בין העיר, הטבע, פעילויות וזמן חופשי לציד זוהר.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-6 text-[#4D453E]">לו"ז (8 ימים)</h2>
                     
-                    <div class="relative ps-8 space-y-6 border-s-2 border-[#D8CFC7]">
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">1</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">13/1: הגעה</h3>
-                            <p class="text-lg">נחיתה ב-TOS בערב. איסוף רכב 4x4, נסיעה לבקתה ב-Kvaløya, קניות בסופר (REMA 1000). התארגנות וציד זוהר ראשון אם השמיים בהירים.</p>
+                    <div class="relative border-r-2 border-[#E5E0D8] mr-3 space-y-8">
+                        <!-- פריט מסלול -->
+                        <div class="relative pr-6">
+                            <span class="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-[#A2B8C4] border-2 border-white ring-1 ring-[#E5E0D8]"></span>
+                            <h3 class="font-bold text-[#4D453E]">13/1: נחיתה והתמקמות</h3>
+                            <p class="text-sm text-[#5C544D] mt-1">רכב, סופר, נסיעה לבקתה וציד זוהר ראשון.</p>
                         </div>
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">2</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">14/1: העיר טרומסו</h3>
-                            <p class="text-lg">נסיעה לעיר. עלייה ברכבל Fjellheisen ב-11:00 לתצפית דמדומים. ביקור בקתדרלה הארקטית. שיטוט במרכז העיר.</p>
+                        <div class="relative pr-6">
+                            <span class="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-[#A2B8C4] border-2 border-white ring-1 ring-[#E5E0D8]"></span>
+                            <h3 class="font-bold text-[#4D453E]">14/1: העיר טרומסו</h3>
+                            <p class="text-sm text-[#5C544D] mt-1">רכבל בבוקר (דמדומים), קתדרלה וסיבוב בעיר.</p>
                         </div>
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">3</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">15/1: כלבי האסקי</h3>
-                            <p class="text-lg">פעילות בוקר: מזחלות כלבי האסקי. אחר צהריים: מנוחה, סאונה בבקתה. לילה: יציאה לציד זוהר באזור Ersfjordbotn.</p>
+                        <div class="relative pr-6">
+                            <span class="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-[#A2B8C4] border-2 border-white ring-1 ring-[#E5E0D8]"></span>
+                            <h3 class="font-bold text-[#4D453E]">15/1: האסקי וזוהר</h3>
+                            <p class="text-sm text-[#5C544D] mt-1">מזחלות בוקר, שנ"צ וערב בחושך של Ersfjord.</p>
                         </div>
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">4</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">16/1: נופי Kvaløya</h3>
-                            <p class="text-lg">יום נהיגה עצמאי. נסיעה לכפר הדייגים הציורי Sommarøy בקצה האי. עצירה בחופים ובפיורדים בדרך. סאונה צפה (Pust) בערב בעיר.</p>
+                        <div class="relative pr-6">
+                            <span class="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-[#A2B8C4] border-2 border-white ring-1 ring-[#E5E0D8]"></span>
+                            <h3 class="font-bold text-[#4D453E]">16/1: רוד טריפ</h3>
+                            <p class="text-sm text-[#5C544D] mt-1">נסיעה ל-Sommarøy. חופים לבנים קפואים.</p>
                         </div>
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">5</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">17/1: אדרנלין / שייט</h3>
-                            <p class="text-lg">פעילות בוקר: אופנועי שלג (אם בחרתם) או שייט פיורדים. אפשרות זולה: לקחת את המעבורת הציבורית לאי Senja וחזרה רק בשביל הנוף.</p>
-                        </div>
-                         <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">6</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">18/1: יום רגוע</h3>
-                            <p class="text-lg">יום פנוי. אפשר לנסות דיג קרח, לבקר במוזיאון פולאריה, או פשוט לנוח בבקתה עם ספר טוב. ביקור בפאב Ølhallen לטעימת בירות.</p>
-                        </div>
-                         <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#A2B8C4] text-white flex items-center justify-center font-semibold">7</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">19/1: יום אחרון</h3>
-                            <p class="text-lg">קניית מזכרות בעיר, ארוחת ערב אחרונה במסעדה מקומית (למשל Fiskekompaniet אם התקציב מאפשר). ניסיון אחרון לראות את הזוהר.</p>
-                        </div>
-                        <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#4D453E] text-white flex items-center justify-center font-semibold">✈</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">20/1: חזרה ל-AMS</h3>
-                            <p class="text-lg">בוקר פנוי אחרון. נסיעה לשדה התעופה TOS, החזרת רכב, וטיסה לאמסטרדם (AMS). לינה במלון בשדה התעופה.</p>
-                        </div>
-                         <div class="relative">
-                            <span class="absolute -start-4 h-8 w-8 rounded-full bg-[#4D453E] text-white flex items-center justify-center font-semibold">✈</span>
-                            <h3 class="text-xl font-semibold text-[#4D453E] pt-1">21/1: טיסה הביתה</h3>
-                            <p class="text-lg">קימה רגועה, הליכה לטרמינל, וטיסה חזרה לישראל ב-11:30.</p>
+                        <div class="relative pr-6">
+                            <span class="absolute -right-[9px] top-0 w-4 h-4 rounded-full bg-[#4D453E] border-2 border-white ring-1 ring-[#E5E0D8]"></span>
+                            <h3 class="font-bold text-[#4D453E]">20/1: טסים ל-AMS</h3>
+                            <p class="text-sm text-[#5C544D] mt-1">החזרת רכב, טיסה לאמסטרדם, מלון בשדה.</p>
                         </div>
                     </div>
                 </div>
@@ -432,91 +391,47 @@
 
             <!-- Tab 7: Tips & Packing -->
             <section id="tips" class="tab-content">
-                <div class="bg-white/50 rounded-lg shadow-lg p-6 md:p-8">
-                    <h2 class="text-3xl font-semibold mb-4 text-[#4D453E] border-b-2 border-[#A2B8C4] pb-2">טיפים ורשימת ציוד</h2>
-                    <p class="text-lg leading-relaxed mb-6">
-                        כמה טיפים אחרונים לחיסכון, בילוי ורשימת ציוד אינטראקטיבית כדי לוודא שלא שכחתם כלום.
-                    </p>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צידנית וציוד</h2>
+                    
+                    <div class="mb-6 bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
+                        <h3 class="font-bold mb-2">🍽️ אוכל וחיסכון</h3>
+                        <ul class="text-sm list-disc list-inside text-[#5C544D]">
+                            <li>קניות רק ב-REMA 1000</li>
+                            <li>לבשל: סלמון, קוד, פסטה</li>
+                            <li>אלכוהול: יקר! לקנות בדיוטי פרי בארץ/AMS</li>
+                        </ul>
+                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="text-2xl font-semibold mt-6 mb-3">אוכל וחיסכון</h3>
-                            <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                                <li><b>בישול עצמי זה חובה.</b> אוכל בחוץ יקר בטירוף.</li>
-                                <li><b>סופרמרקטים:</b> קנו ב-`REMA 1000`, `Coop Prix` או `Extra`.</li>
-                                <li><b>מה לקנות:</b> סלמון טרי (`Laks`), קוד (`Torsk`), בשר איילים (`Reinsdyr`), גבינה חומה (`Brunost`).</li>
-                                <li><b>אלכוהול:</b> קנו בירה בסופר (עד 20:00). יין ומשקאות חריפים רק ב-`Vinmonopolet` (מונופול ממשלתי).</li>
-                            </ul>
-
-                            <h3 class="text-2xl font-semibold mt-8 mb-3">תרבות גאה</h3>
-                            <ul class="list-disc list-inside space-y-2 text-lg leading-relaxed ps-4">
-                                <li><b>תיאום ציפיות:</b> טרומסו עיר קטנה וליברלית. אין ברים, מועדונים או סאונות ייעודיים לקהילה הגאה.</li>
-                                <li><b>הכל משולב:</b> תרגישו בנוח ובטוח להחזיק ידיים ולהיות זוג נשוי בכל מקום. הסצנה פשוט משולבת לחלוטין.</li>
-                                <li><b>ברים מומלצים (לכולם):</b> `Ølhallen` (פאב בירות ותיק) או `Bastard Bar` (בר רוק).</li>
-                                <li><b>קרוזינג:</b> לא קיים במובן הפיזי. הפעילות עברה לאפליקציות.</li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-2xl font-semibold mt-6 mb-3">רשימת ציוד (חובה!)</h3>
-                            <div class="space-y-3 text-lg bg-[#D8CFC7]/30 rounded-lg p-4 shadow-inner">
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>ביגוד תרמי (צמר מרינו) - 2 סטים</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>שכבת פליז / צמר עבה</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>מעיל חיצוני (עמיד לרוח ומים)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>מכנסי סקי / מכנסיים אטומים</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>גרבי צמר עבים (כמה זוגות)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>נעלי חורף גבוהות ואטומות למים</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>כפפות (זוג דק + זוג עבה)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>כובע צמר וצעיף/חם-צוואר</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>מצלמה וחצובה (לצילום זוהר!)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>פנס ראש (חשוב בלילה הפולארי)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>מטען נייד (סוללות מתרוקנות בקור)</span>
-                                </label>
-                                <label class="checklist-item flex items-center gap-x-3 cursor-pointer">
-                                    <input type="checkbox" class="form-checkbox h-5 w-5 rounded text-[#A2B8C4] border-[#D8CFC7] focus:ring-[#A2B8C4]">
-                                    <span>בגד ים (לסאונה!)</span>
-                                </label>
-                            </div>
-                        </div>
+                    <h3 class="font-bold mb-3">רשימת חובה (סמן V)</h3>
+                    <div class="space-y-3">
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base select-none">2 סטים תרמיים (מרינו)</span>
+                        </label>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base select-none">מכנסי סקי / אטומים</span>
+                        </label>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base select-none">נעליים גבוהות אטומות</span>
+                        </label>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base select-none">חצובה למצלמה (חובה!)</span>
+                        </label>
+                        <label class="checklist-item flex items-center gap-x-4 p-3 bg-gray-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" class="w-6 h-6 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
+                            <span class="text-base select-none">מטען נייד (הקור גומר סוללה)</span>
+                        </label>
                     </div>
                 </div>
             </section>
         </main>
 
-        <footer class="text-center text-sm text-[#8A7F77] mt-12 pb-6">
-            <p>אפליקציית תכנון טיול | טרומסו 2026. תהנו!</p>
+        <footer class="text-center text-sm text-[#8A7F77] py-6 px-4 mb-safe">
+            <p>נוצר עבור הטיול שלנו ❤️</p>
         </footer>
 
     </div>
@@ -529,60 +444,47 @@
             const appContent = document.getElementById('app-content');
             const loginBtn = document.getElementById('login-btn');
             const passInput = document.getElementById('passcode-input');
-            
-            // אלמנטים של הודעת השגיאה (Overlay)
             const errorOverlay = document.getElementById('error-overlay');
             const closeErrorBtn = document.getElementById('close-error-btn');
-            
             const CORRECT_CODE = '8989';
 
             function checkPasscode() {
                 if (passInput.value === CORRECT_CODE) {
-                    // כניסה מוצלחת
+                    passInput.blur(); // סגירת מקלדת במובייל
                     loginScreen.style.opacity = '0';
-                    loginScreen.style.transition = 'opacity 0.5s ease';
+                    loginScreen.style.transition = 'opacity 0.4s ease';
                     setTimeout(() => {
                         loginScreen.style.display = 'none';
                         appContent.style.display = 'block';
+                        window.scrollTo(0,0);
                         initChart(); 
-                    }, 500);
+                    }, 400);
                 } else {
-                    // הצגת שגיאה ב-Overlay
                     errorOverlay.style.display = 'flex';
-                    passInput.value = ''; // ניקוי השדה
-                    passInput.blur(); // הסרת פוקוס כדי שהמקלדת במובייל לא תסתיר את ההודעה
+                    passInput.value = ''; 
+                    passInput.blur(); 
                 }
             }
 
             function closeError() {
-                // סגירת ה-Overlay וחזרה להקלדה
                 errorOverlay.style.display = 'none';
                 passInput.focus();
             }
 
             loginBtn.addEventListener('click', checkPasscode);
             closeErrorBtn.addEventListener('click', closeError);
-            
-            // סגירה גם בלחיצה על הרקע הכהה
-            errorOverlay.addEventListener('click', function(e) {
-                if (e.target === errorOverlay) {
-                    closeError();
-                }
+            errorOverlay.addEventListener('click', (e) => {
+                if (e.target === errorOverlay) closeError();
             });
             
-            passInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    checkPasscode();
-                }
+            passInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkPasscode();
             });
 
-            // פוקוס אוטומטי לשדה
-            passInput.focus();
-
-
-            // --- Tab Navigation Logic ---
+            // --- Mobile Tab Navigation Logic ---
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
+            const navContainer = document.getElementById('nav-container');
 
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
@@ -593,108 +495,50 @@
 
                     link.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
+                    
+                    // גלילה אוטומטית של התפריט כדי שהכפתור הפעיל יהיה גלוי
+                    link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    
+                    // גלילה לראש התוכן
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             });
 
-            // --- Checklist Strikethrough Logic ---
+            // --- Checklist Logic ---
             const checklists = document.querySelectorAll('.checklist-item input[type="checkbox"]');
             checklists.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
-                    const item = this.closest('.checklist-item');
-                    if (item) {
-                        if (this.checked) {
-                            item.classList.add('checked');
-                        } else {
-                            item.classList.remove('checked');
-                        }
-                    }
+                    // שמירת מצב ב-LocalStorage יכול להיות תוספת נחמדה כאן, אך לא חובה
                 });
             });
 
-            // --- Budget Chart (Chart.js) ---
-            // עטפנו בפונקציה כדי לקרוא לה רק אחרי הכניסה
+            // --- Budget Chart ---
             function initChart() {
                 const budgetCanvas = document.getElementById('budgetChart');
                 if (budgetCanvas) {
                     const ctx = budgetCanvas.getContext('2d');
-                    
-                    const budgetLabels = [
-                        'לינה', 
-                        'טיסות (AMS-TOS)', 
-                        'רכב ודלק', 
-                        'פעילויות', 
-                        'אוכל (בישול עצמי)', 
-                        'מרווח ביטחון'
-                    ];
-                    
                     const budgetData = [7200, 4500, 4000, 4000, 2800, 2500];
+                    const budgetLabels = ['לינה', 'טיסות', 'רכב', 'פעילויות', 'אוכל', 'ביטחון'];
                     
                     new Chart(ctx, {
                         type: 'doughnut',
                         data: {
                             labels: budgetLabels,
                             datasets: [{
-                                label: 'הוצאה מוערכת (ש"ח)',
                                 data: budgetData,
-                                backgroundColor: [
-                                    '#4D453E', // Deep Brown
-                                    '#8A7F77', // Mid-Tone Brown
-                                    '#A2B8C4', // Muted Blue
-                                    '#D8CFC7', // Light Warm Gray
-                                    '#BFAFA2', // (Another mid-tone)
-                                    '#F5F0E6'  // Beige (lighter)
-                                ],
-                                borderColor: '#F5F0E6',
-                                borderWidth: 3
+                                backgroundColor: ['#4D453E', '#8A7F77', '#A2B8C4', '#D8CFC7', '#BFAFA2', '#F5F0E6'],
+                                borderWidth: 0
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            layout: { padding: 20 },
                             plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        font: {
-                                            family: "'Assistant', sans-serif",
-                                            size: 14
-                                        },
-                                        color: '#4D453E'
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        title: function(tooltipItems) {
-                                            const item = tooltipItems[0];
-                                            let label = item.chart.data.labels[item.dataIndex];
-                                            if (Array.isArray(label)) {
-                                              return label.join(' ');
-                                            } else {
-                                              return label;
-                                            }
-                                        },
-                                        label: function(context) {
-                                            let label = context.dataset.label || '';
-                                            if (label) {
-                                                label += ': ';
-                                            }
-                                            if (context.parsed !== null) {
-                                                label += new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0 }).format(context.parsed);
-                                            }
-                                            return label;
-                                        }
-                                    },
-                                    bodyFont: {
-                                        family: "'Assistant', sans-serif",
-                                        size: 14
-                                    },
-                                    titleFont: {
-                                        family: "'Assistant', sans-serif",
-                                        size: 16,
-                                        weight: 'bold'
-                                    },
+                                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { family: "'Assistant'", size: 14 } } },
+                                tooltip: { 
                                     rtl: true,
-                                    textDirection: 'rtl'
+                                    callbacks: { label: (c) => ' ' + c.parsed + ' ₪' }
                                 }
                             }
                         }
@@ -703,6 +547,5 @@
             }
         });
     </script>
-
 </body>
 </html>
