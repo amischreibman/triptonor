@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>הטיול של עפרי ועמי - מחובר לענן</title>
+    <title>הטיול של עפרי ועמי - מתכנן מלא</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +26,7 @@
         .day-modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: #F5F0E6; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: rgba(255,255,255,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
         .edit-input { width: 100%; background: transparent; border-bottom: 1px dashed #A2B8C4; padding: 2px 0; outline: none; transition: border 0.3s; }
         .edit-input:focus { border-bottom: 2px solid #4D453E; background: rgba(0,0,0,0.02); }
         .timeline-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
@@ -34,24 +34,35 @@
         .timeline-desc { flex-grow: 1; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4D453E; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.6; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.8); padding: 2px 6px; rounded: 4px; pointer-events: none;}
+        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.8; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.9); padding: 4px 8px; rounded: 6px; pointer-events: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .sync-green { color: green; } .sync-red { color: red; }
+        
+        /* New Styles for Editable Cards */
+        .info-card { background: #fff; border: 1px solid #E5E0D8; padding: 1rem; border-radius: 0.75rem; position: relative; margin-bottom: 1rem; }
+        .info-card input, .info-card textarea { width: 100%; background: transparent; outline: none; }
+        .info-card .card-title { font-weight: bold; color: #4D453E; font-size: 1.1rem; margin-bottom: 0.5rem; border-bottom: 1px dashed #E5E0D8; }
+        .info-card .card-desc { font-size: 0.95rem; color: #5C544D; line-height: 1.5; resize: none; }
+        .info-card .card-link { font-size: 0.85rem; color: #A2B8C4; margin-top: 0.5rem; display: block; }
+        .delete-btn-abs { position: absolute; top: 10px; left: 10px; color: #e5e7eb; cursor: pointer; transition: color 0.2s; }
+        .info-card:hover .delete-btn-abs { color: #ef4444; }
+        .link-preview { display: inline-block; background: #4D453E; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-decoration: none; margin-top: 4px; }
+        .link-preview:hover { background: #3a342f; }
     </style>
 </head>
 <body class="bg-[#F5F0E6] min-h-screen pb-safe">
 
-    <!-- Loading Indicator -->
+    <!-- Loading -->
     <div id="loading-screen">
         <div class="loader mb-4"></div>
-        <p class="text-[#4D453E] font-bold">טוען נתונים מהענן...</p>
+        <p class="text-[#4D453E] font-bold">טוען את המסע...</p>
     </div>
 
-    <!-- Login Screen -->
+    <!-- Login -->
     <div id="login-screen">
         <div class="bg-white p-8 rounded-3xl shadow-xl text-center w-full max-w-[320px]">
-            <div class="text-4xl mb-2">☁️</div>
+            <div class="text-4xl mb-2">❄️</div>
             <h2 class="text-2xl font-bold text-[#4D453E] mb-1">הטיול של עפרי ועמי</h2>
-            <p class="text-[#8A7F77] text-sm mb-6">מערכת משותפת אונליין</p>
+            <p class="text-[#8A7F77] text-sm mb-6">לפלנד זה כאן</p>
             <input type="password" id="passcode-input" placeholder="הזן קוד" inputmode="numeric" pattern="[0-9]*" maxlength="4" 
                    class="w-full text-center text-2xl p-3 border-2 border-[#D8CFC7] rounded-xl focus:border-[#4D453E] mb-4 tracking-widest bg-gray-50 outline-none">
             <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:bg-[#3a342f] active:scale-95 transition-all">
@@ -74,25 +85,25 @@
                 <input type="text" id="modal-summary-input" class="edit-input text-[#8A7F77] mt-2 text-sm" placeholder="תיאור קצר">
             </div>
 
-            <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז (עריכה משותפת):</div>
+            <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז (לחץ לעריכה):</div>
             <div id="modal-timeline-container" class="space-y-2 mb-4"></div>
             
             <button id="add-timeline-btn" class="text-sm text-[#A2B8C4] hover:text-[#4D453E] font-bold mb-6 flex items-center gap-1">
-                + הוסף שורה
+                + הוסף פעילות ללו"ז
             </button>
             
             <div class="bg-yellow-50 p-3 rounded-xl mb-6">
                 <label class="block text-xs font-bold text-[#4D453E] mb-1">טיפ ליום זה:</label>
-                <textarea id="modal-tip-input" class="w-full bg-transparent border-b border-yellow-200 text-sm text-gray-700 outline-none resize-none" rows="2"></textarea>
+                <textarea id="modal-tip-input" class="w-full bg-transparent border-b border-yellow-200 text-sm text-gray-700 outline-none resize-none" rows="3"></textarea>
             </div>
 
             <button id="save-day-btn" class="w-full bg-[#4D453E] text-white py-3 rounded-xl font-bold shadow-md hover:bg-[#3a342f] active:scale-95 transition-all">
-                שמור לענן ☁️
+                שמור שינויים לענן ☁️
             </button>
         </div>
     </div>
 
-    <!-- Main App -->
+    <!-- Main App Content -->
     <div id="app-content" style="display: none;">
         
         <header class="text-center pt-6 pb-2 px-4">
@@ -100,27 +111,68 @@
             <p class="text-lg text-[#8A7F77] mt-1">ינואר 2026 | טרומסו</p>
         </header>
 
-        <!-- Sticky Nav -->
+        <!-- Sticky Navigation -->
         <div class="sticky top-0 z-40 bg-[#F5F0E6]/95 backdrop-blur-sm border-b border-[#D8CFC7]">
             <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 items-center md:justify-center">
                 <button class="nav-link active" data-tab="grid-view">📅 לוח יומי</button>
+                <button class="nav-link" data-tab="logistics">✈️ לוגיסטיקה</button>
+                <button class="nav-link" data-tab="checklist">💡 טיפים וציוד</button>
                 <button class="nav-link" data-tab="budget">💰 תקציב</button>
-                <button class="nav-link" data-tab="checklist">✅ ציוד</button>
-                <button class="nav-link" data-tab="logistics">✈️ מידע</button>
             </nav>
         </div>
 
         <main class="container mx-auto max-w-5xl p-4 pb-24">
             
-            <!-- Tab: Grid View -->
+            <!-- 1. Grid View Tab -->
             <section id="grid-view" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="calendar-grid"></div>
             </section>
 
-            <!-- Tab: Budget -->
+            <!-- 2. Logistics Tab (Editable) -->
+            <section id="logistics" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">מידע והזמנות</h2>
+                    <p class="text-sm text-gray-500 mb-4">כאן נמצאים כל פרטי הטיסות, רכב, ומעבורות. ניתן לערוך הכל.</p>
+                    
+                    <div id="logistics-container">
+                        <!-- Dynamic logistics cards go here -->
+                    </div>
+                    
+                    <button id="add-logistics-btn" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50 hover:text-[#4D453E] transition-colors">
+                        + הוסף כרטיס מידע חדש
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. Tips & Checklist Tab (Editable) -->
+            <section id="checklist" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 mb-4">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט ציוד</h2>
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none focus:border-[#4D453E]">
+                        <button id="add-item-btn" class="bg-[#4D453E] text-white px-4 py-2 rounded-lg font-bold">+</button>
+                    </div>
+                    <div class="space-y-2" id="checklist-container"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">טיפים ולינקים חשובים</h2>
+                    <p class="text-sm text-gray-500 mb-4">מידע על לבוש, אפליקציות, אוכל ומיקומים.</p>
+                    
+                    <div id="generaltips-container">
+                        <!-- Dynamic tips cards go here -->
+                    </div>
+
+                    <button id="add-tip-btn" class="w-full border-2 border-dashed border-[#A2B8C4] text-[#A2B8C4] py-3 rounded-xl font-bold mt-4 hover:bg-gray-50 hover:text-[#4D453E] transition-colors">
+                        + הוסף טיפ חדש
+                    </button>
+                </div>
+            </section>
+
+            <!-- 4. Budget Tab -->
             <section id="budget" class="tab-content">
                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב משותף</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                             <div class="space-y-4" id="budget-inputs"></div>
@@ -136,29 +188,6 @@
                 </div>
             </section>
 
-            <!-- Tab: Checklist -->
-            <section id="checklist" class="tab-content">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">רשימת ציוד</h2>
-                    <div class="flex gap-2 mb-6">
-                        <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none">
-                        <button id="add-item-btn" class="bg-[#4D453E] text-white px-4 py-2 rounded-lg font-bold">+</button>
-                    </div>
-                    <div class="space-y-2" id="checklist-container"></div>
-                </div>
-            </section>
-            
-            <!-- Tab: Logistics -->
-            <section id="logistics" class="tab-content">
-                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 text-center">
-                    <h2 class="text-xl font-bold mb-2">מידע לוגיסטי</h2>
-                    <div class="mt-4 grid grid-cols-1 gap-3 text-right">
-                        <div class="bg-blue-50 p-3 rounded-lg"><span class="font-bold">הלוך:</span> 13/1 AMS -> TOS</div>
-                        <div class="bg-blue-50 p-3 rounded-lg"><span class="font-bold">חזור:</span> 20/1 TOS -> AMS</div>
-                    </div>
-                </div>
-            </section>
-
         </main>
         
         <div id="sync-status">ממתין לחיבור...</div>
@@ -166,12 +195,10 @@
 
     <!-- Firebase Logic -->
     <script type="module">
-        // Import Firebase (Version 12.6.0 as requested)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-        // Firebase Configuration (from your input)
         const firebaseConfig = {
             apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w",
             authDomain: "tromso-trip.firebaseapp.com",
@@ -182,21 +209,18 @@
             measurementId: "G-976T7D2Q1Z"
         };
 
-        // Initialize Firebase
         let app, db, tripRef;
         try {
             app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app); // Analytics initialized
-            db = getFirestore(app); // Firestore initialized
-            
-            // Reference to the single trip document
+            const analytics = getAnalytics(app);
+            db = getFirestore(app);
             tripRef = doc(db, "trips", "ofri_ami_data_2026"); 
         } catch (e) {
             console.error("Firebase Init Error:", e);
             document.getElementById('sync-status').textContent = "שגיאת אתחול";
         }
 
-        // --- Default Data (Uploads only if DB is empty) ---
+        // --- Rich Default Data (With Tips & Logistics) ---
         const defaultData = {
             title: "הטיול של עפרי ועמי 👫",
             days: [
@@ -219,9 +243,25 @@
                 { label: 'ביטחון', value: 2500, color: '#F5F0E6' }
             ],
             checklist: [
-                { text: 'ביגוד תרמי (2 סטים)', done: false },
-                { text: 'חצובה למצלמה', done: false },
-                { text: 'מטען נייד', done: false }
+                { text: 'ביגוד תרמי (2 סטים לפחות)', done: false },
+                { text: 'חצובה למצלמה (חובה לזוהר)', done: false },
+                { text: 'מטען נייד (סוללות נגמרות מהר)', done: false },
+                { text: 'כפפות עבות + כפפות דקות (טאץ\')', done: false },
+                { text: 'קרמפונים (דוקרנים לנעליים)', done: false },
+                { text: 'שקיות חימום לידיים/רגליים', done: false }
+            ],
+            logistics: [
+                { title: "טיסות הלוך ✈️", desc: "13/1 AMS (10:20) -> OSL -> TOS (17:00). חובה לנחות בצהריים.", url: "" },
+                { title: "רכב שכור 🚗", desc: "חובה 4x4. להוריד אפליקציית 'EasyPark' לחניה בטרומסו. זהירות מאיילים בכביש!", url: "https://www.rentalcars.com" },
+                { title: "מעבורת לסניה ⛴️", desc: "קו Brensholmen-Botnhamn. לבדוק זמנים באפליקציית Troms Fylkestrafikk.", url: "https://fylkestrafikk.no/" },
+                { title: "טיסות חזור 🛫", desc: "20/1 TOS -> AMS (לינה בשדה), 21/1 בוקר לישראל.", url: "" }
+            ],
+            generalTips: [
+                { title: "שיטת הלבוש (חשוב!) 🧥", desc: "שכבה 1: צמר מרינו (על הגוף). שכבה 2: פליז או צמר עבה. שכבה 3: מעיל רוח/גשם איכותי. לא ג'ינס! מכנסי סקי מומלצים.", url: "" },
+                { title: "אפליקציות חובה 📱", desc: "1. My Aurora Forecast (תחזית זוהר). 2. Yr.no (מזג אוויר מדויק). 3. EasyPark (חניה).", url: "https://www.yr.no/en" },
+                { title: "אלכוהול וקניות 🍷", desc: "אלכוהול חזק קונים רק ב-Vinmonopolet (נסגר מוקדם). בירה בסופר רק עד 20:00. סופר מומלץ: REMA 1000.", url: "" },
+                { title: "רכבל Fjellheisen 🚠", desc: "התצפית הכי יפה. לעלות בסביבות 11:00-12:00 לאור דמדומים, או בערב לזוהר.", url: "https://www.fjellheisen.no/en" },
+                { title: "סאונה בנמל (Pust) 🧖‍♂️", desc: "חוויה מטורפת. סאונה רותחת וקפיצה לים הקפוא. חובה להזמין מראש.", url: "https://pust.io/" }
             ]
         };
 
@@ -230,7 +270,7 @@
         let currentEditingIndex = -1;
         const CORRECT_CODE = '8989';
 
-        // --- Auth Logic ---
+        // --- Login Logic ---
         window.attemptLogin = function() {
             const passInput = document.getElementById('passcode-input');
             const errorMsg = document.getElementById('login-error');
@@ -241,8 +281,6 @@
                 passInput.blur();
                 errorMsg.classList.add('hidden');
                 loadingScreen.style.display = 'flex'; 
-                
-                // Start Listening to Cloud
                 startRealtimeListener(() => {
                     loadingScreen.style.display = 'none';
                     loginScreen.style.display = 'none';
@@ -255,7 +293,7 @@
             }
         };
 
-        // --- Realtime Sync ---
+        // --- Sync Logic ---
         function startRealtimeListener(onFirstLoad) {
             onSnapshot(tripRef, async (docSnap) => {
                 const statusEl = document.getElementById('sync-status');
@@ -263,19 +301,14 @@
                 statusEl.className = 'sync-green';
 
                 if (docSnap.exists()) {
-                    appData = docSnap.data();
+                    // Merge with default to ensure new fields (like generalTips) exist if DB is old
+                    appData = { ...defaultData, ...docSnap.data() };
                 } else {
-                    // Create initial doc
                     await setDoc(tripRef, defaultData);
                     appData = defaultData;
                 }
-
                 refreshUI();
-                
-                if(onFirstLoad) {
-                    onFirstLoad();
-                    onFirstLoad = null;
-                }
+                if(onFirstLoad) { onFirstLoad(); onFirstLoad = null; }
             }, (error) => {
                 console.error("Sync error:", error);
                 document.getElementById('sync-status').textContent = '● שגיאת חיבור';
@@ -286,18 +319,13 @@
         async function saveToCloud() {
             const statusEl = document.getElementById('sync-status');
             statusEl.textContent = '⟳ שומר...';
-            try {
-                await updateDoc(tripRef, appData);
-            } catch (e) {
-                console.error("Save error", e);
-                alert("שגיאה בשמירה לענן. וודא שיש לך הרשאות.");
-            }
+            try { await updateDoc(tripRef, appData); } 
+            catch (e) { console.error("Save error", e); }
         }
 
-        // --- UI Functions ---
+        // --- Init & UI ---
         function initApp() {
             setupTabs();
-            // Listeners
             document.getElementById('trip-title-input').addEventListener('change', (e) => {
                 appData.title = e.target.value;
                 saveToCloud();
@@ -305,6 +333,8 @@
             document.getElementById('save-day-btn').addEventListener('click', saveDayEdit);
             document.getElementById('add-timeline-btn').addEventListener('click', addTimelineRow);
             document.getElementById('add-item-btn').addEventListener('click', addChecklistItem);
+            document.getElementById('add-logistics-btn').addEventListener('click', () => addInfoCard('logistics'));
+            document.getElementById('add-tip-btn').addEventListener('click', () => addInfoCard('generalTips'));
             document.getElementById('close-day-btn').addEventListener('click', () => {
                 document.getElementById('day-overlay').style.display = 'none';
             });
@@ -315,9 +345,54 @@
             renderGrid();
             renderBudget();
             renderChecklist();
+            renderInfoCards('logistics', 'logistics-container');
+            renderInfoCards('generalTips', 'generaltips-container');
         }
 
-        // --- Grid View ---
+        // --- Generic Info Cards (Logistics & Tips) ---
+        function renderInfoCards(dataKey, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (!appData[dataKey]) appData[dataKey] = [];
+
+            appData[dataKey].forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'info-card';
+                
+                const linkDisplay = item.url ? `<a href="${item.url}" target="_blank" class="link-preview">🔗 פתח לינק</a>` : '';
+
+                div.innerHTML = `
+                    <span class="delete-btn-abs" onclick="window.deleteInfoCard('${dataKey}', ${index})">✕</span>
+                    <input type="text" class="card-title" value="${item.title}" placeholder="כותרת" onchange="window.updateInfoCard('${dataKey}', ${index}, 'title', this.value)">
+                    <textarea class="card-desc" rows="2" placeholder="פירוט..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'desc', this.value)">${item.desc}</textarea>
+                    <input type="text" class="card-link" value="${item.url || ''}" placeholder="הדבק לינק כאן (URL)..." onchange="window.updateInfoCard('${dataKey}', ${index}, 'url', this.value)">
+                    ${linkDisplay}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.updateInfoCard = function(dataKey, index, field, value) {
+            appData[dataKey][index][field] = value;
+            saveToCloud();
+            // אם עדכן לינק, נרצה לרענן כדי לראות את הכפתור החדש
+            if (field === 'url') refreshUI(); 
+        }
+
+        window.deleteInfoCard = function(dataKey, index) {
+            if(confirm('למחוק את הכרטיס הזה?')) {
+                appData[dataKey].splice(index, 1);
+                saveToCloud();
+            }
+        }
+
+        window.addInfoCard = function(dataKey) {
+            appData[dataKey].push({ title: "", desc: "", url: "" });
+            saveToCloud();
+        }
+
+        // --- Grid & Modal ---
         function renderGrid() {
             const container = document.getElementById('calendar-grid');
             container.innerHTML = '';
@@ -352,7 +427,6 @@
             (day.timeline || []).forEach(item => {
                 renderTimelineRow(container, item.time, item.desc);
             });
-
             overlay.style.display = 'flex';
         }
 
@@ -368,8 +442,7 @@
         }
 
         function addTimelineRow() {
-            const container = document.getElementById('modal-timeline-container');
-            renderTimelineRow(container, "12:00", "");
+            renderTimelineRow(document.getElementById('modal-timeline-container'), "12:00", "");
         }
 
         async function saveDayEdit() {
@@ -394,12 +467,11 @@
             document.getElementById('day-overlay').style.display = 'none';
         }
 
-        // --- Budget ---
+        // --- Budget & Checklist (Existing Logic) ---
         function renderBudget() {
             const container = document.getElementById('budget-inputs');
             container.innerHTML = '';
             let total = 0;
-
             (appData.budget || []).forEach((item, index) => {
                 total += parseInt(item.value);
                 const row = document.createElement('div');
@@ -416,31 +488,18 @@
             document.getElementById('total-budget-display').textContent = total.toLocaleString() + ' ₪';
             updateChart();
         }
-
         window.updateBudget = function(index, val) {
             appData.budget[index].value = parseInt(val) || 0;
             saveToCloud();
         }
-
         function updateChart() {
             const ctx = document.getElementById('budgetChart').getContext('2d');
             const dataValues = (appData.budget || []).map(b => b.value);
             const labels = (appData.budget || []).map(b => b.label);
             const colors = (appData.budget || []).map(b => b.color);
-
-            if (budgetChartInstance) {
-                budgetChartInstance.data.datasets[0].data = dataValues;
-                budgetChartInstance.update();
-            } else {
-                budgetChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels: labels, datasets: [{ data: dataValues, backgroundColor: colors, borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, layout: { padding: 10 }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
-                });
-            }
+            if (budgetChartInstance) { budgetChartInstance.data.datasets[0].data = dataValues; budgetChartInstance.update(); } 
+            else { budgetChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: dataValues, backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: 10 }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } } }); }
         }
-
-        // --- Checklist ---
         function renderChecklist() {
             const container = document.getElementById('checklist-container');
             container.innerHTML = '';
@@ -448,31 +507,18 @@
                 const div = document.createElement('div');
                 div.className = 'flex items-center gap-3 p-2 bg-gray-50 rounded-lg group';
                 div.innerHTML = `
-                    <input type="checkbox" class="w-5 h-5 accent-[#4D453E] cursor-pointer" 
-                           ${item.done ? 'checked' : ''} onchange="window.toggleCheck(${index})">
+                    <input type="checkbox" class="w-5 h-5 accent-[#4D453E] cursor-pointer" ${item.done ? 'checked' : ''} onchange="window.toggleCheck(${index})">
                     <span class="flex-grow text-sm ${item.done ? 'line-through text-gray-400' : 'text-[#4D453E]'}">${item.text}</span>
                     <button onclick="window.deleteCheckItem(${index})" class="text-gray-300 hover:text-red-500 px-2">🗑️</button>
                 `;
                 container.appendChild(div);
             });
         }
-
-        window.toggleCheck = function(index) {
-            appData.checklist[index].done = !appData.checklist[index].done;
-            saveToCloud();
-        }
-        window.deleteCheckItem = function(index) {
-            appData.checklist.splice(index, 1);
-            saveToCloud();
-        }
+        window.toggleCheck = (index) => { appData.checklist[index].done = !appData.checklist[index].done; saveToCloud(); }
+        window.deleteCheckItem = (index) => { appData.checklist.splice(index, 1); saveToCloud(); }
         async function addChecklistItem() {
             const input = document.getElementById('new-item-input');
-            if(input.value.trim()) {
-                if(!appData.checklist) appData.checklist = [];
-                appData.checklist.push({ text: input.value.trim(), done: false });
-                input.value = '';
-                await saveToCloud();
-            }
+            if(input.value.trim()) { if(!appData.checklist) appData.checklist = []; appData.checklist.push({ text: input.value.trim(), done: false }); input.value = ''; await saveToCloud(); }
         }
 
         // --- Tabs ---
@@ -491,7 +537,6 @@
             });
         }
         
-        // Expose login logic
         document.getElementById('login-btn').addEventListener('click', window.attemptLogin);
         document.getElementById('passcode-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.attemptLogin() });
 
