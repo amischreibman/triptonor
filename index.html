@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>הטיול של עפרי ועמי לזוהר הצפוני</title>
+    <title>הטיול של עפרי ועמי - מחובר לענן</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,586 +11,490 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Assistant', sans-serif;
-            direction: rtl;
-            background-color: #F5F0E6;
-            color: #4D453E;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        body { font-family: 'Assistant', sans-serif; direction: rtl; background-color: #F5F0E6; color: #4D453E; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
-
-        .nav-link {
-            white-space: nowrap; flex-shrink: 0; transition: all 0.3s ease;
-            border-bottom: 3px solid transparent; opacity: 0.7;
-        }
-        .nav-link.active {
-            border-bottom-color: #4D453E; color: #4D453E; font-weight: 700; opacity: 1;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* סגנונות כרטיס יום (Grid Item) */
-        .day-card {
-            background: white;
-            border: 1px solid #E5E0D8;
-            border-radius: 1rem;
-            padding: 1rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .day-card:active { transform: scale(0.98); background-color: #fafafa; }
-        .day-card:hover { border-color: #A2B8C4; shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        .day-badge {
-            background-color: #4D453E; color: white;
-            padding: 0.25rem 0.75rem; border-radius: 999px;
-            font-size: 0.8rem; font-weight: bold;
-            display: inline-block; margin-bottom: 0.5rem;
-        }
-
-        /* סגנונות Modal לפרטי יום */
-        #day-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(77, 69, 62, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 3000;
-            display: none;
-            align-items: center; justify-content: center;
-            padding: 1rem;
-        }
-        .day-modal-content {
-            background: #fff; width: 100%; max-width: 500px;
-            max-height: 85vh; overflow-y: auto;
-            border-radius: 1.5rem; padding: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease-out;
-            position: relative;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* צ'קליסט ומסכי כניסה */
-        .checklist-item:has(input:checked) span { text-decoration: line-through; color: #8A7F77; opacity: 0.7; }
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background-color: #F5F0E6; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
-        #error-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(77, 69, 62, 0.6); backdrop-filter: blur(2px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem; }
-        
-        .timeline-dot {
-            width: 12px; height: 12px; background-color: #A2B8C4; border-radius: 50%;
-            position: absolute; right: -6px; top: 6px; border: 2px solid white;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-link { white-space: nowrap; flex-shrink: 0; transition: all 0.2s ease; border-bottom: 3px solid transparent; opacity: 0.6; font-weight: 600; }
+        .nav-link.active { border-bottom-color: #4D453E; color: #4D453E; opacity: 1; }
+        .day-card { background: white; border: 1px solid #E5E0D8; border-radius: 1rem; padding: 1rem; transition: all 0.2s ease; cursor: pointer; position: relative; }
+        .day-card:active { transform: scale(0.98); }
+        .day-badge { background-color: #4D453E; color: white; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: bold; }
+        #day-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(77, 69, 62, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .day-modal-content { background: #fff; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: #F5F0E6; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: rgba(255,255,255,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
+        .edit-input { width: 100%; background: transparent; border-bottom: 1px dashed #A2B8C4; padding: 2px 0; outline: none; transition: border 0.3s; }
+        .edit-input:focus { border-bottom: 2px solid #4D453E; background: rgba(0,0,0,0.02); }
+        .timeline-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .timeline-time { width: 60px; font-weight: bold; color: #4D453E; }
+        .timeline-desc { flex-grow: 1; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4D453E; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #sync-status { position: fixed; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.6; z-index: 50; font-weight: bold; background: rgba(255,255,255,0.8); padding: 2px 6px; rounded: 4px; pointer-events: none;}
+        .sync-green { color: green; } .sync-red { color: red; }
     </style>
 </head>
 <body class="bg-[#F5F0E6] min-h-screen pb-safe">
 
-    <!-- מסך כניסה -->
+    <!-- Loading Indicator -->
+    <div id="loading-screen">
+        <div class="loader mb-4"></div>
+        <p class="text-[#4D453E] font-bold">טוען נתונים מהענן...</p>
+    </div>
+
+    <!-- Login Screen -->
     <div id="login-screen">
         <div class="bg-white p-8 rounded-3xl shadow-xl text-center w-full max-w-[320px]">
-            <div class="text-4xl mb-2">🏔️</div>
-            <h2 class="text-2xl font-bold text-[#4D453E] mb-2">הטיול של עפרי ועמי</h2>
-            <p class="text-[#8A7F77] text-sm mb-6">לזוהר הצפוני | ינואר 2026</p>
+            <div class="text-4xl mb-2">☁️</div>
+            <h2 class="text-2xl font-bold text-[#4D453E] mb-1">הטיול של עפרי ועמי</h2>
+            <p class="text-[#8A7F77] text-sm mb-6">מערכת משותפת אונליין</p>
             <input type="password" id="passcode-input" placeholder="הזן קוד" inputmode="numeric" pattern="[0-9]*" maxlength="4" 
-                   class="w-full text-center text-2xl p-4 border-2 border-[#D8CFC7] rounded-xl focus:outline-none focus:border-[#4D453E] mb-4 tracking-widest bg-[#FAFAFA]">
-            <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-4 rounded-xl hover:bg-[#3a342f] active:scale-95 transition-all shadow-lg">
-                כניסה למערכת
+                   class="w-full text-center text-2xl p-3 border-2 border-[#D8CFC7] rounded-xl focus:border-[#4D453E] mb-4 tracking-widest bg-gray-50 outline-none">
+            <button id="login-btn" class="w-full bg-[#4D453E] text-white font-bold text-lg py-3 rounded-xl shadow-lg hover:bg-[#3a342f] active:scale-95 transition-all">
+                כניסה
             </button>
+            <p id="login-error" class="text-red-500 text-sm mt-3 hidden">קוד שגוי</p>
         </div>
     </div>
 
-    <!-- Overlay שגיאה -->
-    <div id="error-overlay">
-        <div class="bg-white p-8 rounded-3xl text-center w-full max-w-[280px] animate-[popIn_0.3s]">
-            <div class="text-5xl mb-4">✋</div>
-            <h3 class="text-xl font-bold text-[#4D453E] mb-2">שגיאה</h3>
-            <p class="text-[#8A7F77] mb-6">קוד שגוי.</p>
-            <button id="close-error-btn" class="w-full bg-[#ef4444] text-white font-bold py-3 rounded-xl shadow-lg shadow-red-500/20">נסה שנית</button>
-        </div>
-    </div>
-
-    <!-- Overlay פירוט יום (חדש!) -->
+    <!-- Edit Day Modal -->
     <div id="day-overlay">
-        <div class="day-modal-content">
-            <button id="close-day-btn" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+        <div class="day-modal-content relative">
+            <button id="close-day-btn" class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-xl">✕</button>
             
-            <div id="modal-header" class="mb-6 border-b border-gray-100 pb-4">
-                <span id="modal-date" class="bg-[#A2B8C4] text-white px-3 py-1 rounded-full text-sm font-bold"></span>
-                <h2 id="modal-title" class="text-2xl font-bold text-[#4D453E] mt-2"></h2>
-                <p id="modal-summary" class="text-[#8A7F77] mt-1"></p>
+            <div class="mb-6 border-b border-gray-100 pb-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="modal-date-display" class="bg-[#A2B8C4] text-white px-3 py-1 rounded-full text-sm font-bold"></span>
+                </div>
+                <input type="text" id="modal-title-input" class="edit-input text-2xl font-bold text-[#4D453E]" placeholder="כותרת היום">
+                <input type="text" id="modal-summary-input" class="edit-input text-[#8A7F77] mt-2 text-sm" placeholder="תיאור קצר">
             </div>
 
-            <div id="modal-timeline" class="space-y-6 border-r-2 border-gray-100 mr-2 pr-4 relative">
-                <!-- תוכן דינמי ייכנס כאן -->
-            </div>
+            <div class="mb-2 font-bold text-sm text-[#4D453E]">לו"ז (עריכה משותפת):</div>
+            <div id="modal-timeline-container" class="space-y-2 mb-4"></div>
             
-            <div class="mt-6 pt-4 border-t border-gray-100 bg-yellow-50 p-4 rounded-xl">
-                <h4 class="font-bold text-[#4D453E] text-sm mb-1">💡 טיפ ליום זה:</h4>
-                <p id="modal-tip" class="text-sm text-gray-600"></p>
+            <button id="add-timeline-btn" class="text-sm text-[#A2B8C4] hover:text-[#4D453E] font-bold mb-6 flex items-center gap-1">
+                + הוסף שורה
+            </button>
+            
+            <div class="bg-yellow-50 p-3 rounded-xl mb-6">
+                <label class="block text-xs font-bold text-[#4D453E] mb-1">טיפ ליום זה:</label>
+                <textarea id="modal-tip-input" class="w-full bg-transparent border-b border-yellow-200 text-sm text-gray-700 outline-none resize-none" rows="2"></textarea>
             </div>
+
+            <button id="save-day-btn" class="w-full bg-[#4D453E] text-white py-3 rounded-xl font-bold shadow-md hover:bg-[#3a342f] active:scale-95 transition-all">
+                שמור לענן ☁️
+            </button>
         </div>
     </div>
 
-    <!-- תוכן האתר -->
+    <!-- Main App -->
     <div id="app-content" style="display: none;">
         
-        <header class="text-center pt-8 pb-4 px-4">
-            <h1 class="text-2xl md:text-4xl font-bold text-[#4D453E]">הטיול של עפרי ועמי 👫</h1>
-            <p class="text-lg text-[#8A7F77] mt-1">לזוהר הצפוני | ינואר 2026</p>
+        <header class="text-center pt-6 pb-2 px-4">
+            <input type="text" id="trip-title-input" class="text-center bg-transparent text-2xl md:text-4xl font-bold text-[#4D453E] w-full outline-none border-b border-transparent hover:border-[#D8CFC7] focus:border-[#4D453E]" value="הטיול של עפרי ועמי 👫">
+            <p class="text-lg text-[#8A7F77] mt-1">ינואר 2026 | טרומסו</p>
         </header>
 
-        <!-- Navigation -->
-        <div class="sticky top-0 z-40 bg-[#F5F0E6]/95 backdrop-blur-sm border-b border-[#D8CFC7] shadow-sm">
-            <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 md:justify-center items-center -mb-px">
-                <button class="nav-link active text-lg pb-2" data-tab="main">ראשי</button>
-                <button class="nav-link text-lg pb-2 font-bold text-[#4D453E]" data-tab="grid-view">📅 לוח יומי</button>
-                <button class="nav-link text-lg pb-2" data-tab="logistics">לוגיסטיקה</button>
-                <button class="nav-link text-lg pb-2" data-tab="accommodation">לינה</button>
-                <button class="nav-link text-lg pb-2" data-tab="activities">פעילויות</button>
-                <button class="nav-link text-lg pb-2" data-tab="budget">תקציב</button>
-                <button class="nav-link text-lg pb-2" data-tab="tips">ציוד</button>
+        <!-- Sticky Nav -->
+        <div class="sticky top-0 z-40 bg-[#F5F0E6]/95 backdrop-blur-sm border-b border-[#D8CFC7]">
+            <nav id="nav-container" class="flex overflow-x-auto no-scrollbar py-3 px-4 gap-6 items-center md:justify-center">
+                <button class="nav-link active" data-tab="grid-view">📅 לוח יומי</button>
+                <button class="nav-link" data-tab="budget">💰 תקציב</button>
+                <button class="nav-link" data-tab="checklist">✅ ציוד</button>
+                <button class="nav-link" data-tab="logistics">✈️ מידע</button>
             </nav>
-            <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#F5F0E6] to-transparent pointer-events-none md:hidden"></div>
         </div>
 
-        <main class="container mx-auto max-w-5xl p-4 pb-20">
+        <main class="container mx-auto max-w-5xl p-4 pb-24">
             
-            <!-- Tab: Main -->
-            <section id="main" class="tab-content active">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-6 text-center">
-                    <h2 class="text-2xl font-bold text-[#4D453E] mb-2">ברוכים הבאים עפרי ועמי! 👋</h2>
-                    <p class="text-[#5C544D] mb-6">התוכנית המלאה למסע הארקטי שלכם מוכנה.</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div class="text-2xl mb-1">✈️</div>
-                            <div class="font-bold">13/1</div>
-                            <div class="text-xs text-gray-500">המראה</div>
-                        </div>
-                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div class="text-2xl mb-1">🚗</div>
-                            <div class="font-bold">4x4</div>
-                            <div class="text-xs text-gray-500">רכב שכור</div>
-                        </div>
-                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div class="text-2xl mb-1">🏠</div>
-                            <div class="font-bold">בקתה</div>
-                            <div class="text-xs text-gray-500">מחוץ לעיר</div>
-                        </div>
-                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div class="text-2xl mb-1">🌌</div>
-                            <div class="font-bold">זוהר</div>
-                            <div class="text-xs text-gray-500">המטרה</div>
-                        </div>
-                    </div>
-                    <button class="mt-8 bg-[#4D453E] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-[#3a342f] transition-all" onclick="document.querySelector('[data-tab=grid-view]').click()">
-                        לצפייה בלוח היומי 📅
-                    </button>
-                </div>
-            </section>
-
-            <!-- Tab: Grid View (New!) -->
-            <section id="grid-view" class="tab-content">
-                <div class="mb-4 text-center">
-                    <h2 class="text-2xl font-bold text-[#4D453E]">לוח המסע</h2>
-                    <p class="text-sm text-[#8A7F77]">לחצו על יום לפירוט מלא</p>
-                </div>
-                
-                <!-- Grid Container -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="calendar-grid">
-                    <!-- Cards will be injected via JS -->
-                </div>
-            </section>
-
-            <!-- Tab: Logistics -->
-            <section id="logistics" class="tab-content">
-                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">לוגיסטיקה וטיסות</h2>
-                    <div class="space-y-4 text-sm md:text-base">
-                        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-[#4D453E]">🛫 הלוך: 13/01/26</h3>
-                            <p>נחיתה ב-AMS ב-10:20. המשך ל-TOS אחה"צ.</p>
-                        </div>
-                        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                            <h3 class="font-bold text-[#4D453E]">🛬 חזור: 20/01/26</h3>
-                            <p>טיסה ל-AMS ב-20/1, לינה בשדה, המראה לישראל ב-21/1 בבוקר.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Tab: Accommodation -->
-            <section id="accommodation" class="tab-content">
-                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">לינה</h2>
-                    <p class="mb-4">המלצה: 2 לילות בעיר, 5 בבקתה.</p>
-                    <div class="bg-gray-50 p-4 rounded-xl border mb-2">
-                        <h3 class="font-bold">Kvaløya</h3>
-                        <p class="text-sm">אידיאלי לזוהר. Ersfjordbotn.</p>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl border">
-                        <h3 class="font-bold">Senja</h3>
-                        <p class="text-sm">נוף פראי. מומלץ ליומיים.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Tab: Activities -->
-            <section id="activities" class="tab-content">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">פעילויות</h2>
-                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-gray-50 p-3 rounded-xl text-center">
-                            <span class="text-2xl">🐕</span>
-                            <div class="font-bold text-sm mt-1">מזחלות</div>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-xl text-center">
-                            <span class="text-2xl">🚡</span>
-                            <div class="font-bold text-sm mt-1">רכבל</div>
-                        </div>
-                         <div class="bg-gray-50 p-3 rounded-xl text-center">
-                            <span class="text-2xl">🧖‍♂️</span>
-                            <div class="font-bold text-sm mt-1">סאונה</div>
-                        </div>
-                         <div class="bg-gray-50 p-3 rounded-xl text-center">
-                            <span class="text-2xl">🧊</span>
-                            <div class="font-bold text-sm mt-1">דיג קרח</div>
-                        </div>
-                     </div>
-                </div>
+            <!-- Tab: Grid View -->
+            <section id="grid-view" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="calendar-grid"></div>
             </section>
 
             <!-- Tab: Budget -->
             <section id="budget" class="tab-content">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
-                    <h2 class="text-2xl font-bold mb-2 text-[#4D453E]">תקציב: 25k ש"ח</h2>
-                    <div class="h-[300px] w-full relative mb-4">
-                        <canvas id="budgetChart"></canvas>
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">ניהול תקציב משותף</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="space-y-4" id="budget-inputs"></div>
+                            <div class="mt-6 pt-4 border-t flex justify-between items-center">
+                                <span class="font-bold text-xl">סה"כ:</span>
+                                <span id="total-budget-display" class="font-bold text-xl text-[#4D453E]">0 ₪</span>
+                            </div>
+                        </div>
+                        <div class="h-[250px] md:h-[300px] w-full relative">
+                            <canvas id="budgetChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Tab: Tips -->
-            <section id="tips" class="tab-content">
-                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 md:p-8">
-                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">צ'ק ליסט</h2>
-                     <div class="space-y-3">
-                        <label class="checklist-item flex items-center gap-x-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-                            <input type="checkbox" class="w-5 h-5 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
-                            <span>ביגוד תרמי</span>
-                        </label>
-                         <label class="checklist-item flex items-center gap-x-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-                            <input type="checkbox" class="w-5 h-5 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
-                            <span>חצובה</span>
-                        </label>
-                        <label class="checklist-item flex items-center gap-x-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-                            <input type="checkbox" class="w-5 h-5 rounded border-2 border-[#D8CFC7] text-[#4D453E] focus:ring-[#4D453E]">
-                            <span>מטען נייד</span>
-                        </label>
+            <!-- Tab: Checklist -->
+            <section id="checklist" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5">
+                    <h2 class="text-2xl font-bold mb-4 text-[#4D453E]">רשימת ציוד</h2>
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="new-item-input" placeholder="הוסף פריט..." class="flex-grow p-2 border border-gray-300 rounded-lg outline-none">
+                        <button id="add-item-btn" class="bg-[#4D453E] text-white px-4 py-2 rounded-lg font-bold">+</button>
+                    </div>
+                    <div class="space-y-2" id="checklist-container"></div>
+                </div>
+            </section>
+            
+            <!-- Tab: Logistics -->
+            <section id="logistics" class="tab-content">
+                 <div class="bg-white rounded-2xl shadow-sm border border-[#E5E0D8] p-5 text-center">
+                    <h2 class="text-xl font-bold mb-2">מידע לוגיסטי</h2>
+                    <div class="mt-4 grid grid-cols-1 gap-3 text-right">
+                        <div class="bg-blue-50 p-3 rounded-lg"><span class="font-bold">הלוך:</span> 13/1 AMS -> TOS</div>
+                        <div class="bg-blue-50 p-3 rounded-lg"><span class="font-bold">חזור:</span> 20/1 TOS -> AMS</div>
                     </div>
                 </div>
             </section>
 
         </main>
-
-        <footer class="text-center text-sm text-[#8A7F77] py-6 px-4 mb-safe">
-            <p>עפרי & עמי | נורבגיה 2026 ❤️</p>
-        </footer>
+        
+        <div id="sync-status">ממתין לחיבור...</div>
     </div>
 
-    <script>
-        // --- Data: The Itinerary ---
-        const tripDays = [
-            {
-                id: 1,
-                date: '13/1',
-                day: 'יום שלישי',
-                title: 'נחיתה והתארגנות',
-                icon: '✈️',
-                summary: 'נחיתה, רכב, סופרמרקט',
-                timeline: [
-                    { time: '10:20', desc: 'נחיתה באמסטרדם' },
-                    { time: '13:30', desc: 'טיסת המשך לטרומסו (TOS)' },
-                    { time: '18:00', desc: 'נחיתה בטרומסו ואיסוף רכב' },
-                    { time: '19:30', desc: 'קניות ב-REMA 1000 והגעה לבקתה' },
-                    { time: '21:00', desc: 'בדיקת שמיים לזוהר ראשון מהמרפסת' }
-                ],
-                tip: 'לקנות אוכל לכמה ימים כדי לא לחפש מסעדות בחושך.'
-            },
-            {
-                id: 2,
-                date: '14/1',
-                day: 'יום רביעי',
-                title: 'העיר טרומסו',
-                icon: '🏙️',
-                summary: 'רכבל, קתדרלה, סיור עיר',
-                timeline: [
-                    { time: '10:00', desc: 'נסיעה למרכז העיר' },
-                    { time: '11:00', desc: 'עלייה ברכבל Fjellheisen (שעת דמדומים)' },
-                    { time: '13:00', desc: 'ביקור בקתדרלה הארקטית' },
-                    { time: '15:00', desc: 'ארוחת צהריים מאוחרת ושיטוט בעיר' },
-                    { time: '20:00', desc: 'יציאה לציד זוהר ב-Ersfjordbotn' }
-                ],
-                tip: 'הנוף מהרכבל הכי יפה סביב 11:00-12:00 כשיש מעט אור.'
-            },
-            {
-                id: 3,
-                date: '15/1',
-                day: 'יום חמישי',
-                title: 'כלבים וטבע',
-                icon: '🐕',
-                summary: 'מזחלות האסקי וסאונה',
-                timeline: [
-                    { time: '09:00', desc: 'יציאה לפעילות מזחלות כלבים' },
-                    { time: '10:00', desc: 'נהיגה במזחלת (חוויה מטורפת!)' },
-                    { time: '14:00', desc: 'חזרה לבקתה, מנוחה ואוכל' },
-                    { time: '17:00', desc: 'סאונה פרטית בבקתה' },
-                    { time: '21:00', desc: 'משמרת זוהר' }
-                ],
-                tip: 'להתלבש הכי חם שיש למזחלות, הרוח מקפיאה.'
-            },
-            {
-                id: 4,
-                date: '16/1',
-                day: 'יום שישי',
-                title: 'רוד טריפ',
-                icon: '🚗',
-                summary: 'נסיעה לסומרוי (Sommarøy)',
-                timeline: [
-                    { time: '10:00', desc: 'יציאה לכיוון Sommarøy' },
-                    { time: '11:30', desc: 'עצירות צילום בפיורדים בדרך' },
-                    { time: '12:30', desc: 'הגעה לחופים הלבנים של סומרוי' },
-                    { time: '15:00', desc: 'קפה ועוגה בבית קפה מקומי' },
-                    { time: '18:00', desc: 'סאונה צפה Pust בנמל טרומסו' }
-                ],
-                tip: 'הכבישים יכולים להיות חלקים, סעו לאט ותהנו מהנוף.'
-            },
-            {
-                id: 5,
-                date: '17/1',
-                day: 'יום שבת',
-                title: 'האי Senja',
-                icon: '🏔️',
-                summary: 'יום טיול ארוך / מעבר לינה',
-                timeline: [
-                    { time: '09:00', desc: 'נסיעה/מעבורת לכיוון Senja' },
-                    { time: '12:00', desc: 'תצפית Tungeneset (שיני השטן)' },
-                    { time: '14:00', desc: 'פיקניק ברכב מול הנוף' },
-                    { time: '16:00', desc: 'הגעה למקום הלינה בסניה' },
-                    { time: '20:00', desc: 'חושך מוחלט - זמן מושלם לזוהר' }
-                ],
-                tip: 'סניה פראית יותר מטרומסו, וודאו שיש לכם מספיק דלק.'
-            },
-             {
-                id: 6,
-                date: '18/1',
-                day: 'יום ראשון',
-                title: 'רוגע ארקטי',
-                icon: '❄️',
-                summary: 'דיג קרח / מנוחה',
-                timeline: [
-                    { time: '10:00', desc: 'בוקר רגוע וקפה מול השלג' },
-                    { time: '12:00', desc: 'אופציה: דיג באגם קפוא' },
-                    { time: '15:00', desc: 'חזרה לכיוון טרומסו (אם לנים שם)' },
-                    { time: '19:00', desc: 'ביקור בפאב Ølhallen' }
-                ],
-                tip: 'יום טוב לנוח ולצבור כוחות ללילות.'
-            },
-             {
-                id: 7,
-                date: '19/1',
-                day: 'יום שני',
-                title: 'פרידה מהעיר',
-                icon: '🛍️',
-                summary: 'מזכרות וארוחת ערב',
-                timeline: [
-                    { time: '11:00', desc: 'קניית מזכרות ומתנות במרכז' },
-                    { time: '13:00', desc: 'ביקור במוזיאון פולאריה' },
-                    { time: '18:00', desc: 'ארוחת ערב חגיגית במסעדה' },
-                    { time: '22:00', desc: 'ניסיון ציד זוהר אחרון בהחלט' }
-                ],
-                tip: 'אל תשכחו לקנות גבינה חומה הביתה.'
-            },
-             {
-                id: 8,
-                date: '20/1',
-                day: 'יום שלישי',
-                title: 'טסים לאמסטרדם',
-                icon: '🇳🇱',
-                summary: 'טיסה ל-AMS, לינה בשדה',
-                timeline: [
-                    { time: '10:00', desc: 'צ\'ק אאוט והחזרת רכב' },
-                    { time: '13:00', desc: 'טיסה מטרומסו לאמסטרדם' },
-                    { time: '17:00', desc: 'נחיתה ב-AMS' },
-                    { time: '18:30', desc: 'צ\'ק אין למלון בשדה התעופה' }
-                ],
-                tip: 'שנו טוב, מחר חוזרים למציאות.'
-            },
-             {
-                id: 9,
-                date: '21/1',
-                day: 'יום רביעי',
-                title: 'הביתה',
-                icon: '🇮🇱',
-                summary: 'טיסה לישראל',
-                timeline: [
-                    { time: '09:00', desc: 'הליכה לטרמינל' },
-                    { time: '11:30', desc: 'המראה לתל אביב' },
-                    { time: '17:00', desc: 'נחיתה בבן גוריון' }
-                ],
-                tip: 'ברוכים השבים!'
-            }
-        ];
+    <!-- Firebase Logic -->
+    <script type="module">
+        // Import Firebase (Version 12.6.0 as requested)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-        document.addEventListener('DOMContentLoaded', function() {
+        // Firebase Configuration (from your input)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w",
+            authDomain: "tromso-trip.firebaseapp.com",
+            projectId: "tromso-trip",
+            storageBucket: "tromso-trip.firebasestorage.app",
+            messagingSenderId: "706076555674",
+            appId: "1:706076555674:web:c7f3075199b975897fe223",
+            measurementId: "G-976T7D2Q1Z"
+        };
+
+        // Initialize Firebase
+        let app, db, tripRef;
+        try {
+            app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app); // Analytics initialized
+            db = getFirestore(app); // Firestore initialized
             
-            // --- Login Logic ---
-            const loginScreen = document.getElementById('login-screen');
-            const appContent = document.getElementById('app-content');
-            const loginBtn = document.getElementById('login-btn');
+            // Reference to the single trip document
+            tripRef = doc(db, "trips", "ofri_ami_data_2026"); 
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            document.getElementById('sync-status').textContent = "שגיאת אתחול";
+        }
+
+        // --- Default Data (Uploads only if DB is empty) ---
+        const defaultData = {
+            title: "הטיול של עפרי ועמי 👫",
+            days: [
+                { id: 1, date: '13/1', day: 'יום ג\'', title: 'נחיתה והתארגנות', icon: '✈️', summary: 'נחיתה, רכב, סופרמרקט', timeline: [{time:'18:00', desc:'נחיתה ורכב'}, {time:'19:30', desc:'קניות ב-REMA'}], tip: 'לקנות אוכל לכמה ימים.' },
+                { id: 2, date: '14/1', day: 'יום ד\'', title: 'העיר טרומסו', icon: '🏙️', summary: 'רכבל, קתדרלה, סיור עיר', timeline: [{time:'11:00', desc:'רכבל Fjellheisen'}, {time:'20:00', desc:'ציד זוהר'}], tip: 'הנוף מהרכבל יפה בדמדומים.' },
+                { id: 3, date: '15/1', day: 'יום ה\'', title: 'כלבים וטבע', icon: '🐕', summary: 'מזחלות האסקי וסאונה', timeline: [{time:'10:00', desc:'מזחלות כלבים'}, {time:'17:00', desc:'סאונה'}], tip: 'ביגוד תרמי חובה.' },
+                { id: 4, date: '16/1', day: 'יום ו\'', title: 'רוד טריפ', icon: '🚗', summary: 'נסיעה לסומרוי', timeline: [{time:'10:00', desc:'יציאה לסומרוי'}, {time:'18:00', desc:'סאונת Pust'}], tip: 'סעו בזהירות.' },
+                { id: 5, date: '17/1', day: 'יום שבת', title: 'האי Senja', icon: '🏔️', summary: 'יום טיול ארוך', timeline: [{time:'09:00', desc:'מעבורת לסניה'}, {time:'20:00', desc:'זוהר בחושך'}], tip: 'למלא דלק.' },
+                { id: 6, date: '18/1', day: 'יום א\'', title: 'רוגע ארקטי', icon: '❄️', summary: 'דיג קרח / מנוחה', timeline: [{time:'12:00', desc:'דיג באגם'}, {time:'19:00', desc:'פאב Ølhallen'}], tip: 'לנוח לקראת הלילה.' },
+                { id: 7, date: '19/1', day: 'יום ב\'', title: 'פרידה מהעיר', icon: '🛍️', summary: 'מזכרות וארוחת ערב', timeline: [{time:'11:00', desc:'מזכרות'}, {time:'18:00', desc:'מסעדה'}], tip: 'לקנות גבינה חומה.' },
+                { id: 8, date: '20/1', day: 'יום ג\'', title: 'טסים ל-AMS', icon: '🇳🇱', summary: 'טיסה ולינה בשדה', timeline: [{time:'13:00', desc:'טיסה ל-AMS'}, {time:'18:30', desc:'מלון בשדה'}], tip: 'צק אין מוקדם.' },
+                { id: 9, date: '21/1', day: 'יום ד\'', title: 'הביתה', icon: '🇮🇱', summary: 'טיסה לישראל', timeline: [{time:'11:30', desc:'המראה לתל אביב'}], tip: 'ברוכים השבים!' }
+            ],
+            budget: [
+                { label: 'לינה', value: 7200, color: '#4D453E' },
+                { label: 'טיסות', value: 4500, color: '#8A7F77' },
+                { label: 'רכב ודלק', value: 4000, color: '#A2B8C4' },
+                { label: 'פעילויות', value: 4000, color: '#D8CFC7' },
+                { label: 'אוכל', value: 2800, color: '#BFAFA2' },
+                { label: 'ביטחון', value: 2500, color: '#F5F0E6' }
+            ],
+            checklist: [
+                { text: 'ביגוד תרמי (2 סטים)', done: false },
+                { text: 'חצובה למצלמה', done: false },
+                { text: 'מטען נייד', done: false }
+            ]
+        };
+
+        let appData = {}; 
+        let budgetChartInstance = null;
+        let currentEditingIndex = -1;
+        const CORRECT_CODE = '8989';
+
+        // --- Auth Logic ---
+        window.attemptLogin = function() {
             const passInput = document.getElementById('passcode-input');
-            const errorOverlay = document.getElementById('error-overlay');
-            const closeErrorBtn = document.getElementById('close-error-btn');
-            const CORRECT_CODE = '8989';
+            const errorMsg = document.getElementById('login-error');
+            const loadingScreen = document.getElementById('loading-screen');
+            const loginScreen = document.getElementById('login-screen');
 
-            function checkPasscode() {
-                if (passInput.value === CORRECT_CODE) {
-                    passInput.blur();
-                    loginScreen.style.opacity = '0';
-                    loginScreen.style.transition = 'opacity 0.4s ease';
-                    setTimeout(() => {
-                        loginScreen.style.display = 'none';
-                        appContent.style.display = 'block';
-                        window.scrollTo(0,0);
-                        initChart();
-                        renderGrid(); // Render the new grid
-                    }, 400);
-                } else {
-                    errorOverlay.style.display = 'flex';
-                    passInput.value = ''; passInput.blur();
-                }
+            if(passInput.value === CORRECT_CODE) {
+                passInput.blur();
+                errorMsg.classList.add('hidden');
+                loadingScreen.style.display = 'flex'; 
+                
+                // Start Listening to Cloud
+                startRealtimeListener(() => {
+                    loadingScreen.style.display = 'none';
+                    loginScreen.style.display = 'none';
+                    document.getElementById('app-content').style.display = 'block';
+                    initApp();
+                });
+            } else {
+                errorMsg.classList.remove('hidden');
+                passInput.value = '';
             }
-            
-            function closeError() { errorOverlay.style.display = 'none'; passInput.focus(); }
-            
-            loginBtn.addEventListener('click', checkPasscode);
-            closeErrorBtn.addEventListener('click', closeError);
-            errorOverlay.addEventListener('click', (e) => { if(e.target===errorOverlay) closeError(); });
-            passInput.addEventListener('keypress', (e) => { if(e.key==='Enter') checkPasscode(); });
+        };
 
-            // --- Navigation ---
+        // --- Realtime Sync ---
+        function startRealtimeListener(onFirstLoad) {
+            onSnapshot(tripRef, async (docSnap) => {
+                const statusEl = document.getElementById('sync-status');
+                statusEl.textContent = '● מחובר לענן';
+                statusEl.className = 'sync-green';
+
+                if (docSnap.exists()) {
+                    appData = docSnap.data();
+                } else {
+                    // Create initial doc
+                    await setDoc(tripRef, defaultData);
+                    appData = defaultData;
+                }
+
+                refreshUI();
+                
+                if(onFirstLoad) {
+                    onFirstLoad();
+                    onFirstLoad = null;
+                }
+            }, (error) => {
+                console.error("Sync error:", error);
+                document.getElementById('sync-status').textContent = '● שגיאת חיבור';
+                document.getElementById('sync-status').className = 'sync-red';
+            });
+        }
+
+        async function saveToCloud() {
+            const statusEl = document.getElementById('sync-status');
+            statusEl.textContent = '⟳ שומר...';
+            try {
+                await updateDoc(tripRef, appData);
+            } catch (e) {
+                console.error("Save error", e);
+                alert("שגיאה בשמירה לענן. וודא שיש לך הרשאות.");
+            }
+        }
+
+        // --- UI Functions ---
+        function initApp() {
+            setupTabs();
+            // Listeners
+            document.getElementById('trip-title-input').addEventListener('change', (e) => {
+                appData.title = e.target.value;
+                saveToCloud();
+            });
+            document.getElementById('save-day-btn').addEventListener('click', saveDayEdit);
+            document.getElementById('add-timeline-btn').addEventListener('click', addTimelineRow);
+            document.getElementById('add-item-btn').addEventListener('click', addChecklistItem);
+            document.getElementById('close-day-btn').addEventListener('click', () => {
+                document.getElementById('day-overlay').style.display = 'none';
+            });
+        }
+
+        function refreshUI() {
+            document.getElementById('trip-title-input').value = appData.title || "הטיול";
+            renderGrid();
+            renderBudget();
+            renderChecklist();
+        }
+
+        // --- Grid View ---
+        function renderGrid() {
+            const container = document.getElementById('calendar-grid');
+            container.innerHTML = '';
+            (appData.days || []).forEach((day, index) => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="day-badge">${day.date}</span>
+                        <span class="text-2xl">${day.icon}</span>
+                    </div>
+                    <h3 class="font-bold text-[#4D453E] text-lg leading-tight mb-1">${day.title}</h3>
+                    <p class="text-sm text-[#8A7F77] line-clamp-2">${day.summary}</p>
+                `;
+                card.onclick = () => openEditModal(index);
+                container.appendChild(card);
+            });
+        }
+
+        window.openEditModal = function(index) {
+            currentEditingIndex = index;
+            const day = appData.days[index];
+            const overlay = document.getElementById('day-overlay');
+            
+            document.getElementById('modal-date-display').textContent = `${day.day} | ${day.date}`;
+            document.getElementById('modal-title-input').value = day.title;
+            document.getElementById('modal-summary-input').value = day.summary;
+            document.getElementById('modal-tip-input').value = day.tip || '';
+            
+            const container = document.getElementById('modal-timeline-container');
+            container.innerHTML = '';
+            (day.timeline || []).forEach(item => {
+                renderTimelineRow(container, item.time, item.desc);
+            });
+
+            overlay.style.display = 'flex';
+        }
+
+        function renderTimelineRow(container, timeVal, descVal) {
+            const row = document.createElement('div');
+            row.className = 'timeline-row';
+            row.innerHTML = `
+                <input type="time" class="timeline-time edit-input" value="${timeVal}">
+                <input type="text" class="timeline-desc edit-input" value="${descVal}">
+                <span class="text-red-400 cursor-pointer px-2" onclick="this.parentElement.remove()">×</span>
+            `;
+            container.appendChild(row);
+        }
+
+        function addTimelineRow() {
+            const container = document.getElementById('modal-timeline-container');
+            renderTimelineRow(container, "12:00", "");
+        }
+
+        async function saveDayEdit() {
+            if (currentEditingIndex === -1) return;
+            const day = appData.days[currentEditingIndex];
+            
+            day.title = document.getElementById('modal-title-input').value;
+            day.summary = document.getElementById('modal-summary-input').value;
+            day.tip = document.getElementById('modal-tip-input').value;
+            
+            const newTimeline = [];
+            document.querySelectorAll('#modal-timeline-container .timeline-row').forEach(row => {
+                newTimeline.push({
+                    time: row.querySelector('.timeline-time').value,
+                    desc: row.querySelector('.timeline-desc').value
+                });
+            });
+            newTimeline.sort((a,b) => a.time.localeCompare(b.time));
+            day.timeline = newTimeline;
+
+            await saveToCloud();
+            document.getElementById('day-overlay').style.display = 'none';
+        }
+
+        // --- Budget ---
+        function renderBudget() {
+            const container = document.getElementById('budget-inputs');
+            container.innerHTML = '';
+            let total = 0;
+
+            (appData.budget || []).forEach((item, index) => {
+                total += parseInt(item.value);
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-4 bg-gray-50 p-2 rounded-lg';
+                row.innerHTML = `
+                    <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${item.color}"></div>
+                    <span class="font-bold text-sm w-24">${item.label}</span>
+                    <input type="number" class="flex-grow bg-white border border-gray-200 rounded p-1 text-left" 
+                           value="${item.value}" onchange="window.updateBudget(${index}, this.value)">
+                    <span class="text-xs text-gray-500">₪</span>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('total-budget-display').textContent = total.toLocaleString() + ' ₪';
+            updateChart();
+        }
+
+        window.updateBudget = function(index, val) {
+            appData.budget[index].value = parseInt(val) || 0;
+            saveToCloud();
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            const dataValues = (appData.budget || []).map(b => b.value);
+            const labels = (appData.budget || []).map(b => b.label);
+            const colors = (appData.budget || []).map(b => b.color);
+
+            if (budgetChartInstance) {
+                budgetChartInstance.data.datasets[0].data = dataValues;
+                budgetChartInstance.update();
+            } else {
+                budgetChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: labels, datasets: [{ data: dataValues, backgroundColor: colors, borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, layout: { padding: 10 }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
+                });
+            }
+        }
+
+        // --- Checklist ---
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+            (appData.checklist || []).forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-3 p-2 bg-gray-50 rounded-lg group';
+                div.innerHTML = `
+                    <input type="checkbox" class="w-5 h-5 accent-[#4D453E] cursor-pointer" 
+                           ${item.done ? 'checked' : ''} onchange="window.toggleCheck(${index})">
+                    <span class="flex-grow text-sm ${item.done ? 'line-through text-gray-400' : 'text-[#4D453E]'}">${item.text}</span>
+                    <button onclick="window.deleteCheckItem(${index})" class="text-gray-300 hover:text-red-500 px-2">🗑️</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.toggleCheck = function(index) {
+            appData.checklist[index].done = !appData.checklist[index].done;
+            saveToCloud();
+        }
+        window.deleteCheckItem = function(index) {
+            appData.checklist.splice(index, 1);
+            saveToCloud();
+        }
+        async function addChecklistItem() {
+            const input = document.getElementById('new-item-input');
+            if(input.value.trim()) {
+                if(!appData.checklist) appData.checklist = [];
+                appData.checklist.push({ text: input.value.trim(), done: false });
+                input.value = '';
+                await saveToCloud();
+            }
+        }
+
+        // --- Tabs ---
+        function setupTabs() {
             const navLinks = document.querySelectorAll('.nav-link');
             const tabContents = document.querySelectorAll('.tab-content');
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     const tabId = link.getAttribute('data-tab');
-                    navLinks.forEach(nav => nav.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
+                    navLinks.forEach(n => n.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
                     link.classList.add('active');
                     document.getElementById(tabId).classList.add('active');
-                    link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.scrollTo({top:0, behavior:'smooth'});
                 });
             });
+        }
+        
+        // Expose login logic
+        document.getElementById('login-btn').addEventListener('click', window.attemptLogin);
+        document.getElementById('passcode-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') window.attemptLogin() });
 
-            // --- Grid & Modal Logic ---
-            function renderGrid() {
-                const gridContainer = document.getElementById('calendar-grid');
-                gridContainer.innerHTML = '';
-                
-                tripDays.forEach(day => {
-                    const card = document.createElement('div');
-                    card.className = 'day-card';
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="day-badge">${day.date}</span>
-                            <span class="text-2xl">${day.icon}</span>
-                        </div>
-                        <h3 class="font-bold text-[#4D453E] text-lg leading-tight mb-1">${day.title}</h3>
-                        <p class="text-sm text-[#8A7F77] line-clamp-2">${day.summary}</p>
-                    `;
-                    card.addEventListener('click', () => openModal(day));
-                    gridContainer.appendChild(card);
-                });
-            }
-
-            function openModal(dayData) {
-                const overlay = document.getElementById('day-overlay');
-                document.getElementById('modal-date').textContent = `${dayData.day} | ${dayData.date}`;
-                document.getElementById('modal-title').textContent = dayData.title;
-                document.getElementById('modal-summary').textContent = dayData.summary;
-                document.getElementById('modal-tip').textContent = dayData.tip;
-
-                // Build timeline
-                const timelineContainer = document.getElementById('modal-timeline');
-                timelineContainer.innerHTML = '';
-                dayData.timeline.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'relative pr-4 pb-2';
-                    div.innerHTML = `
-                        <div class="timeline-dot"></div>
-                        <span class="font-bold text-[#4D453E] block">${item.time}</span>
-                        <span class="text-gray-600 text-sm">${item.desc}</span>
-                    `;
-                    timelineContainer.appendChild(div);
-                });
-
-                overlay.style.display = 'flex';
-                // Stop body scroll
-                document.body.style.overflow = 'hidden';
-            }
-
-            // Close Modal Logic
-            const overlay = document.getElementById('day-overlay');
-            const closeBtn = document.getElementById('close-day-btn');
-            
-            function closeModal() {
-                overlay.style.display = 'none';
-                document.body.style.overflow = ''; // Restore scroll
-            }
-            
-            closeBtn.addEventListener('click', closeModal);
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) closeModal();
-            });
-
-
-            // --- Chart & Checklist ---
-            function initChart() {
-                const budgetCanvas = document.getElementById('budgetChart');
-                if (budgetCanvas) {
-                    const ctx = budgetCanvas.getContext('2d');
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['לינה', 'טיסות', 'רכב', 'פעילויות', 'אוכל', 'ביטחון'],
-                            datasets: [{
-                                data: [7200, 4500, 4000, 4000, 2800, 2500],
-                                backgroundColor: ['#4D453E', '#8A7F77', '#A2B8C4', '#D8CFC7', '#BFAFA2', '#F5F0E6'],
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: { padding: 20 },
-                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { family: "'Assistant'", size: 14 } } } }
-                        }
-                    });
-                }
-            }
-        });
     </script>
 </body>
 </html>
