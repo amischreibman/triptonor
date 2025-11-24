@@ -12,47 +12,56 @@
     <style>
         body { font-family: 'Assistant', sans-serif; background-color: #F3F4F6; color: #1F2937; -webkit-tap-highlight-color: transparent; }
         
-        /* State Visibility classes */
+        /* Mode Visibility */
         body:not(.editing) .edit-only { display: none !important; }
         body.editing .view-only { display: none !important; }
-        body.editing .editable-container { border: 1px dashed #9CA3AF; padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.5); }
 
-        /* Inputs */
+        /* Custom Inputs */
         input, textarea, select { background: transparent; border-bottom: 1px solid #D1D5DB; outline: none; transition: border 0.3s; width: 100%; }
         body.editing input:focus, body.editing textarea:focus { border-bottom: 2px solid #4F46E5; background: #fff; }
 
-        /* Timeline */
-        .timeline-row { position: relative; padding-right: 20px; border-right: 2px solid #E5E7EB; padding-bottom: 20px; }
-        .timeline-row:last-child { border-right: none; }
-        .timeline-dot { position: absolute; right: -6px; top: 0; width: 10px; height: 10px; background: #4F46E5; border-radius: 50%; border: 2px solid white; }
+        /* Day Card (Grid View) */
+        .day-card { 
+            background: white; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; 
+            cursor: pointer; transition: all 0.2s ease; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between; height: 180px;
+        }
+        .day-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #A5B4FC; }
+        .day-card::before { content: ''; position: absolute; top: 0; right: 0; width: 6px; height: 100%; background: #4F46E5; }
+
+        /* Detailed Timeline (Modal View) */
+        .timeline-item { position: relative; padding-right: 30px; padding-bottom: 40px; border-right: 2px solid #E5E7EB; }
+        .timeline-item:last-child { border-right: transparent; }
+        .timeline-icon { 
+            position: absolute; right: -20px; top: 0; width: 38px; height: 38px; 
+            background: white; border: 2px solid #4F46E5; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; color: #4F46E5; font-weight: bold; z-index: 10;
+        }
         
-        /* Booked Badge */
-        .badge-booked { background-color: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #86EFAC; }
-        .badge-pending { background-color: #F3F4F6; color: #6B7280; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; border: 1px solid #D1D5DB; }
+        /* Info Chips */
+        .chip { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .chip-price { background: #ECFDF5; color: #047857; }
+        .chip-dist { background: #EFF6FF; color: #1D4ED8; }
+        .chip-warn { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+        .chip-tip { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
 
-        /* Option Card (Selected vs Alternative) */
-        .option-card { border: 1px solid #E5E7EB; padding: 10px; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s; background: white; }
-        .option-card.selected { border: 2px solid #4F46E5; background: #EEF2FF; }
-        .option-card:not(.selected) { opacity: 0.7; }
-        .option-card:not(.selected):hover { opacity: 1; border-color: #A5B4FC; cursor: pointer; }
-
-        /* Sticky Notes */
-        .note-trigger { color: #F59E0B; cursor: pointer; }
-        .sticky-note { background: #FEF3C7; padding: 8px; border-radius: 6px; font-family: 'Kalam', cursive; font-size: 0.9rem; margin-top: 5px; border: 1px solid #FCD34D; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
-
-        /* Tabs */
-        .tab-btn.active { color: #4F46E5; border-bottom: 2px solid #4F46E5; }
-        .tab-content { display: none; animation: fadeIn 0.3s; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Loader */
-        #loading-screen { position: fixed; inset: 0; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
+        /* Modals */
+        #day-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 4000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 700px; height: 90vh; border-radius: 20px; overflow-y: auto; position: relative; display: flex; flex-direction: column; }
+        
+        /* Loader & Login */
+        #loading-screen { position: fixed; inset: 0; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4F46E5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Utilities */
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { color: #4F46E5; border-bottom: 2px solid #4F46E5; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-20">
 
     <!-- Loading & Login -->
     <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">טוען את הטיול...</p></div>
@@ -68,30 +77,21 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-40">
+    <header class="bg-white shadow-sm sticky top-0 z-30">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center mb-3">
                 <div class="flex items-center gap-2">
                     <span class="text-2xl">🇳🇴</span>
                     <h1 class="text-lg font-bold text-gray-800 leading-tight">טרומסו 2026<br><span class="text-xs text-gray-500 font-normal">עפרי & עמי</span></h1>
                 </div>
-                
                 <div class="flex gap-2">
-                    <!-- Currency Toggle -->
-                    <button id="currency-btn" class="bg-gray-100 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200 shadow-sm" onclick="toggleCurrency()">
-                        ₪ <span class="text-gray-400 mx-1">|</span> €
-                    </button>
-                    <!-- Edit Toggle -->
-                    <button id="edit-btn" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-sm font-bold border border-indigo-200" onclick="toggleEditMode()">
-                        ✏️ עריכה
-                    </button>
+                    <button id="currency-btn" class="bg-gray-100 px-3 py-1 rounded-lg text-sm font-bold border border-gray-200" onclick="toggleCurrency()">₪ <span class="text-gray-300 mx-1">|</span> €</button>
+                    <button id="edit-btn" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-sm font-bold border border-indigo-200" onclick="toggleEditMode()">✏️ עריכה</button>
                 </div>
             </div>
-
-            <!-- Navigation -->
-            <nav class="flex overflow-x-auto gap-6 text-sm font-medium text-gray-500 no-scrollbar pb-1 border-b border-gray-100">
+            <nav class="flex overflow-x-auto gap-6 text-sm font-medium text-gray-500 no-scrollbar border-b border-gray-100">
                 <button class="tab-btn active whitespace-nowrap pb-2" onclick="switchTab('itinerary')">📅 לוח מסע</button>
-                <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('logistics')">✈️ לוגיסטיקה ולינה</button>
+                <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('logistics')">✈️ לוגיסטיקה</button>
                 <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('checklist')">🎒 ציוד</button>
                 <button class="tab-btn whitespace-nowrap pb-2" onclick="switchTab('budget')">💰 תקציב</button>
             </nav>
@@ -100,71 +100,75 @@
 
     <main class="container mx-auto max-w-4xl p-4">
 
-        <!-- TAB 1: ITINERARY -->
+        <!-- TAB 1: ITINERARY GRID -->
         <section id="itinerary" class="tab-content active">
-            <div id="days-container" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-            <button class="edit-only w-full py-3 mt-4 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl font-bold hover:bg-white hover:border-indigo-300" onclick="addDay()">+ הוסף יום חדש</button>
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-xl font-bold text-gray-800">סקירה יומית</h2>
+                <span class="text-xs text-gray-500">לחץ על יום לפירוט מלא</span>
+            </div>
+            <div id="days-grid" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Grid Cards Injected Here -->
+            </div>
+            <button class="edit-only w-full py-4 mt-6 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl font-bold hover:bg-white hover:border-indigo-300 transition" onclick="addDay()">+ הוסף יום חדש לטיול</button>
         </section>
 
-        <!-- TAB 2: LOGISTICS (Accommodation, Flights, Car, Markets) -->
+        <!-- TAB 2: LOGISTICS -->
         <section id="logistics" class="tab-content">
-            
-            <!-- Flights Section -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold text-gray-800">✈️ טיסות</h2>
-                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('flights')">+ טיסה</button>
+            <div class="space-y-8">
+                <!-- Flights -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-bold text-lg">✈️ טיסות</h3>
+                        <button class="edit-only text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded" onclick="addGroup('flights')">+ הוסף</button>
+                    </div>
+                    <div id="flights-container" class="space-y-3"></div>
                 </div>
-                <div id="flights-container" class="space-y-4"></div>
-            </div>
-
-            <!-- Accommodation Section (Sorted by date) -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold text-gray-800">🏠 לינה (לפי סדר המסע)</h2>
-                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('housing')">+ מקום לינה</button>
+                <!-- Cars -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-bold text-lg">🚗 רכב שכור</h3>
+                        <button class="edit-only text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded" onclick="addGroup('cars')">+ הוסף</button>
+                    </div>
+                    <div id="cars-container" class="space-y-3"></div>
                 </div>
-                <div id="housing-container" class="space-y-4"></div>
-            </div>
-
-            <!-- Car Section -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold text-gray-800">🚗 רכב שכור</h2>
-                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('cars')">+ רכב</button>
+                <!-- Housing -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-bold text-lg">🏠 לינה</h3>
+                        <button class="edit-only text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded" onclick="addGroup('housing')">+ הוסף</button>
+                    </div>
+                    <div id="housing-container" class="space-y-3"></div>
                 </div>
-                <div id="cars-container" class="space-y-4"></div>
-            </div>
-
-            <!-- Markets Section -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold text-gray-800">🛒 סופרמרקטים</h2>
-                    <button class="edit-only text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded" onclick="addGroup('markets')">+ סופר</button>
+                <!-- Markets -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-bold text-lg">🛒 סופרמרקטים</h3>
+                        <button class="edit-only text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded" onclick="addGroup('markets')">+ הוסף</button>
+                    </div>
+                    <div id="markets-container" class="space-y-3"></div>
                 </div>
-                <div id="markets-container" class="space-y-4"></div>
             </div>
         </section>
 
         <!-- TAB 3: CHECKLIST -->
         <section id="checklist" class="tab-content">
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                <h2 class="text-lg font-bold mb-4 text-gray-800">רשימת ציוד חורף</h2>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold mb-4">רשימת ציוד</h2>
                 <div class="flex gap-2 mb-4 edit-only">
                     <input type="text" id="new-item-text" placeholder="פריט..." class="border rounded px-2 py-1 text-sm">
+                    <input type="text" id="new-item-source" placeholder="מקור/חנות" class="border rounded px-2 py-1 text-sm">
                     <input type="number" id="new-item-price" placeholder="מחיר" class="border rounded px-2 py-1 text-sm w-20">
                     <button onclick="addCheckItem()" class="bg-indigo-600 text-white px-3 rounded font-bold">+</button>
                 </div>
-                
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <table class="w-full text-sm text-left text-gray-600">
+                        <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
                             <tr>
-                                <th scope="col" class="px-2 py-2 text-right">סטטוס</th>
-                                <th scope="col" class="px-2 py-2 text-right">פריט</th>
-                                <th scope="col" class="px-2 py-2 text-right">מקור/הערה</th>
-                                <th scope="col" class="px-2 py-2 text-right">עלות</th>
-                                <th scope="col" class="px-2 py-2 edit-only"></th>
+                                <th class="px-2 py-3 text-right">V</th>
+                                <th class="px-2 py-3 text-right">פריט</th>
+                                <th class="px-2 py-3 text-right">מקור</th>
+                                <th class="px-2 py-3 text-right">מחיר</th>
+                                <th class="px-2 py-3 edit-only"></th>
                             </tr>
                         </thead>
                         <tbody id="checklist-table-body"></tbody>
@@ -175,106 +179,118 @@
 
         <!-- TAB 4: BUDGET -->
         <section id="budget" class="tab-content">
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                <h2 class="text-xl font-bold mb-6 text-gray-800">ניהול תקציב</h2>
-                
-                <div class="grid md:grid-cols-2 gap-8 items-center mb-8">
-                    <div class="h-64 w-full flex justify-center">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold mb-6">תקציב הטיול</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="h-64 flex justify-center w-full">
                         <canvas id="budgetChart"></canvas>
                     </div>
                     <div>
-                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 mb-3">
-                            <span class="block text-sm text-green-600 font-bold">שולם / הוזמן ✅</span>
-                            <span id="total-paid" class="text-2xl font-bold text-green-700">0</span>
+                        <div class="mb-4 p-4 bg-green-50 rounded-xl border border-green-100">
+                            <span class="block text-sm font-bold text-green-600 mb-1">שולם / הוזמן ✅</span>
+                            <span id="total-paid" class="text-3xl font-bold text-green-700">0</span>
                         </div>
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
-                            <span class="block text-sm text-gray-500 font-bold">נותר לשלם 🕒</span>
-                            <span id="total-future" class="text-2xl font-bold text-gray-700">0</span>
+                        <div class="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="block text-sm font-bold text-gray-500 mb-1">עתידי / תשלום במקום 🕒</span>
+                            <span id="total-future" class="text-3xl font-bold text-gray-700">0</span>
                         </div>
-                        <div class="border-t pt-3 mt-3">
-                            <span class="block text-sm text-gray-400">סך הכל משוער</span>
-                            <span id="total-sum" class="text-3xl font-bold text-indigo-600">0</span>
+                        <div class="pt-4 border-t flex justify-between items-center">
+                            <span class="text-gray-400 font-bold">סה"כ כללי</span>
+                            <span id="total-sum" class="text-2xl font-bold text-indigo-600">0</span>
                         </div>
                     </div>
                 </div>
-                
-                <div id="budget-details" class="space-y-2 text-sm"></div>
             </div>
         </section>
 
     </main>
 
-    <!-- Generic Item Modal (For Timeline Details) -->
-    <div id="details-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white p-6 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
-            <h3 id="modal-title" class="text-xl font-bold mb-2 text-gray-800">פרטים</h3>
-            <div id="modal-content" class="text-gray-600 mb-6 space-y-3"></div>
-            <button onclick="closeModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-xl">סגור</button>
+    <!-- DAY DETAILS MODAL (The Main Interaction) -->
+    <div id="day-modal">
+        <div class="modal-content">
+            <!-- Header -->
+            <div class="bg-indigo-600 p-6 text-white sticky top-0 z-10">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <input id="modal-day-date" class="bg-transparent text-indigo-200 text-sm font-bold mb-1 edit-only" placeholder="תאריך">
+                        <div id="view-day-date" class="text-indigo-200 text-sm font-bold mb-1 view-only"></div>
+                        
+                        <input id="modal-day-title" class="bg-transparent text-3xl font-bold w-full outline-none edit-only" placeholder="כותרת היום">
+                        <h2 id="view-day-title" class="text-3xl font-bold view-only"></h2>
+                    </div>
+                    <button onclick="closeDayModal()" class="text-white/80 hover:text-white text-2xl">&times;</button>
+                </div>
+                <div class="mt-4 flex gap-4 text-sm opacity-90">
+                    <span>💰 <span id="modal-day-cost">0</span></span>
+                    <button class="text-red-200 hover:text-white edit-only" onclick="deleteCurrentDay()">🗑️ מחק יום</button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 flex-1 bg-gray-50">
+                <div id="modal-timeline-container" class="space-y-0">
+                    <!-- Timeline Items Injected Here -->
+                </div>
+                
+                <button class="edit-only w-full py-3 mt-6 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl font-bold hover:bg-white" onclick="addTimelineItemToModal()">+ הוסף פעילות ליום זה</button>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">סיכום/הערות ליום:</label>
+                    <textarea id="modal-day-note" class="w-full bg-white p-3 rounded-xl border border-gray-200 text-sm h-24" placeholder="הערות כלליות..." onchange="saveModalData()"></textarea>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow px-3 py-1 rounded-full text-xs font-bold text-gray-400 z-50 flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-gray-400" id="sync-dot"></div>
+        <div class="w-2 h-2 rounded-full bg-gray-300" id="sync-dot"></div>
         <span id="sync-text">ממתין...</span>
     </div>
 
-    <!-- Firebase Logic -->
+    <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w",
-            authDomain: "tromso-trip.firebaseapp.com",
-            projectId: "tromso-trip",
-            storageBucket: "tromso-trip.firebasestorage.app",
-            messagingSenderId: "706076555674",
-            appId: "1:706076555674:web:c7f3075199b975897fe223",
-            measurementId: "G-976T7D2Q1Z"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w", authDomain: "tromso-trip.firebaseapp.com", projectId: "tromso-trip", storageBucket: "tromso-trip.firebasestorage.app", messagingSenderId: "706076555674", appId: "1:706076555674:web:c7f3075199b975897fe223", measurementId: "G-976T7D2Q1Z" };
 
         let app, db, tripRef;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            tripRef = doc(db, "trips", "ofri_ami_v3_final"); 
-        } catch (e) { console.error(e); }
+        try { app = initializeApp(firebaseConfig); db = getFirestore(app); tripRef = doc(db, "trips", "ofri_ami_v4_final"); } catch (e) { console.error(e); }
 
-        // --- DATA STRUCTURE ---
+        // --- RICH DATA STRUCTURE ---
         let appData = {
             currency: 'ILS',
             days: [
-                { id: 1, date: '13/1 (ג\')', title: 'נחיתה', timeline: [
-                    { id: 101, time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS דרך אוסלו', cost: 0, booked: true, info: 'PNR: ABC1234' },
-                    { id: 102, time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה', cost: 0, booked: false, info: '' }
-                ], summaryCost: 0 },
-                { id: 2, date: '14/1 (ד\')', title: 'טרומסו', timeline: [
-                    { id: 201, time: '11:00', title: 'רכבל Fjellheisen', desc: 'כרטיס זוגי', cost: 250, booked: false, info: '' }
-                ], summaryCost: 0 }
+                { 
+                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'לקנות מים, סים מקומי אם צריך.', 
+                    timeline: [
+                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS דרך OSL. לנחות בזמן!', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight' },
+                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz. טויוטה RAV4. לבדוק צמיגים.', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה התעופה', warning: 'לצלם את הרכב לפני הנסיעה', type: 'car' },
+                        { time: '19:30', title: 'סופרמרקט REMA 1000', desc: 'קניות ליומיים ראשונים. מים, לחם, גבינות.', cost: 600, booked: false, info: '', distance: '5 דקות מהשדה', warning: '', type: 'market' },
+                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים.', cost: 0, booked: true, info: 'קוד לכספת: 1234', distance: '15 דקות מהסופר', warning: '', type: 'home' }
+                    ]
+                },
+                { 
+                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש שכבות, קר בעיר.',
+                    timeline: [
+                        { time: '10:00', title: 'חניה במנהרה', desc: 'Fjellet P-hus. חניה מחוממת בתוך ההר.', cost: 120, booked: false, info: '', distance: '20 דקות נסיעה', warning: 'להוריד אפליקציית EasyPark', type: 'car' },
+                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית על העיר. שעת דמדומים.', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן - לוותר', type: 'attraction' },
+                        { time: '14:00', title: 'מסעדת Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר.', cost: 80, booked: false, info: '', distance: 'מרכז העיר', warning: '', type: 'food' },
+                        { time: '20:00', title: 'ציד זוהר עצמאי', desc: 'נסיעה ל-Ersfjordbotn או Grøtfjord.', cost: 0, booked: false, info: '', distance: '30-50 ק"מ', warning: 'לבדוק תחזית עננים ב-Yr.no', type: 'star' }
+                    ] 
+                },
+                { id: 3, date: '15/1 (ה\')', title: 'כלבים וטבע', note: '', timeline: [] },
+                { id: 4, date: '16/1 (ו\')', title: 'המעבורת לסניה', note: '', timeline: [] },
+                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: '', timeline: [] },
+                { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', note: '', timeline: [] },
+                { id: 7, date: '19/1 (ב\')', title: 'יום אחרון', note: '', timeline: [] },
+                { id: 8, date: '20/1 (ג\')', title: 'טיסה הביתה', note: '', timeline: [] }
             ],
             logistics: {
-                flights: [
-                    { id: 'f1', title: 'טיסות הלוך חזור', options: [
-                        { id: 'o1', name: 'SAS + Norwegian', desc: 'שעות נוחות', cost: 3500, booked: true, link: '', info: 'הוזמן דרך Skyscanner' }
-                    ], selectedId: 'o1' }
-                ],
-                housing: [
-                    { id: 'h1', title: 'לינה בטרומסו (ימים 1-3)', date: '2026-01-13', options: [
-                        { id: 'opt1', name: 'Airbnb Ersfjord', desc: 'בקתה על המים', cost: 3200, booked: false, link: 'https://airbnb.com', info: '' },
-                        { id: 'opt2', name: 'Clarion Hotel', desc: 'במרכז העיר', cost: 4000, booked: false, link: '', info: '' }
-                    ], selectedId: 'opt1' }
-                ],
-                cars: [
-                    { id: 'c1', title: 'רכב לכל התקופה', options: [
-                        { id: 'o1', name: 'Toyota RAV4', desc: 'Hertz', cost: 4500, booked: false, link: '', info: '' },
-                        { id: 'o2', name: 'Suzuki Vitara', desc: 'Sixt', cost: 3800, booked: false, link: '', info: '' }
-                    ], selectedId: 'o1' }
-                ],
-                markets: [
-                    { id: 'm1', title: 'קניות להגעה', date: '2026-01-13', options: [
-                        { id: 'o1', name: 'REMA 1000', desc: 'ליד השדה', cost: 800, booked: false, info: '' }
-                    ], selectedId: 'o1'}
-                ]
+                flights: [{ id: 'f1', title: 'טיסות הלוך חזור', options: [{id:'o1', name:'SAS Basic', cost:3500, booked:true}], selectedId: 'o1' }],
+                housing: [{ id: 'h1', title: 'לינה טרומסו', options: [{id:'o1', name:'Airbnb Ersfjord', cost:3200, booked:true}], selectedId: 'o1' }],
+                cars: [{ id: 'c1', title: 'רכב', options: [{id:'o1', name:'Toyota RAV4', cost:4500, booked:true}], selectedId: 'o1' }],
+                markets: [{ id: 'm1', title: 'סופר', options: [{id:'o1', name:'REMA 1000', cost:800, booked:false}], selectedId: 'o1' }]
             },
             checklist: [
                 { id: 1, text: 'ביגוד תרמי', source: 'דקטלון', cost: 400, gotIt: true },
@@ -284,90 +300,27 @@
 
         let isEditMode = false;
         let currentCurrency = 'ILS';
+        let currentOpenDayIndex = -1;
         const EUR_RATE = 4;
-        let chartInstance = null;
-        const CACHE_KEY = 'tromso_app_cache';
+        const CACHE_KEY = 'tromso_app_v4_cache';
 
-        // --- AUTH & INIT ---
-        const CORRECT_CODE = '8989';
+        // --- HELPERS ---
+        const formatPrice = (ils) => currentCurrency === 'ILS' ? `₪${parseInt(ils||0).toLocaleString()}` : `€${(parseInt(ils||0)/EUR_RATE).toFixed(0)}`;
         
-        // Check LocalStorage Login
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            document.getElementById('login-screen').style.display = 'none';
-            loadFromCache();
-            initFirebaseListener();
-        } else {
-            document.getElementById('loading-screen').style.display = 'none';
-        }
-
-        document.getElementById('login-btn').addEventListener('click', () => {
-            if(document.getElementById('passcode-input').value === CORRECT_CODE) {
-                localStorage.setItem('isLoggedIn', 'true');
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('loading-screen').style.display = 'flex';
-                loadFromCache();
-                initFirebaseListener();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        });
-
-        function loadFromCache() {
-            const cached = localStorage.getItem(CACHE_KEY);
-            if (cached) {
-                appData = JSON.parse(cached);
-                renderAll();
-                updateSyncStatus('טוען מהזיכרון...', 'gray');
-                document.getElementById('loading-screen').style.display = 'none';
-            }
-        }
-
-        function initFirebaseListener() {
-            onSnapshot(tripRef, async (docSnap) => {
-                document.getElementById('loading-screen').style.display = 'none';
-                if (docSnap.exists()) {
-                    appData = docSnap.data();
-                    // Validate structure integrity
-                    if(!appData.logistics) appData.logistics = { flights: [], housing: [], cars: [], markets: [] };
-                    
-                    localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
-                    renderAll();
-                    updateSyncStatus('מסונכרן לענן', 'green');
-                } else {
-                    await setDoc(tripRef, appData); // Save initial if empty
-                }
-            });
-        }
-
-        function updateSyncStatus(text, color) {
-            const dot = document.getElementById('sync-dot');
-            const txt = document.getElementById('sync-text');
-            txt.textContent = text;
-            dot.className = `w-2 h-2 rounded-full bg-${color}-500`;
-        }
-
-        // --- STATE & HELPERS ---
+        // --- UI LOGIC ---
         window.toggleEditMode = () => {
             isEditMode = !isEditMode;
             document.body.classList.toggle('editing', isEditMode);
-            document.getElementById('edit-btn').innerHTML = isEditMode ? '✅ סיום עריכה' : '✏️ עריכה';
+            document.getElementById('edit-btn').innerHTML = isEditMode ? '✅ סיום' : '✏️ עריכה';
             document.getElementById('edit-btn').classList.toggle('bg-green-100', isEditMode);
-            document.getElementById('edit-btn').classList.toggle('text-green-700', isEditMode);
-            renderAll();
+            renderAll(); // Re-render to update view states
         };
 
         window.toggleCurrency = () => {
             currentCurrency = currentCurrency === 'ILS' ? 'EUR' : 'ILS';
-            const btn = document.getElementById('currency-btn');
-            btn.innerHTML = currentCurrency === 'ILS' ? '<b>₪</b> <span class="text-gray-400 mx-1">|</span> €' : '₪ <span class="text-gray-400 mx-1">|</span> <b>€</b>';
+            document.getElementById('currency-btn').innerHTML = currentCurrency === 'ILS' ? '<b>₪</b> | €' : '₪ | <b>€</b>';
             renderAll();
         };
-
-        function formatPrice(ils) {
-            if (!ils) return currentCurrency === 'ILS' ? '0 ₪' : '0 €';
-            if (currentCurrency === 'ILS') return `₪${parseInt(ils).toLocaleString()}`;
-            return `€${(parseInt(ils) / EUR_RATE).toFixed(0)}`;
-        }
 
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -378,352 +331,318 @@
 
         // --- RENDERERS ---
 
-        // 1. Itinerary Renderer
-        function renderItinerary() {
-            const container = document.getElementById('days-container');
+        // 1. GRID (Summary)
+        function renderGrid() {
+            const container = document.getElementById('days-grid');
             container.innerHTML = '';
-            
-            appData.days.forEach((day, dayIdx) => {
+            appData.days.forEach((day, idx) => {
+                let totalCost = 0;
+                day.timeline.forEach(t => totalCost += parseInt(t.cost || 0));
+                
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-gray-200 p-4';
-                
-                let dailyTotal = 0;
-                
-                const timelineHtml = day.timeline.map((item, itemIdx) => {
-                    dailyTotal += parseInt(item.cost || 0);
-                    const bookedBadge = item.booked ? 
-                        `<span class="badge-booked" onclick="showDetails('${item.info || 'הוזמן'}')">✔️ הוזמן</span>` : 
-                        `<span class="badge-pending hidden">לא הוזמן</span>`; // Only show booked in view mode usually, but user asked for info
-                    
-                    const editControls = `
-                        <div class="edit-only mt-2 bg-gray-50 p-2 rounded border border-dashed border-gray-300">
-                            <div class="flex gap-2 mb-1">
-                                <input type="time" value="${item.time}" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'time', this.value)" class="w-20">
-                                <input type="text" value="${item.title}" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'title', this.value)" class="font-bold">
-                            </div>
-                            <input type="text" value="${item.desc}" placeholder="תיאור" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'desc', this.value)" class="text-xs mb-1">
-                            <div class="flex gap-2 items-center">
-                                <input type="number" value="${item.cost}" placeholder="מחיר" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'cost', this.value)" class="w-20 text-xs">
-                                <label class="flex items-center gap-1 text-xs cursor-pointer">
-                                    <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'booked', this.checked)">
-                                    הוזמן?
-                                </label>
-                            </div>
-                            <input type="text" value="${item.info || ''}" placeholder="פרטי הזמנה/מידע נוסף" onchange="updateTimeline(${dayIdx}, ${itemIdx}, 'info', this.value)" class="text-xs mt-1 w-full border rounded px-1">
-                            <button onclick="deleteTimelineItem(${dayIdx}, ${itemIdx})" class="text-red-500 text-xs mt-1">מחק</button>
-                        </div>
-                    `;
-
-                    return `
-                        <div class="timeline-row pb-4">
-                            <div class="timeline-dot"></div>
-                            <div class="flex justify-between items-start cursor-pointer view-only hover:bg-gray-50 p-1 rounded" onclick="showTimelineDetails(${dayIdx}, ${itemIdx})">
-                                <div>
-                                    <span class="font-bold text-indigo-900">${item.time}</span>
-                                    <span class="font-bold mr-2">${item.title}</span>
-                                    <div class="text-sm text-gray-600 pr-12">${item.desc}</div>
-                                    <div class="pr-12 mt-1 flex gap-2 items-center">
-                                        ${bookedBadge}
-                                        ${item.cost > 0 ? `<span class="text-xs bg-gray-100 px-2 rounded">${formatPrice(item.cost)}</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            ${editControls}
-                        </div>
-                    `;
-                }).join('');
-
+                card.className = 'day-card';
+                card.onclick = () => openDayModal(idx);
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4 border-b pb-2">
-                        <div>
-                            <input class="font-bold text-lg text-gray-800 bg-transparent edit-only" value="${day.title}" onchange="updateDay(${dayIdx}, 'title', this.value)">
-                            <h3 class="font-bold text-lg text-gray-800 view-only">${day.title}</h3>
-                            <div class="text-xs text-gray-500">${day.date}</div>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-xs text-gray-400">יומי</span>
-                            <span class="font-bold text-indigo-600">${formatPrice(dailyTotal)}</span>
-                        </div>
-                        <button class="edit-only text-red-400" onclick="deleteDay(${dayIdx})">🗑️</button>
+                    <div>
+                        <div class="text-xs font-bold text-indigo-500 uppercase mb-1">${day.date}</div>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">${day.title}</h3>
+                        <p class="text-sm text-gray-500 line-clamp-3">${day.note || 'אין הערות'}</p>
                     </div>
-                    <div class="pl-2">${timelineHtml}</div>
-                    <button class="edit-only w-full mt-2 text-xs border border-dashed border-gray-300 p-1 rounded text-gray-400" onclick="addTimelineItem(${dayIdx})">+ פעילות</button>
+                    <div class="border-t pt-3 flex justify-between items-center">
+                        <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">${day.timeline.length} פעילויות</span>
+                        <span class="font-bold text-indigo-600">${formatPrice(totalCost)}</span>
+                    </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // 2. Logistics Renderer (Generic for all groups)
+        // 2. DAY MODAL (Detail View)
+        window.openDayModal = (idx) => {
+            currentOpenDayIndex = idx;
+            const day = appData.days[idx];
+            
+            // Set Header Data
+            document.getElementById('view-day-title').textContent = day.title;
+            document.getElementById('view-day-date').textContent = day.date;
+            document.getElementById('modal-day-title').value = day.title;
+            document.getElementById('modal-day-date').value = day.date;
+            document.getElementById('modal-day-note').value = day.note || '';
+            
+            // Calc Total
+            let total = 0;
+            day.timeline.forEach(t => total += parseInt(t.cost || 0));
+            document.getElementById('modal-day-cost').textContent = formatPrice(total);
+
+            renderModalTimeline();
+            document.getElementById('day-modal').style.display = 'flex';
+        };
+
+        window.closeDayModal = () => {
+            document.getElementById('day-modal').style.display = 'none';
+            currentOpenDayIndex = -1;
+        };
+
+        window.saveModalData = () => {
+            if(currentOpenDayIndex === -1) return;
+            const day = appData.days[currentOpenDayIndex];
+            day.title = document.getElementById('modal-day-title').value;
+            day.date = document.getElementById('modal-day-date').value;
+            day.note = document.getElementById('modal-day-note').value;
+            saveData();
+            renderGrid(); // Update grid preview
+        };
+
+        function renderModalTimeline() {
+            const container = document.getElementById('modal-timeline-container');
+            container.innerHTML = '';
+            const day = appData.days[currentOpenDayIndex];
+
+            day.timeline.forEach((item, tIdx) => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                
+                // Icon based on type
+                let icon = '📍';
+                if(item.type === 'flight') icon = '✈️';
+                if(item.type === 'car') icon = '🚗';
+                if(item.type === 'food') icon = '🍔';
+                if(item.type === 'home') icon = '🏠';
+                if(item.type === 'star') icon = '✨';
+
+                const bookedBadge = item.booked ? 
+                    `<span class="chip bg-green-100 text-green-800 border-green-200">✔️ הוזמן</span>` : '';
+
+                // HTML Construction
+                div.innerHTML = `
+                    <div class="timeline-icon">${icon}</div>
+                    
+                    <!-- VIEW MODE -->
+                    <div class="view-only">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-lg font-bold text-indigo-900 w-14">${item.time}</span>
+                            <h4 class="text-lg font-bold text-gray-800">${item.title}</h4>
+                        </div>
+                        <p class="text-gray-600 mb-2 text-sm leading-relaxed">${item.desc}</p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            ${item.cost > 0 ? `<span class="chip chip-price">${formatPrice(item.cost)}</span>` : ''}
+                            ${item.distance ? `<span class="chip chip-dist">🚗 ${item.distance}</span>` : ''}
+                            ${bookedBadge}
+                        </div>
+
+                        ${item.warning ? `<div class="text-xs bg-red-50 border border-red-100 text-red-700 p-2 rounded mb-2">⚠️ ${item.warning}</div>` : ''}
+                        ${item.info ? `<div class="text-xs bg-blue-50 border border-blue-100 text-blue-700 p-2 rounded">ℹ️ ${item.info}</div>` : ''}
+                    </div>
+
+                    <!-- EDIT MODE -->
+                    <div class="edit-only bg-white border border-gray-200 p-4 rounded-xl shadow-sm space-y-3">
+                        <div class="flex gap-2">
+                            <input type="time" value="${item.time}" class="w-24 font-bold" onchange="updateTimelineItem(${tIdx}, 'time', this.value)">
+                            <input type="text" value="${item.title}" class="font-bold flex-1" placeholder="כותרת פעילות" onchange="updateTimelineItem(${tIdx}, 'title', this.value)">
+                            <select class="w-10" onchange="updateTimelineItem(${tIdx}, 'type', this.value)">
+                                <option value="place" ${item.type==='place'?'selected':''}>📍</option>
+                                <option value="flight" ${item.type==='flight'?'selected':''}>✈️</option>
+                                <option value="car" ${item.type==='car'?'selected':''}>🚗</option>
+                                <option value="food" ${item.type==='food'?'selected':''}>🍔</option>
+                                <option value="home" ${item.type==='home'?'selected':''}>🏠</option>
+                            </select>
+                        </div>
+                        <textarea rows="2" class="text-sm" placeholder="תיאור" onchange="updateTimelineItem(${tIdx}, 'desc', this.value)">${item.desc}</textarea>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" value="${item.cost}" placeholder="עלות" class="text-sm" onchange="updateTimelineItem(${tIdx}, 'cost', this.value)">
+                            <input type="text" value="${item.distance}" placeholder="מרחק/זמן נסיעה" class="text-sm" onchange="updateTimelineItem(${tIdx}, 'distance', this.value)">
+                        </div>
+                        
+                        <input type="text" value="${item.warning}" placeholder="⚠️ אזהרות/דגשים" class="text-sm text-red-500 border-red-200 placeholder-red-200" onchange="updateTimelineItem(${tIdx}, 'warning', this.value)">
+                        
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+                            <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateTimelineItem(${tIdx}, 'booked', this.checked)">
+                            <span class="text-sm font-bold">הוזמן?</span>
+                            <input type="text" value="${item.info}" placeholder="פרטי הזמנה (מספר אישור, לינק)" class="flex-1 text-sm" onchange="updateTimelineItem(${tIdx}, 'info', this.value)">
+                        </div>
+
+                        <button class="text-red-500 text-xs underline" onclick="deleteTimelineItem(${tIdx})">מחק פעילות</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.updateTimelineItem = (tIdx, field, val) => {
+            appData.days[currentOpenDayIndex].timeline[tIdx][field] = val;
+            saveData();
+            
+            // If cost changed, update header total
+            if(field === 'cost') {
+                let total = 0;
+                appData.days[currentOpenDayIndex].timeline.forEach(t => total += parseInt(t.cost || 0));
+                document.getElementById('modal-day-cost').textContent = formatPrice(total);
+                renderGrid(); // update dashboard total
+            }
+        };
+
+        window.addTimelineItemToModal = () => {
+            appData.days[currentOpenDayIndex].timeline.push({time:'12:00', title:'פעילות חדשה', desc:'', cost:0, booked:false, type:'place'});
+            saveData();
+            renderModalTimeline();
+        };
+
+        window.deleteTimelineItem = (tIdx) => {
+            if(confirm('למחוק?')) {
+                appData.days[currentOpenDayIndex].timeline.splice(tIdx, 1);
+                saveData();
+                renderModalTimeline();
+            }
+        };
+        
+        window.deleteCurrentDay = () => {
+            if(confirm('למחוק את כל היום הזה?')) {
+                appData.days.splice(currentOpenDayIndex, 1);
+                saveData();
+                closeDayModal();
+                renderGrid();
+            }
+        }
+        
+        window.addDay = () => {
+            appData.days.push({id: Date.now(), date: 'תאריך', title: 'יום חדש', note: '', timeline: []});
+            saveData();
+            renderGrid();
+        }
+
+        // 3. LOGISTICS (Generic)
         function renderLogisticsGroup(type, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             const groups = appData.logistics[type] || [];
 
-            // Sort housing by date
-            if(type === 'housing' || type === 'markets') {
-                groups.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
-            }
-
             groups.forEach((group, gIdx) => {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'bg-white border border-gray-200 rounded-xl p-4 mb-4';
+                wrapper.className = 'bg-white border border-gray-200 rounded-xl p-4 mb-3';
                 
-                // Header
+                // Group Header
                 let header = `
-                    <div class="flex justify-between mb-2">
-                        <div class="w-full">
-                            <input class="font-bold text-lg bg-transparent edit-only w-full" value="${group.title}" onchange="updateGroup('${type}', ${gIdx}, 'title', this.value)">
-                            <h3 class="font-bold text-lg view-only flex items-center gap-2">
-                                ${group.title} 
-                                ${group.date ? `<span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 rounded">${group.date}</span>` : ''}
-                            </h3>
-                            ${isEditMode ? `<input type="date" value="${group.date || ''}" class="text-xs w-32 mb-2" onchange="updateGroup('${type}', ${gIdx}, 'date', this.value)">` : ''}
-                        </div>
-                        <button class="edit-only text-red-400" onclick="deleteGroup('${type}', ${gIdx})">🗑️</button>
+                    <div class="flex justify-between items-center mb-2">
+                        <input class="font-bold text-lg bg-transparent edit-only w-full" value="${group.title}" onchange="updateGroup('${type}', ${gIdx}, 'title', this.value)">
+                        <h3 class="font-bold text-gray-800 view-only">${group.title}</h3>
+                        <button class="edit-only text-red-400 text-sm" onclick="deleteGroup('${type}', ${gIdx})">🗑️</button>
                     </div>
                 `;
 
-                // Options logic
                 let optionsHtml = '';
                 group.options.forEach((opt, oIdx) => {
                     const isSelected = group.selectedId === opt.id;
-                    const bookedBadge = opt.booked ? `<span class="badge-booked">הוזמן</span>` : '';
                     
-                    // View Mode: Click to select (if alternatives exist)
-                    // Edit Mode: Full edit form
-                    
+                    // Edit Mode
                     if (isEditMode) {
                         optionsHtml += `
-                            <div class="option-card ${isSelected ? 'selected' : ''} p-3 relative">
-                                <div class="absolute top-2 left-2 flex gap-2">
+                            <div class="option-card ${isSelected ? 'selected' : ''} p-3 relative mb-2">
+                                <div class="flex gap-2 items-center mb-2">
                                     <input type="radio" name="grp-${type}-${gIdx}" ${isSelected ? 'checked' : ''} onchange="selectOption('${type}', ${gIdx}, '${opt.id}')">
+                                    <input class="font-bold text-sm flex-1" value="${opt.name}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'name', this.value)">
                                     <button class="text-red-400 text-xs" onclick="deleteOption('${type}', ${gIdx}, ${oIdx})">x</button>
                                 </div>
-                                <input class="font-bold text-sm mb-1" value="${opt.name}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'name', this.value)">
-                                <textarea class="text-xs mb-1" rows="2" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'desc', this.value)">${opt.desc}</textarea>
-                                <div class="flex gap-2 mb-1">
-                                    <input type="number" class="w-20 text-xs" value="${opt.cost}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'cost', this.value)">
-                                    <input type="text" class="flex-1 text-xs" placeholder="לינק" value="${opt.link || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'link', this.value)">
-                                </div>
+                                <input type="number" class="w-full text-xs mb-1 p-1 border rounded" value="${opt.cost}" placeholder="מחיר" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'cost', this.value)">
                                 <div class="flex gap-2 items-center bg-gray-50 p-1 rounded">
-                                    <label class="text-xs flex items-center gap-1"><input type="checkbox" ${opt.booked ? 'checked' : ''} onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'booked', this.checked)"> הוזמן</label>
-                                    <input class="text-xs flex-1" placeholder="פרטי הזמנה" value="${opt.info || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'info', this.value)">
+                                    <input type="checkbox" ${opt.booked ? 'checked' : ''} onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'booked', this.checked)">
+                                    <span class="text-xs">הוזמן</span>
                                 </div>
                             </div>
                         `;
                     } else {
-                        // View Mode - Show all options, highlight selected. Allow clicking to swap.
+                        // View Mode (Only show selected unless there are alternatives to swap)
                         optionsHtml += `
-                            <div class="option-card ${isSelected ? 'selected' : ''} flex justify-between items-center p-3" onclick="selectOption('${type}', ${gIdx}, '${opt.id}')">
+                            <div class="option-card ${isSelected ? 'selected' : ''} flex justify-between items-center p-3 mb-2 cursor-pointer hover:bg-gray-50" onclick="selectOption('${type}', ${gIdx}, '${opt.id}')">
                                 <div>
                                     <div class="font-bold text-sm flex items-center gap-2">
                                         ${opt.name} 
-                                        ${bookedBadge}
+                                        ${opt.booked ? '<span class="badge-booked">הוזמן</span>' : ''}
                                         ${isSelected ? '<span class="text-indigo-600 text-xs border border-indigo-200 px-1 rounded">נבחר</span>' : ''}
                                     </div>
-                                    <div class="text-xs text-gray-600 mt-1">${opt.desc}</div>
-                                    ${opt.link ? `<a href="${opt.link}" target="_blank" class="text-xs text-blue-500 underline mt-1 block" onclick="event.stopPropagation()">קישור להזמנה</a>` : ''}
-                                    ${opt.booked && opt.info ? `<div class="text-xs bg-green-50 text-green-800 p-1 mt-1 rounded border border-green-100">${opt.info}</div>` : ''}
+                                    <div class="text-xs text-gray-500">לחץ להחלפה</div>
                                 </div>
-                                <div class="text-right">
-                                    <div class="font-bold text-indigo-700">${formatPrice(opt.cost)}</div>
-                                </div>
+                                <div class="font-bold text-indigo-700">${formatPrice(opt.cost)}</div>
                             </div>
                         `;
                     }
                 });
 
-                wrapper.innerHTML = header + `<div class="space-y-2">${optionsHtml}</div>` + (isEditMode ? `<button class="w-full text-xs border border-dashed p-1 mt-2 text-gray-400" onclick="addOption('${type}', ${gIdx})">+ הוסף אופציה</button>` : '');
+                wrapper.innerHTML = header + optionsHtml + (isEditMode ? `<button class="w-full text-xs border border-dashed p-1 mt-1 text-gray-400" onclick="addOption('${type}', ${gIdx})">+ אופציה</button>` : '');
                 container.appendChild(wrapper);
             });
         }
 
-        // 3. Checklist Renderer
+        // Wrapper functions for logistics
+        window.updateGroup = (t, i, f, v) => { appData.logistics[t][i][f] = v; saveData(); };
+        window.deleteGroup = (t, i) => { if(confirm('למחוק?')) { appData.logistics[t].splice(i,1); saveData(); renderAll(); } };
+        window.addGroup = (t) => { if(!appData.logistics[t]) appData.logistics[t]=[]; appData.logistics[t].push({id:Date.now(), title:'חדש', options:[{id:'o'+Date.now(), name:'אופציה 1', cost:0}], selectedId:'o'+Date.now()}); saveData(); renderAll(); };
+        
+        window.updateOption = (t, g, o, f, v) => { appData.logistics[t][g].options[o][f] = v; saveData(); renderAll(); };
+        window.selectOption = (t, g, id) => { appData.logistics[t][g].selectedId = id; saveData(); renderAll(); };
+        window.addOption = (t, g) => { appData.logistics[t][g].options.push({id:'o'+Date.now(), name:'חדש', cost:0}); saveData(); renderAll(); };
+        window.deleteOption = (t, g, o) => { appData.logistics[t][g].options.splice(o,1); saveData(); renderAll(); };
+
+        // 4. CHECKLIST
         function renderChecklist() {
             const tbody = document.getElementById('checklist-table-body');
             tbody.innerHTML = '';
-            
             appData.checklist.forEach((item, idx) => {
                 const tr = document.createElement('tr');
                 tr.className = 'bg-white border-b hover:bg-gray-50';
-                
-                const statusCell = `
-                    <td class="px-2 py-3">
-                        <input type="checkbox" class="w-5 h-5 accent-indigo-600 cursor-pointer" ${item.gotIt ? 'checked' : ''} onchange="updateChecklist(${idx}, 'gotIt', this.checked)">
-                    </td>
+                tr.innerHTML = `
+                    <td class="px-2 py-3"><input type="checkbox" ${item.gotIt ? 'checked' : ''} onchange="updateChecklist(${idx}, 'gotIt', this.checked)"></td>
+                    <td class="px-2 py-3"><span class="view-only ${item.gotIt ? 'line-through text-gray-400' : ''}">${item.text}</span><input class="edit-only" value="${item.text}" onchange="updateChecklist(${idx}, 'text', this.value)"></td>
+                    <td class="px-2 py-3 text-xs"><span class="view-only">${item.source||'-'}</span><input class="edit-only" value="${item.source||''}" onchange="updateChecklist(${idx}, 'source', this.value)"></td>
+                    <td class="px-2 py-3 font-bold text-indigo-600"><span class="view-only">${formatPrice(item.cost)}</span><input type="number" class="edit-only w-20" value="${item.cost}" onchange="updateChecklist(${idx}, 'cost', this.value)"></td>
+                    <td class="px-2 py-3 edit-only"><button class="text-red-400" onclick="deleteChecklist(${idx})">🗑️</button></td>
                 `;
-                
-                const nameCell = `
-                    <td class="px-2 py-3 font-medium text-gray-900">
-                        <span class="view-only ${item.gotIt ? 'line-through text-gray-400' : ''}">${item.text}</span>
-                        <input class="edit-only" value="${item.text}" onchange="updateChecklist(${idx}, 'text', this.value)">
-                    </td>
-                `;
-                
-                const sourceCell = `
-                    <td class="px-2 py-3 text-xs">
-                        <span class="view-only">${item.source || '-'}</span>
-                        <input class="edit-only" value="${item.source || ''}" placeholder="מקור" onchange="updateChecklist(${idx}, 'source', this.value)">
-                    </td>
-                `;
-                
-                const costCell = `
-                    <td class="px-2 py-3 font-bold text-indigo-600">
-                        <span class="view-only">${formatPrice(item.cost)}</span>
-                        <input type="number" class="edit-only w-20" value="${item.cost}" onchange="updateChecklist(${idx}, 'cost', this.value)">
-                    </td>
-                `;
-                
-                const actionsCell = `
-                    <td class="px-2 py-3 edit-only">
-                        <button class="text-red-400" onclick="deleteChecklist(${idx})">🗑️</button>
-                    </td>
-                `;
-
-                tr.innerHTML = statusCell + nameCell + sourceCell + costCell + actionsCell;
                 tbody.appendChild(tr);
             });
         }
+        window.updateChecklist = (i,f,v) => { appData.checklist[i][f]=v; saveData(); renderAll(); };
+        window.deleteChecklist = (i) => { appData.checklist.splice(i,1); saveData(); renderAll(); };
+        window.addCheckItem = () => { 
+            appData.checklist.push({id:Date.now(), text: document.getElementById('new-item-text').value, source: document.getElementById('new-item-source').value, cost: document.getElementById('new-item-price').value, gotIt: false}); 
+            saveData(); renderAll(); 
+        };
 
-        // 4. Budget Renderer
+        // 5. BUDGET
         function renderBudget() {
-            let paidTotal = 0;
-            let futureTotal = 0;
+            let paid = 0, future = 0;
             
-            // Helper to process item cost
-            const processCost = (cost, isBooked) => {
-                const val = parseInt(cost || 0);
-                if(isBooked) paidTotal += val;
-                else futureTotal += val;
-                return val;
-            };
+            const sum = (c, b) => b ? paid += parseInt(c||0) : future += parseInt(c||0);
 
-            // Days
-            appData.days.forEach(d => {
-                d.timeline.forEach(t => processCost(t.cost, t.booked));
-            });
+            appData.days.forEach(d => d.timeline.forEach(t => sum(t.cost, t.booked)));
+            ['flights','housing','cars','markets'].forEach(t => (appData.logistics[t]||[]).forEach(g => {
+                const s = g.options.find(o => o.id === g.selectedId);
+                if(s) sum(s.cost, s.booked);
+            }));
+            appData.checklist.forEach(c => sum(c.cost, c.gotIt));
 
-            // Logistics (Only selected options count!)
-            ['flights', 'housing', 'cars', 'markets'].forEach(type => {
-                (appData.logistics[type] || []).forEach(group => {
-                    const selected = group.options.find(o => o.id === group.selectedId);
-                    if(selected) processCost(selected.cost, selected.booked);
-                });
-            });
+            document.getElementById('total-paid').textContent = formatPrice(paid);
+            document.getElementById('total-future').textContent = formatPrice(future);
+            document.getElementById('total-sum').textContent = formatPrice(paid+future);
 
-            // Checklist
-            appData.checklist.forEach(c => processCost(c.cost, c.gotIt));
-
-            // Update UI
-            document.getElementById('total-paid').textContent = formatPrice(paidTotal);
-            document.getElementById('total-future').textContent = formatPrice(futureTotal);
-            document.getElementById('total-sum').textContent = formatPrice(paidTotal + futureTotal);
-
-            // Chart
             const ctx = document.getElementById('budgetChart').getContext('2d');
             if(window.myChart) window.myChart.destroy();
-            window.myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['שולם/הוזמן', 'עתידי'],
-                    datasets: [{
-                        data: [paidTotal, futureTotal],
-                        backgroundColor: ['#4ade80', '#e5e7eb'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            window.myChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['שולם','עתידי'], datasets: [{ data: [paid, future], backgroundColor: ['#16A34A','#E5E7EB'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false } });
         }
 
-        // --- ACTIONS ---
-        
-        // Timeline
-        window.addDay = () => { appData.days.push({id: Date.now(), date: 'תאריך', title: 'יום חדש', timeline: []}); saveData(); renderAll(); }
-        window.deleteDay = (idx) => { if(confirm('למחוק?')) { appData.days.splice(idx, 1); saveData(); renderAll(); } }
-        window.updateDay = (idx, field, val) => { appData.days[idx][field] = val; saveData(); renderAll(); }
-        
-        window.addTimelineItem = (dIdx) => { appData.days[dIdx].timeline.push({time:'12:00', title:'פעילות', desc:'', cost:0, booked:false}); saveData(); renderAll(); }
-        window.deleteTimelineItem = (dIdx, tIdx) => { appData.days[dIdx].timeline.splice(tIdx, 1); saveData(); renderAll(); }
-        window.updateTimeline = (dIdx, tIdx, field, val) => { appData.days[dIdx].timeline[tIdx][field] = val; saveData(); renderAll(); }
-        window.showTimelineDetails = (dIdx, tIdx) => {
-            if(isEditMode) return;
-            const item = appData.days[dIdx].timeline[tIdx];
-            const dayData = appData.days[dIdx];
-            const content = `
-                <div class="font-bold text-xl mb-2 text-indigo-900">${item.title}</div>
-                <div class="bg-gray-100 p-2 rounded mb-4 font-mono text-sm">${item.time} | ${dayData.date}</div>
-                <p class="mb-4">${item.desc || 'אין תיאור'}</p>
-                <div class="border-t pt-4">
-                    <div class="flex justify-between mb-2">
-                        <span>עלות:</span>
-                        <span class="font-bold">${formatPrice(item.cost)}</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded">
-                        <span>סטטוס:</span>
-                        ${item.booked ? '<span class="badge-booked">הוזמן ✅</span>' : '<span class="text-gray-500">טרם הוזמן</span>'}
-                    </div>
-                    ${item.booked && item.info ? `<div class="mt-4 bg-green-50 p-3 rounded border border-green-100 text-sm"><div class="font-bold text-green-800 mb-1">פרטי הזמנה:</div>${item.info}</div>` : ''}
-                </div>
-            `;
-            document.getElementById('modal-content').innerHTML = content; 
-            document.getElementById('details-modal').classList.remove('hidden');
-            document.getElementById('details-modal').classList.add('flex');
+        // --- CORE ---
+        async function saveData() {
+            updateSyncStatus('שומר...', 'yellow');
+            try { await updateDoc(tripRef, appData); localStorage.setItem(CACHE_KEY, JSON.stringify(appData)); updateSyncStatus('מסונכרן', 'green'); } catch(e) { console.error(e); }
         }
 
-        // Logistics Groups
-        window.addGroup = (type) => { 
-            if(!appData.logistics[type]) appData.logistics[type] = [];
-            const newId = 'opt' + Date.now();
-            appData.logistics[type].push({ id: Date.now(), title: 'חדש', date: '', options: [{id: newId, name:'אופציה 1', cost:0, booked:false}], selectedId: newId });
-            saveData(); renderAll(); 
-        }
-        window.deleteGroup = (type, idx) => { if(confirm('למחוק?')) { appData.logistics[type].splice(idx, 1); saveData(); renderAll(); } }
-        window.updateGroup = (type, idx, field, val) => { appData.logistics[type][idx][field] = val; saveData(); renderAll(); }
-        
-        // Options
-        window.addOption = (type, gIdx) => {
-            const newId = 'opt' + Date.now();
-            appData.logistics[type][gIdx].options.push({ id: newId, name: 'אופציה חדשה', cost: 0, booked: false });
-            saveData(); renderAll();
-        }
-        window.deleteOption = (type, gIdx, oIdx) => {
-            const group = appData.logistics[type][gIdx];
-            const optId = group.options[oIdx].id;
-            // Prevent deleting the only option or the selected one without logic handling
-            if(group.options.length <= 1) return alert('חייבת להיות לפחות אופציה אחת');
-            
-            group.options.splice(oIdx, 1);
-            if(group.selectedId === optId) group.selectedId = group.options[0].id; // Select first if deleted selected
-            
-            saveData(); renderAll();
-        }
-        window.updateOption = (type, gIdx, oIdx, field, val) => {
-            appData.logistics[type][gIdx].options[oIdx][field] = val;
-            saveData(); renderAll();
-        }
-        window.selectOption = (type, gIdx, optId) => {
-            appData.logistics[type][gIdx].selectedId = optId;
-            saveData(); renderAll(); // Re-render updates budget and UI highlighting
+        function updateSyncStatus(t, c) {
+            document.getElementById('sync-text').textContent = t;
+            document.getElementById('sync-dot').className = `w-2 h-2 rounded-full bg-${c}-500`;
         }
 
-        // Checklist
-        window.addCheckItem = () => {
-            const text = document.getElementById('new-item-text').value;
-            const cost = document.getElementById('new-item-price').value;
-            if(text) {
-                appData.checklist.push({ id: Date.now(), text: text, cost: cost || 0, gotIt: false });
-                document.getElementById('new-item-text').value = '';
-                document.getElementById('new-item-price').value = '';
-                saveData(); renderAll();
-            }
-        }
-        window.updateChecklist = (idx, field, val) => { appData.checklist[idx][field] = val; saveData(); renderAll(); }
-        window.deleteChecklist = (idx) => { appData.checklist.splice(idx, 1); saveData(); renderAll(); }
-
-        // Global
         window.renderAll = () => {
-            renderItinerary();
+            renderGrid();
             renderLogisticsGroup('flights', 'flights-container');
             renderLogisticsGroup('housing', 'housing-container');
             renderLogisticsGroup('cars', 'cars-container');
@@ -732,19 +651,35 @@
             renderBudget();
         }
 
-        async function saveData() {
-            updateSyncStatus('שומר...', 'yellow');
-            try { 
-                await updateDoc(tripRef, appData); 
-                localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
-                updateSyncStatus('מסונכרן לענן', 'green');
-            } catch(e) { console.error(e); }
+        // Auth & Cache
+        if (localStorage.getItem('isLoggedIn') === 'true') {
+            document.getElementById('login-screen').style.display = 'none';
+            const cached = localStorage.getItem(CACHE_KEY);
+            if(cached) { appData = JSON.parse(cached); renderAll(); }
+            onSnapshot(tripRef, (s) => {
+                document.getElementById('loading-screen').style.display = 'none';
+                if(s.exists()) { 
+                    appData = s.data(); 
+                    if(!appData.logistics) appData.logistics = {flights:[],housing:[],cars:[],markets:[]}; // integrity check
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(appData)); renderAll(); updateSyncStatus('מסונכרן', 'green');
+                } else { setDoc(tripRef, appData); }
+            });
+        } else {
+            document.getElementById('loading-screen').style.display = 'none';
         }
 
-        window.closeModal = () => {
-            document.getElementById('details-modal').classList.add('hidden');
-            document.getElementById('details-modal').classList.remove('flex');
-        }
+        document.getElementById('login-btn').onclick = () => {
+            if(document.getElementById('passcode-input').value === '8989') {
+                localStorage.setItem('isLoggedIn', 'true');
+                // Instant switch to prevent reload loop
+                document.getElementById('login-screen').style.display = 'none';
+                onSnapshot(tripRef, (s) => {
+                    if(s.exists()) appData = s.data();
+                    else setDoc(tripRef, appData);
+                    renderAll();
+                });
+            } else document.getElementById('login-error').classList.remove('hidden');
+        };
 
     </script>
 </body>
