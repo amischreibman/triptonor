@@ -54,6 +54,16 @@
         .chip-dist { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
         .chip-warn { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
         .booked-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 99px; border: 1px solid #86EFAC; }
+        
+        /* Source Link Button */
+        .source-link {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.7rem; background: #FFF7ED; color: #C2410C;
+            border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full;
+            text-decoration: none; margin-top: 6px; font-weight: bold;
+            transition: all 0.2s;
+        }
+        .source-link:hover { background: #FFEDD5; }
 
         /* Sticky Note */
         .sticky-note { 
@@ -61,7 +71,6 @@
             font-family: 'Kalam', cursive; font-size: 0.9rem; border-left: 4px solid #F59E0B; 
             box-shadow: 2px 2px 5px rgba(0,0,0,0.05); margin-top: 8px; position: relative;
         }
-        .sticky-source { font-size: 0.65rem; color: #92400E; text-align: left; margin-top: 4px; font-family: sans-serif; opacity: 0.7; }
 
         /* Option Card */
         .option-card { border: 1px solid #E5E7EB; padding: 12px; border-radius: 10px; margin-bottom: 10px; transition: 0.2s; background: #fff; position: relative; }
@@ -83,7 +92,7 @@
 <body class="pb-20">
 
     <!-- Loading & Login -->
-    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">מכין את המסע...</p></div>
+    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">טוען את התוכנית...</p></div>
     
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-10 rounded-3xl shadow-2xl text-center w-96">
@@ -126,7 +135,7 @@
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">סקירה יומית</h2>
-                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא ועריכה</p>
+                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא, עריכה וקישורים</p>
                 </div>
             </div>
             
@@ -328,96 +337,93 @@
         const firebaseConfig = { apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w", authDomain: "tromso-trip.firebaseapp.com", projectId: "tromso-trip", storageBucket: "tromso-trip.firebasestorage.app", messagingSenderId: "706076555674", appId: "1:706076555674:web:c7f3075199b975897fe223", measurementId: "G-976T7D2Q1Z" };
 
         let app, db, tripRef;
-        try { app = initializeApp(firebaseConfig); db = getFirestore(app); tripRef = doc(db, "trips", "ofri_ami_v8_final_full"); } catch (e) { console.error(e); }
+        try { app = initializeApp(firebaseConfig); db = getFirestore(app); tripRef = doc(db, "trips", "ofri_ami_v9_final"); } catch (e) { console.error(e); }
 
-        // --- RICH DATA ---
-        // Prices sourced from VisitTromso, Fjellheisen.no, RentalCars (Jan 2025 estimates), Lametayel.
+        // --- RICH DATA (V9) ---
         const defaultData = {
             currency: 'ILS',
             days: [
                 { 
-                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'מים בנורבגיה מצוינים מהברז, אין צורך לקנות מים מינרליים. אלכוהול יקר מאוד - לקנות בדיוטי פרי.', 
+                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'להצטייד במים ובמזון קל ליומיים הראשונים. הברזים בנורבגיה מצוינים לשתייה.', 
                     timeline: [
-                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS דרך OSL. שימו לב: לעיתים צריך לאסוף כבודה באוסלו ולהפקיד מחדש (לבדוק בדלפק).', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight', note: 'להוריד סרטים לטיסה' },
-                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה. חובה לבדוק שמגבים תקינים ושיש מגרד קרח. הרכב מגיע עם צמיגי חורף (מסמרים).', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם את הרכב מכל כיוון', type: 'car', note: '' },
-                        { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופרמרקט הכי זול וגדול ביציאה מהעיר לכיוון Kvaløya. הצטיידות ליומיים.', cost: 600, booked: false, info: '', distance: '7 דקות נסיעה מהשדה', warning: 'נסגר ב-23:00', type: 'food', note: 'לקנות: גבינת ברי, לחם, פסטה, רטבים, נשנושים' },
-                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים. אזור חשוך מעולה לזוהר מהמרפסת.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דקות מהסופר', warning: '', type: 'home', note: 'מקור: המלצת גולשים למטייל 2023' }
+                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS/Norwegian. לעיתים צריך לאסוף כבודה באוסלו ולהפקיד מחדש. לבדוק בדלפק.', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight', note: 'מקור: Skyscanner' },
+                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה התעופה. לוודא שיש מגרד קרח וצמיגי חורף (מסמרים).', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם את הרכב לפני הנסיעה', type: 'car', note: 'מקור: RentalCars' },
+                        { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופרמרקט הזול והגדול ביציאה מהעיר לכיוון Kvaløya. פתוח עד 23:00.', cost: 600, booked: false, info: '', distance: '7 דקות נסיעה מהשדה', warning: 'סגור בימי ראשון', type: 'food', note: 'לקנות: גבינת ברי, לחם, פסטה, רטבים' },
+                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים באזור חשוך. מעולה לזוהר מהמרפסת.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דקות מהסופר', warning: '', type: 'home', note: '', sourceUrl: 'https://www.airbnb.com' }
                     ]
                 },
                 { 
-                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'יום רגוע בעיר. להתלבש בשיטת הבצל - חם בפנים, קפוא בחוץ.',
+                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש בשיטת הבצל. להחנות בחניון Fjellet (בתוך ההר).',
                     timeline: [
-                        { time: '10:00', title: 'חניה במרכז (Fjellet P-hus)', desc: 'חניה מחוממת בתוך ההר! חוויה בפני עצמה. יציאות רגליות למרכז העיר.', cost: 120, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'חובה אפליקציית EasyPark', type: 'car', note: 'לא לחנות ברחוב - יקר ומוגבל בזמן' },
-                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית מרהיבה. בחורף השמש לא עולה, אבל יש "שעות דמדומים" (Blue Hour) מדהימות בין 10:00-13:00.', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן מאוד - לוותר', type: 'attraction', note: 'אפשר לשתות שוקו חם למעלה' },
-                        { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר המרכזית. מוסד קולינרי מקומי וזול.', cost: 80, booked: false, info: '', distance: 'במרכז', warning: '', type: 'food', note: 'לנסות את נקניקיית האייל' },
-                        { time: '15:30', title: 'ספריית טרומסו', desc: 'מבנה אדריכלי מדהים עם גג זכוכית. מקום טוב להתחמם.', cost: 0, booked: false, info: '', distance: 'מרחק הליכה', warning: '', type: 'attraction', note: '' },
-                        { time: '20:00', title: 'מרדף זוהר עצמאי', desc: 'נסיעה לחוף Grøtfjord או חזרה ל-Ersfjordbotn. מקומות חשוכים ללא זיהום אור.', cost: 0, booked: false, info: '', distance: '40 דקות נסיעה', warning: 'לבדוק אפליקציית My Aurora Forecast', type: 'star', note: 'להביא תרמוס עם תה' }
+                        { time: '10:00', title: 'חניון Fjellet P-hus', desc: 'חניה מחוממת בתוך ההר מתחת לעיר. יציאות רגליות למרכז.', cost: 150, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'חובה להוריד אפליקציית EasyPark', type: 'car', note: 'מקור: למטייל (טיפים)', sourceUrl: 'https://easypark.com/en' },
+                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית פנורמית על העיר. מומלץ לעלות בשעות ה"אור הכחול" (10:00-13:00).', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן מאוד - לוותר', type: 'attraction', note: 'מקור: אתר הרשמי', sourceUrl: 'https://www.fjellheisen.no/en' },
+                        { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר המרכזית. זול וטעים (נסו את נקניקיית האייל).', cost: 80, booked: false, info: '', distance: 'במרכז העיר', warning: '', type: 'food', note: 'מקור: המלצת גולשים למטייל' },
+                        { time: '20:00', title: 'מרדף זוהר עצמאי', desc: 'נסיעה לחוף Grøtfjord או חזרה ל-Ersfjordbotn. אזורים חשוכים ללא זיהום אור.', cost: 0, booked: false, info: '', distance: '40 דקות נסיעה', warning: 'לבדוק אפליקציית My Aurora Forecast', type: 'star', note: '' }
                     ] 
                 },
                 { 
-                    id: 3, date: '15/1 (ה\')', title: 'כלבים וסאונה', note: 'יום אקטיבי. להביא בגד ים לסאונה (כן, בחורף!).',
+                    id: 3, date: '15/1 (ה\')', title: 'כלבים וסאונה', note: 'יום אקטיבי. לא לשכוח בגד ים לסאונה!',
                     timeline: [
-                        { time: '08:45', title: 'מזחלות כלבים', desc: 'Tromsø Villmarkssenter. נהיגה עצמית במזחלת (Self-drive). כולל ביגוד חם וארוחה.', cost: 1900, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'להזמין חודשיים מראש!', type: 'attraction', note: 'חוויה של פעם בחיים' },
-                        { time: '14:00', title: 'מנוחה בבקתה', desc: 'מקלחת חמה ומנוחה לקראת הערב.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'home', note: '' },
-                        { time: '17:00', title: 'סאונת Pust', desc: 'סאונה צפה בנמל טרומסו. חם בפנים, קופצים למים הקפואים (3 מעלות). מחזק את המערכת החיסונית!', cost: 400, booked: false, info: '', distance: 'במרכז העיר', warning: 'הזמנה מראש חובה באתר pust.io', type: 'attraction', note: 'מקור: המלצת גולשים למטייל' }
+                        { time: '08:45', title: 'מזחלות כלבים', desc: 'Tromsø Villmarkssenter. נהיגה עצמית (Self-drive). כולל ביגוד חם וארוחה.', cost: 1300, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'להזמין חודשיים מראש!', type: 'attraction', note: 'מחיר לזוג', sourceUrl: 'https://villmarkssenter.no/' },
+                        { time: '17:00', title: 'סאונת Pust', desc: 'סאונה צפה בנמל. חום לוהט וקפיצה למי הקרח (3 מעלות). חוויה מחשמלת.', cost: 200, booked: false, info: '', distance: 'במרכז', warning: 'הזמנה מראש חובה', type: 'attraction', note: 'מחיר לזוג. מקור: למטייל', sourceUrl: 'https://pust.io/' }
                     ]
                 },
                 { 
-                    id: 4, date: '16/1 (ו\')', title: 'המעבורת לסניה', note: 'יום מעבר. הנופים בדרך לסניה הם היפים ביותר בטיול.',
+                    id: 4, date: '16/1 (ו\')', title: 'המעבורת לסניה', note: 'הדרך לסניה היא היפה ביותר בטיול. סעו בזהירות.',
                     timeline: [
-                        { time: '09:30', title: 'נסיעה ל-Brensholmen', desc: 'נסיעה נופית דרך החוף הדרומי של Kvaløya.', cost: 0, booked: false, info: '', distance: 'שעה נסיעה (55 ק"מ)', warning: 'כבישים צרים וחלקים', type: 'car', note: '' },
-                        { time: '11:00', title: 'מעבורת ל-Botnhamn', desc: 'מעבורת קריטית. חוסכת 3 שעות נסיעה. בחורף יש מעט הפלגות.', cost: 150, booked: false, info: '', distance: '45 דקות הפלגה', warning: 'לבדוק בבוקר ב-Troms Reise אם מבוטל!', type: 'car', note: 'אם מבוטל - נוסעים מסביב (3.5 שעות)' },
-                        { time: '13:00', title: 'Tungeneset', desc: 'תצפית "שיני השטן". סלעים משוננים היורדים לים. עמדת צילום חובה.', cost: 0, booked: false, info: '', distance: 'על כביש 862', warning: 'הסלעים חלקים מאוד', type: 'attraction', note: '' },
-                        { time: '15:00', title: 'Mefjord Brygge', desc: 'צ\'ק אין במלון דירות בתוך פיורד דרמטי.', cost: 0, booked: true, info: '', distance: 'Senja', warning: '', type: 'home', note: 'יש מסעדה במקום אם לא רוצים לבשל' }
+                        { time: '09:30', title: 'נסיעה ל-Brensholmen', desc: 'נסיעה לאורך החוף הדרומי של Kvaløya.', cost: 0, booked: false, info: '', distance: '55 ק"מ (שעה)', warning: 'כבישים צרים וחלקים', type: 'car', note: '' },
+                        { time: '11:00', title: 'מעבורת ל-Botnhamn', desc: 'חוסכת 3.5 שעות נסיעה. בחורף הלו"ז מצומצם.', cost: 150, booked: false, info: '', distance: '45 דקות הפלגה', warning: 'לבדוק בבוקר באפליקציית Troms Reise!', type: 'car', note: 'אם מבוטל - נסיעה יבשתית ארוכה', sourceUrl: 'https://fylkestrafikk.no/' },
+                        { time: '13:00', title: 'Tungeneset', desc: 'תצפית "שיני השטן". סלעים דרמטיים היורדים לים.', cost: 0, booked: false, info: '', distance: 'על כביש 862', warning: 'סלעים חלקים מאוד', type: 'attraction', note: 'עמדת צילום חובה' },
+                        { time: '15:00', title: 'Mefjord Brygge', desc: 'צ\'ק אין במלון דירות בלב הפיורד.', cost: 0, booked: true, info: '', distance: '', warning: '', type: 'home', note: 'יש מסעדה במקום', sourceUrl: 'https://www.mefjordbrygge.no/' }
                     ]
                 },
-                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: 'הטבע בשיאו. סניה פראית יותר מטרומסו. כמעט ואין חנויות.', timeline: [
+                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: 'טבע פראי. אין כמעט חנויות - להצטייד מראש.', timeline: [
                     { time: '10:00', title: 'Bergsbotn', desc: 'מרפסת תצפית תלויה מעל הפיורד. נוף עוצר נשימה.', cost: 0, booked: false, info: '', distance: '20 דק נסיעה', warning: '', type: 'attraction', note: '' },
-                    { time: '12:00', title: 'Hamn i Senja', desc: 'כפר דייגים היסטורי. מקום יפה לעצירת קפה/צהריים.', cost: 100, booked: false, info: '', distance: '', warning: '', type: 'food', note: '' },
-                    { time: '20:00', title: 'זוהר בחושך', desc: 'בסניה אין זיהום אור. פשוט צאו מהמרפסת או סעו לחוף חשוך.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'star', note: 'סיכוי גבוה יותר מטרומסו' }
+                    { time: '12:00', title: 'Hamn i Senja', desc: 'כפר דייגים היסטורי משוחזר. מקום יפה לקפה/צהריים.', cost: 150, booked: false, info: '', distance: '', warning: '', type: 'food', note: '' },
+                    { time: '20:00', title: 'זוהר בחושך', desc: 'בסניה אין זיהום אור. פשוט צאו מהמרפסת.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'star', note: 'סיכוי גבוה יותר מטרומסו' }
                 ] },
-                { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', note: 'יום ראשון - רוב החנויות סגורות.', timeline: [
-                    { time: '10:00', title: 'יציאה מסניה', desc: 'דרך המעבורת או היבשה (תלוי במזג אוויר).', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'car', note: '' },
-                    { time: '14:00', title: 'Sommarøy', desc: '"אי הקיץ". חופים לבנים ארקטיים ומי טורקיז. סיבוב רגלי קצר.', cost: 0, booked: false, info: '', distance: '', warning: 'רוחות חזקות בד"כ', type: 'attraction', note: '' },
-                    { time: '19:00', title: 'Ølhallen Pub', desc: 'הפאב הוותיק בטרומסו. 72 סוגי בירה מהחבית. אווירה מקומית.', cost: 150, booked: false, info: '', distance: 'מרכז העיר', warning: 'נסגר מוקדם ביום א\'', type: 'food', note: 'מקור: המלצת גולשים' }
+                { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', note: 'יום ראשון - הרוב סגור.', timeline: [
+                    { time: '10:00', title: 'יציאה מסניה', desc: 'דרך המעבורת או היבשה (בהתאם למזג אוויר).', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'car', note: '' },
+                    { time: '14:00', title: 'Sommarøy', desc: '"אי הקיץ". חופים לבנים ומי טורקיז. סיבוב רגלי קצר בגשרים.', cost: 0, booked: false, info: '', distance: '', warning: 'רוחות חזקות בד"כ', type: 'attraction', note: '' },
+                    { time: '19:00', title: 'Ølhallen Pub', desc: 'הפאב הוותיק ביותר בטרומסו. 72 סוגי בירה.', cost: 150, booked: false, info: '', distance: 'מרכז העיר', warning: 'נסגר מוקדם ביום א\'', type: 'food', note: 'מקור: המלצת גולשים' }
                 ] },
                 { id: 7, date: '19/1 (ב\')', title: 'פרידה', note: '', timeline: [
-                    { time: '11:00', title: 'קניות מזכרות', desc: 'רחוב Storgata. סוודרים נורבגיים, טרולים וגבינה חומה.', cost: 400, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
-                    { time: '13:00', title: 'Polaria', desc: 'אקווריום ארקטי. האכלת כלבי ים ב-12:30 או 15:30. סרט פנורמי יפה.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
-                    { time: '19:00', title: 'Fiskekompaniet', desc: 'ארוחת ערב חגיגית לסיום. מסעדת דגים ופירות ים הטובה בעיר.', cost: 800, booked: false, info: '', distance: 'על הנמל', warning: 'להזמין מקום שבוע מראש', type: 'food', note: 'יקר אבל שווה' }
+                    { time: '11:00', title: 'קניות מזכרות', desc: 'רחוב Storgata. סוודרים נורבגיים, טרולים וגבינה חומה (Brunost).', cost: 400, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
+                    { time: '13:00', title: 'Polaria', desc: 'אקווריום ארקטי. מבנה בצורת קוביות דומינו.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: 'האכלת כלבי ים ב-12:30', sourceUrl: 'https://polaria.no/' },
+                    { time: '19:00', title: 'Fiskekompaniet', desc: 'ארוחת ערב חגיגית. מסעדת פירות ים הטובה בעיר.', cost: 800, booked: false, info: '', distance: 'על הנמל', warning: 'להזמין מקום שבוע מראש', type: 'food', note: 'יקר אבל שווה' }
                 ] },
-                { id: 8, date: '20/1 (ג\')', title: 'טיסה ל-AMS', note: 'יום נסיעות.', timeline: [
-                    { time: '10:00', title: 'החזרת רכב', desc: 'בשדה התעופה TOS. למלא דלק לפני!', cost: 300, booked: false, info: '', distance: '', warning: 'תחנת דלק ליד השדה', type: 'car', note: '' },
-                    { time: '18:00', title: 'מלון בשדה', desc: 'CitizenM Schiphol. הליכה ברגל מהטרמינל.', cost: 900, booked: true, info: '', distance: '', warning: '', type: 'home', note: 'חדרים קטנים אך מודרניים' }
+                { id: 8, date: '20/1 (ג\')', title: 'טיסה ל-AMS', note: '', timeline: [
+                    { time: '10:00', title: 'החזרת רכב', desc: 'בשדה התעופה TOS. למלא דלק בתחנה ליד השדה.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'car', note: 'דלק' },
+                    { time: '18:00', title: 'מלון בשדה', desc: 'CitizenM Schiphol. הליכה ברגל מהטרמינל.', cost: 900, booked: true, info: '', distance: '', warning: '', type: 'home', note: '' }
                 ] }
             ],
             logistics: {
                 flights: [
-                    { id: 'f1', title: 'טיסות (לפי למטייל)', options: [
-                        { id: 'o1', name: 'SAS + Norwegian', desc: 'הלוך ב-13/1, חזור ב-20/1', cost: 3500, booked: true, info: 'הוזמן' }
+                    { id: 'f1', title: 'טיסות (אופציות)', options: [
+                        { id: 'o1', name: 'SAS + Norwegian', desc: 'הלוך 13/1, חזור 20/1. קונקשיין באוסלו.', cost: 3500, booked: true, info: 'הוזמן', link: 'https://www.skyscanner.co.il/' }
                     ], selectedId: 'o1' }
                 ],
                 housing: [
-                    { id: 'h1', title: 'טרומסו (לילות 1-3)', date:'2026-01-13', options: [
-                        { id: 'opt1', name: 'Airbnb Ersfjord', desc: 'מומלץ לזוהר', cost: 3200, booked: true, info: '' },
-                        { id: 'opt2', name: 'Clarion The Edge', desc: 'במרכז', cost: 4000, booked: false, info: '' }
+                    { id: 'h1', title: 'טרומסו (ימים 1-3)', date:'2026-01-13', options: [
+                        { id: 'opt1', name: 'Airbnb Ersfjord', desc: 'בקתה מומלצת לזוהר', cost: 3200, booked: true, info: '', link: 'https://airbnb.com' },
+                        { id: 'opt2', name: 'Clarion The Edge', desc: 'מלון יוקרה במרכז', cost: 4500, booked: false, info: '', link: 'https://www.nordicchoicehotels.com/' }
                     ], selectedId: 'opt1' },
-                    { id: 'h2', title: 'סניה (לילות 4-5)', date:'2026-01-16', options: [
-                        { id: 'opt1', name: 'Mefjord Brygge', desc: 'דירה בפיורד', cost: 2400, booked: false, info: '' }
+                    { id: 'h2', title: 'סניה (ימים 4-5)', date:'2026-01-16', options: [
+                        { id: 'opt1', name: 'Mefjord Brygge', desc: 'דירה בפיורד', cost: 2400, booked: false, info: '', link: 'https://www.mefjordbrygge.no/' }
                     ], selectedId: 'opt1' }
                 ],
                 cars: [
-                    { id: 'c1', title: 'רכב', options: [
-                        { id: 'o1', name: 'Hertz (שדה)', desc: 'Toyota RAV4 4x4', cost: 4500, booked: false, info: '' },
-                        { id: 'o2', name: 'Rent-A-Wreck', desc: 'משומש וזול (מונית לסניף)', cost: 2800, booked: false, info: '' }
+                    { id: 'c1', title: 'רכב לכל התקופה', options: [
+                        { id: 'o1', name: 'Hertz (בשדה)', desc: 'Toyota RAV4 4x4 חדשה', cost: 4500, booked: false, info: '', link: 'https://www.rentalcars.com/' },
+                        { id: 'o2', name: 'Rent-A-Wreck', desc: 'רכב משומש, זול משמעותית. צריך מונית לסניף.', cost: 2800, booked: false, info: '', link: 'https://www.rent-a-wreck.no/' }
                     ], selectedId: 'o1' }
                 ],
                 markets: [
-                    { id: 'm1', title: 'סופרמרקט ראשי', options: [{id:'o1', name:'REMA 1000', desc:'הכי זול', cost:800, booked:false}], selectedId:'o1' }
+                    { id: 'm1', title: 'סופרמרקט', options: [{id:'o1', name:'REMA 1000', desc:'הכי זול', cost:800, booked:false}], selectedId:'o1' }
                 ]
             },
             checklist: [
-                { id: 1, text: 'ביגוד תרמי (מרינו)', source: 'דקטלון', cost: 400, gotIt: true },
+                { id: 1, text: 'ביגוד תרמי (מרינו)', source: 'דקטלון/למטייל', cost: 400, gotIt: true },
                 { id: 2, text: 'קרמפונים (דוקרנים)', source: 'אמזון', cost: 100, gotIt: false },
                 { id: 3, text: 'שקיות חימום', source: 'ריקושט', cost: 50, gotIt: false }
             ]
@@ -431,7 +437,7 @@
         let currentOpenDayIndex = -1;
         let modalEditMode = false; // New local state for modal
         const EUR_RATE = 4;
-        const CACHE_KEY = 'tromso_v8_full_cache';
+        const CACHE_KEY = 'tromso_v9_cache';
 
         // --- CORE FUNCTIONS ---
         const formatPrice = (ils) => currentCurrency === 'ILS' ? `₪${parseInt(ils||0).toLocaleString()}` : `€${(parseInt(ils||0)/EUR_RATE).toFixed(0)}`;
@@ -524,6 +530,7 @@
                 const icon = icons[item.type] || '📍';
 
                 const bookedBadge = item.booked ? `<span class="booked-badge">הוזמן</span>` : '';
+                const sourceLink = item.sourceUrl ? `<a href="${item.sourceUrl}" target="_blank" class="source-link">🔗 למקור ההמלצה</a>` : '';
 
                 div.innerHTML = `
                     <div class="timeline-icon">${icon}</div>
@@ -544,7 +551,7 @@
 
                         ${item.warning ? `<div class="info-chip chip-warn w-full mb-1">⚠️ ${item.warning}</div>` : ''}
                         ${item.info ? `<div class="text-xs bg-blue-50 text-blue-700 p-2 rounded border border-blue-100 mb-1">ℹ️ הזמנה: ${item.info}</div>` : ''}
-                        ${item.note ? `<div class="sticky-note">${item.note}<div class="sticky-source">מקור: מחקר/למטייל</div></div>` : ''}
+                        ${item.note ? `<div class="sticky-note">${item.note}<div class="sticky-source">מקור: מחקר/למטייל</div>${sourceLink}</div>` : ''}
                     </div>
 
                     <!-- Edit Mode -->
@@ -570,6 +577,7 @@
                         </div>
                         <input type="text" value="${item.warning}" placeholder="⚠️ אזהרה" class="text-sm text-red-600 bg-red-50 border-red-100" onchange="updateItem(${tIdx}, 'warning', this.value)">
                         <textarea rows="2" class="text-sm bg-yellow-50 border-yellow-200" placeholder="📝 פתקית/טיפ" onchange="updateItem(${tIdx}, 'note', this.value)">${item.note || ''}</textarea>
+                        <input type="text" value="${item.sourceUrl || ''}" placeholder="🔗 קישור למקור/המלצה" class="text-xs" onchange="updateItem(${tIdx}, 'sourceUrl', this.value)">
                         <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
                             <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateItem(${tIdx}, 'booked', this.checked)">
                             <span class="text-xs font-bold">הוזמן?</span>
@@ -645,6 +653,7 @@
                 group.options.forEach((opt, oIdx) => {
                     const selected = group.selectedId === opt.id;
                     const selectClass = selected ? 'selected' : '';
+                    const linkDisplay = opt.link ? `<a href="${opt.link}" target="_blank" class="text-xs text-blue-500 ml-2">🔗 לינק</a>` : '';
                     
                     // If NOT edit mode, allow clicking to select. If edit mode, show full inputs
                     if (isEditMode) {
@@ -656,6 +665,7 @@
                                     <button class="text-red-400 text-xs" onclick="deleteOption('${type}', ${gIdx}, ${oIdx})">x</button>
                                 </div>
                                 <input class="text-xs" placeholder="תיאור" value="${opt.desc}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'desc', this.value)">
+                                <input class="text-xs" placeholder="לינק" value="${opt.link || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'link', this.value)">
                                 <input type="number" class="text-xs w-20" placeholder="מחיר" value="${opt.cost}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'cost', this.value)">
                             </div>
                         `;
@@ -668,7 +678,7 @@
                                         ${opt.booked ? '<span class="booked-badge">הוזמן</span>' : ''}
                                         ${selected ? '<span class="text-xs text-indigo-600 bg-indigo-50 px-2 rounded border border-indigo-100">נבחר</span>' : ''}
                                     </div>
-                                    <div class="text-xs text-gray-500">${opt.desc}</div>
+                                    <div class="text-xs text-gray-500">${opt.desc} ${linkDisplay}</div>
                                 </div>
                                 <div class="font-bold text-indigo-600">${formatPrice(opt.cost)}</div>
                             </div>
