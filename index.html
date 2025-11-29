@@ -12,24 +12,24 @@
     <style>
         body { font-family: 'Assistant', sans-serif; background-color: #F0F2F5; color: #1F2937; -webkit-tap-highlight-color: transparent; }
         
-        /* Modal & Overlay Animations */
-        #day-modal { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        /* Animations */
+        #day-modal { transition: opacity 0.2s ease; opacity: 0; pointer-events: none; }
         #day-modal.open { opacity: 1; pointer-events: auto; }
-        .modal-content { transform: translateY(20px); transition: transform 0.3s ease; }
-        #day-modal.open .modal-content { transform: translateY(0); }
+        .modal-content { transform: scale(0.95); transition: transform 0.2s ease; }
+        #day-modal.open .modal-content { transform: scale(1); }
 
-        /* Mode Visibility inside Modal */
-        .modal-view-mode .edit-field { display: none !important; }
-        .modal-edit-mode .view-field { display: none !important; }
+        /* Mode Visibility */
+        body:not(.editing) .edit-only { display: none !important; }
+        body.editing .view-only { display: none !important; }
         
         /* Inputs */
         input, textarea, select { background: transparent; border: 1px solid transparent; border-bottom: 1px solid #D1D5DB; outline: none; transition: all 0.2s; width: 100%; border-radius: 4px; }
-        .modal-edit-mode input, .modal-edit-mode textarea, .modal-edit-mode select { 
+        body.editing input, body.editing textarea, body.editing select { 
             background: #F9FAFB; border: 1px solid #D1D5DB; padding: 4px 8px; 
         }
-        .modal-edit-mode input:focus, .modal-edit-mode textarea:focus { border-color: #4F46E5; ring: 2px solid #E0E7FF; }
+        body.editing input:focus, body.editing textarea:focus { border-color: #4F46E5; ring: 2px solid #E0E7FF; }
 
-        /* Calendar Grid */
+        /* Grid & Cards */
         .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .day-card { 
             background: white; border-radius: 16px; padding: 20px; 
@@ -39,7 +39,7 @@
         .day-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #818CF8; }
         .day-card::after { content:''; position: absolute; bottom:0; right:0; width: 100%; height: 4px; background: linear-gradient(90deg, #4F46E5, #A5B4FC); }
 
-        /* Detailed Timeline */
+        /* Timeline */
         .timeline-item { position: relative; padding-right: 40px; padding-bottom: 30px; border-right: 2px solid #E5E7EB; }
         .timeline-item:last-child { border-right: transparent; }
         .timeline-icon { 
@@ -48,22 +48,13 @@
             display: flex; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Chips & Badges */
+        /* Chips */
         .info-chip { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px; }
         .chip-price { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
         .chip-dist { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
         .chip-warn { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
         .booked-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 99px; border: 1px solid #86EFAC; }
-        
-        /* Source Link Button */
-        .source-link {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: 0.7rem; background: #FFF7ED; color: #C2410C;
-            border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full;
-            text-decoration: none; margin-top: 6px; font-weight: bold;
-            transition: all 0.2s;
-        }
-        .source-link:hover { background: #FFEDD5; }
+        .source-link { font-size: 0.7rem; background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full; text-decoration: none; margin-top: 6px; font-weight: bold; display: inline-block;}
 
         /* Sticky Note */
         .sticky-note { 
@@ -92,7 +83,7 @@
 <body class="pb-20">
 
     <!-- Loading & Login -->
-    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">טוען את התוכנית...</p></div>
+    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">מתחבר לענן...</p></div>
     
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-10 rounded-3xl shadow-2xl text-center w-96">
@@ -135,13 +126,11 @@
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">סקירה יומית</h2>
-                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא, עריכה וקישורים</p>
+                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא ועריכה</p>
                 </div>
             </div>
             
-            <div id="days-grid" class="calendar-grid">
-                <!-- Cards injected via JS -->
-            </div>
+            <div id="days-grid" class="calendar-grid"></div>
             
             <button class="w-full py-4 mt-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-2xl font-bold hover:bg-white hover:border-indigo-300 transition flex items-center justify-center gap-2" onclick="addDay()">
                 <i class="fa-solid fa-plus"></i> הוסף יום חדש
@@ -151,7 +140,6 @@
         <!-- TAB 2: LOGISTICS -->
         <section id="logistics" class="tab-content">
             <div class="grid lg:grid-cols-2 gap-6">
-                <!-- Left Col -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div class="flex justify-between mb-4 items-center">
@@ -170,7 +158,6 @@
                     </div>
                 </div>
 
-                <!-- Right Col -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div class="flex justify-between mb-4 items-center">
@@ -261,16 +248,14 @@
 
     </main>
 
-    <!-- === DAY MODAL (THE CORE INTERFACE) === -->
+    <!-- === DAY MODAL === -->
     <div id="day-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeDayModal()"></div>
         
         <div class="modal-content bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative modal-view-mode" id="modal-inner">
             
-            <!-- Sticky Header -->
             <div class="bg-indigo-600 p-6 text-white shrink-0 flex justify-between items-start shadow-lg z-10">
                 <div class="w-full">
-                    <!-- View Mode Header -->
                     <div class="view-field">
                         <div class="text-indigo-200 font-bold text-sm mb-1 flex items-center gap-2">
                             <span id="view-day-date"></span>
@@ -279,12 +264,10 @@
                         <h2 class="text-3xl font-extrabold" id="view-day-title"></h2>
                         <p class="text-indigo-100 text-sm mt-2 opacity-90" id="view-day-note"></p>
                     </div>
-
-                    <!-- Edit Mode Header -->
                     <div class="edit-field w-full">
-                        <input id="edit-day-date" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm font-bold mb-2 w-32 rounded px-2" placeholder="תאריך">
-                        <input id="edit-day-title" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-2xl font-bold w-full mb-2 rounded px-2" placeholder="כותרת">
-                        <textarea id="edit-day-note" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm w-full rounded px-2 h-16" placeholder="סיכום יומי..."></textarea>
+                        <input id="edit-day-date" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm font-bold mb-2 w-32 rounded px-2">
+                        <input id="edit-day-title" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-2xl font-bold w-full mb-2 rounded px-2">
+                        <textarea id="edit-day-note" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm w-full rounded px-2 h-16"></textarea>
                     </div>
                 </div>
                 
@@ -296,16 +279,9 @@
                 </div>
             </div>
 
-            <!-- Scrollable Body -->
             <div class="overflow-y-auto flex-1 p-0 bg-gray-50">
-                
-                <!-- Timeline Container -->
                 <div class="p-6 pb-20">
-                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0">
-                        <!-- Items injected here -->
-                    </div>
-
-                    <!-- Add Button (Edit Mode Only) -->
+                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0"></div>
                     <div class="edit-field mt-8 text-center">
                         <button onclick="addTimelineItemToModal()" class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-600 transition w-full">
                             + הוסף פעילות חדשה
@@ -315,7 +291,6 @@
                 </div>
             </div>
 
-            <!-- Edit Mode Footer (Save) -->
             <div class="edit-field absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] flex justify-end gap-3">
                 <button onclick="toggleModalEdit()" class="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-lg">ביטול</button>
                 <button onclick="saveModalData()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition">💾 שמור שינויים</button>
@@ -323,49 +298,85 @@
         </div>
     </div>
 
-    <!-- Sync Status -->
     <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow-lg border border-gray-100 px-4 py-2 rounded-full text-xs font-bold text-gray-500 z-50 flex items-center gap-2 transition-all">
-        <div class="w-2 h-2 rounded-full bg-gray-300 animate-pulse" id="sync-dot"></div>
+        <div class="w-2 h-2 rounded-full bg-gray-300" id="sync-dot"></div>
         <span id="sync-text">ממתין...</span>
     </div>
 
     <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBN9quYq8q01fOgDKliJ_IUq40F0askb_w", authDomain: "tromso-trip.firebaseapp.com", projectId: "tromso-trip", storageBucket: "tromso-trip.firebasestorage.app", messagingSenderId: "706076555674", appId: "1:706076555674:web:c7f3075199b975897fe223", measurementId: "G-976T7D2Q1Z" };
 
-        let app, db, tripRef;
-        try { app = initializeApp(firebaseConfig); db = getFirestore(app); tripRef = doc(db, "trips", "ofri_ami_v9_final"); } catch (e) { console.error(e); }
+        let app, db, auth, tripRef;
+        try { 
+            app = initializeApp(firebaseConfig); 
+            auth = getAuth(app);
+            db = getFirestore(app); 
+            tripRef = doc(db, "trips", "main_plan_final"); 
+        } catch (e) { console.error(e); }
 
-        // --- RICH DATA (V9) ---
+        // --- AUTH & SYNC ---
+        const CACHE_KEY = 'tromso_v10_cache';
+        
+        async function initAuthAndSync() {
+            try {
+                await signInAnonymously(auth); // Ensure we are authenticated
+                onSnapshot(tripRef, async (docSnap) => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    if (docSnap.exists()) {
+                        appData = docSnap.data();
+                        // Version check / Merge logic could go here
+                        if(!appData.logistics) appData = defaultData; 
+                    } else {
+                        // First time run or empty DB -> Upload default data
+                        await setDoc(tripRef, defaultData);
+                        appData = defaultData;
+                    }
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
+                    renderAll();
+                    updateSyncStatus('מסונכרן', 'green');
+                });
+            } catch (error) {
+                console.error("Auth/Sync Error:", error);
+                // Fallback to cache if offline/error
+                const cached = localStorage.getItem(CACHE_KEY);
+                if(cached) { appData = JSON.parse(cached); renderAll(); }
+                document.getElementById('loading-screen').style.display = 'none';
+                updateSyncStatus('אופליין (זיכרון)', 'gray');
+            }
+        }
+
+        // --- RICH DEFAULT DATA (Source of Truth if DB is empty) ---
         const defaultData = {
             currency: 'ILS',
             days: [
                 { 
-                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'להצטייד במים ובמזון קל ליומיים הראשונים. הברזים בנורבגיה מצוינים לשתייה.', 
+                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'מים בנורבגיה מצוינים מהברז. אלכוהול יקר - לקנות בדיוטי.', 
                     timeline: [
-                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS/Norwegian. לעיתים צריך לאסוף כבודה באוסלו ולהפקיד מחדש. לבדוק בדלפק.', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight', note: 'מקור: Skyscanner' },
-                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה התעופה. לוודא שיש מגרד קרח וצמיגי חורף (מסמרים).', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם את הרכב לפני הנסיעה', type: 'car', note: 'מקור: RentalCars' },
-                        { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופרמרקט הזול והגדול ביציאה מהעיר לכיוון Kvaløya. פתוח עד 23:00.', cost: 600, booked: false, info: '', distance: '7 דקות נסיעה מהשדה', warning: 'סגור בימי ראשון', type: 'food', note: 'לקנות: גבינת ברי, לחם, פסטה, רטבים' },
-                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים באזור חשוך. מעולה לזוהר מהמרפסת.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דקות מהסופר', warning: '', type: 'home', note: '', sourceUrl: 'https://www.airbnb.com' }
+                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS/Norwegian. לבדוק אם צריך לאסוף כבודה באוסלו.', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight', note: 'מקור: Skyscanner' },
+                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה. חובה: מגרד קרח וצמיגי חורף (מסמרים).', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם את הרכב לפני הנסיעה', type: 'car', note: 'מקור: RentalCars' },
+                        { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופרמרקט הזול והגדול ביציאה מהעיר. פתוח עד 23:00.', cost: 600, booked: false, info: '', distance: '7 דקות נסיעה', warning: 'סגור בימי ראשון', type: 'food', note: 'לקנות: גבינות, לחם, פסטה' },
+                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים באזור חשוך. מעולה לזוהר.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דקות מהסופר', warning: '', type: 'home', note: '', sourceUrl: 'https://www.airbnb.com' }
                     ]
                 },
                 { 
-                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש בשיטת הבצל. להחנות בחניון Fjellet (בתוך ההר).',
+                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש בשיטת הבצל. להחנות בחניון Fjellet.',
                     timeline: [
-                        { time: '10:00', title: 'חניון Fjellet P-hus', desc: 'חניה מחוממת בתוך ההר מתחת לעיר. יציאות רגליות למרכז.', cost: 150, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'חובה להוריד אפליקציית EasyPark', type: 'car', note: 'מקור: למטייל (טיפים)', sourceUrl: 'https://easypark.com/en' },
-                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית פנורמית על העיר. מומלץ לעלות בשעות ה"אור הכחול" (10:00-13:00).', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן מאוד - לוותר', type: 'attraction', note: 'מקור: אתר הרשמי', sourceUrl: 'https://www.fjellheisen.no/en' },
-                        { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר המרכזית. זול וטעים (נסו את נקניקיית האייל).', cost: 80, booked: false, info: '', distance: 'במרכז העיר', warning: '', type: 'food', note: 'מקור: המלצת גולשים למטייל' },
-                        { time: '20:00', title: 'מרדף זוהר עצמאי', desc: 'נסיעה לחוף Grøtfjord או חזרה ל-Ersfjordbotn. אזורים חשוכים ללא זיהום אור.', cost: 0, booked: false, info: '', distance: '40 דקות נסיעה', warning: 'לבדוק אפליקציית My Aurora Forecast', type: 'star', note: '' }
+                        { time: '10:00', title: 'חניון Fjellet P-hus', desc: 'חניה מחוממת בתוך ההר מתחת לעיר.', cost: 150, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'חובה אפליקציית EasyPark', type: 'car', note: 'מקור: למטייל (טיפים)', sourceUrl: 'https://easypark.com/en' },
+                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית פנורמית. מומלץ לעלות ב"אור הכחול" (10:00-13:00).', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן מאוד - לוותר', type: 'attraction', note: 'מקור: אתר הרשמי', sourceUrl: 'https://www.fjellheisen.no/en' },
+                        { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר המרכזית.', cost: 80, booked: false, info: '', distance: 'במרכז העיר', warning: '', type: 'food', note: 'מקור: המלצת גולשים למטייל' },
+                        { time: '20:00', title: 'מרדף זוהר עצמאי', desc: 'נסיעה לחוף Grøtfjord או חזרה ל-Ersfjordbotn.', cost: 0, booked: false, info: '', distance: '40 דקות נסיעה', warning: 'לבדוק אפליקציית My Aurora Forecast', type: 'star', note: '' }
                     ] 
                 },
                 { 
-                    id: 3, date: '15/1 (ה\')', title: 'כלבים וסאונה', note: 'יום אקטיבי. לא לשכוח בגד ים לסאונה!',
+                    id: 3, date: '15/1 (ה\')', title: 'כלבים וסאונה', note: 'יום אקטיבי. לא לשכוח בגד ים!',
                     timeline: [
-                        { time: '08:45', title: 'מזחלות כלבים', desc: 'Tromsø Villmarkssenter. נהיגה עצמית (Self-drive). כולל ביגוד חם וארוחה.', cost: 1300, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'להזמין חודשיים מראש!', type: 'attraction', note: 'מחיר לזוג', sourceUrl: 'https://villmarkssenter.no/' },
-                        { time: '17:00', title: 'סאונת Pust', desc: 'סאונה צפה בנמל. חום לוהט וקפיצה למי הקרח (3 מעלות). חוויה מחשמלת.', cost: 200, booked: false, info: '', distance: 'במרכז', warning: 'הזמנה מראש חובה', type: 'attraction', note: 'מחיר לזוג. מקור: למטייל', sourceUrl: 'https://pust.io/' }
+                        { time: '08:45', title: 'מזחלות כלבים', desc: 'Tromsø Villmarkssenter. נהיגה עצמית (Self-drive).', cost: 1300, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'להזמין חודשיים מראש!', type: 'attraction', note: 'מחיר לזוג', sourceUrl: 'https://villmarkssenter.no/' },
+                        { time: '17:00', title: 'סאונת Pust', desc: 'סאונה צפה בנמל. חום לוהט וקפיצה למי הקרח.', cost: 200, booked: false, info: '', distance: 'במרכז', warning: 'הזמנה מראש חובה', type: 'attraction', note: 'מקור: למטייל', sourceUrl: 'https://pust.io/' }
                     ]
                 },
                 { 
@@ -377,86 +388,76 @@
                         { time: '15:00', title: 'Mefjord Brygge', desc: 'צ\'ק אין במלון דירות בלב הפיורד.', cost: 0, booked: true, info: '', distance: '', warning: '', type: 'home', note: 'יש מסעדה במקום', sourceUrl: 'https://www.mefjordbrygge.no/' }
                     ]
                 },
-                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: 'טבע פראי. אין כמעט חנויות - להצטייד מראש.', timeline: [
-                    { time: '10:00', title: 'Bergsbotn', desc: 'מרפסת תצפית תלויה מעל הפיורד. נוף עוצר נשימה.', cost: 0, booked: false, info: '', distance: '20 דק נסיעה', warning: '', type: 'attraction', note: '' },
-                    { time: '12:00', title: 'Hamn i Senja', desc: 'כפר דייגים היסטורי משוחזר. מקום יפה לקפה/צהריים.', cost: 150, booked: false, info: '', distance: '', warning: '', type: 'food', note: '' },
-                    { time: '20:00', title: 'זוהר בחושך', desc: 'בסניה אין זיהום אור. פשוט צאו מהמרפסת.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'star', note: 'סיכוי גבוה יותר מטרומסו' }
+                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: 'טבע פראי. כמעט ואין חנויות.', timeline: [
+                    { time: '10:00', title: 'Bergsbotn', desc: 'מרפסת תצפית תלויה מעל הפיורד.', cost: 0, booked: false, info: '', distance: '20 דק נסיעה', warning: '', type: 'attraction', note: '' },
+                    { time: '12:00', title: 'Hamn i Senja', desc: 'כפר דייגים היסטורי משוחזר. קפה/צהריים.', cost: 150, booked: false, info: '', distance: '', warning: '', type: 'food', note: '' },
+                    { time: '20:00', title: 'זוהר בחושך', desc: 'בסניה אין זיהום אור. פשוט צאו מהמרפסת.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'star', note: '' }
                 ] },
                 { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', note: 'יום ראשון - הרוב סגור.', timeline: [
-                    { time: '10:00', title: 'יציאה מסניה', desc: 'דרך המעבורת או היבשה (בהתאם למזג אוויר).', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'car', note: '' },
-                    { time: '14:00', title: 'Sommarøy', desc: '"אי הקיץ". חופים לבנים ומי טורקיז. סיבוב רגלי קצר בגשרים.', cost: 0, booked: false, info: '', distance: '', warning: 'רוחות חזקות בד"כ', type: 'attraction', note: '' },
+                    { time: '10:00', title: 'יציאה מסניה', desc: 'דרך המעבורת או היבשה.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'car', note: '' },
+                    { time: '14:00', title: 'Sommarøy', desc: '"אי הקיץ". חופים לבנים ומי טורקיז.', cost: 0, booked: false, info: '', distance: '', warning: 'רוחות חזקות בד"כ', type: 'attraction', note: '' },
                     { time: '19:00', title: 'Ølhallen Pub', desc: 'הפאב הוותיק ביותר בטרומסו. 72 סוגי בירה.', cost: 150, booked: false, info: '', distance: 'מרכז העיר', warning: 'נסגר מוקדם ביום א\'', type: 'food', note: 'מקור: המלצת גולשים' }
                 ] },
                 { id: 7, date: '19/1 (ב\')', title: 'פרידה', note: '', timeline: [
-                    { time: '11:00', title: 'קניות מזכרות', desc: 'רחוב Storgata. סוודרים נורבגיים, טרולים וגבינה חומה (Brunost).', cost: 400, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
-                    { time: '13:00', title: 'Polaria', desc: 'אקווריום ארקטי. מבנה בצורת קוביות דומינו.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: 'האכלת כלבי ים ב-12:30', sourceUrl: 'https://polaria.no/' },
-                    { time: '19:00', title: 'Fiskekompaniet', desc: 'ארוחת ערב חגיגית. מסעדת פירות ים הטובה בעיר.', cost: 800, booked: false, info: '', distance: 'על הנמל', warning: 'להזמין מקום שבוע מראש', type: 'food', note: 'יקר אבל שווה' }
+                    { time: '11:00', title: 'קניות מזכרות', desc: 'רחוב Storgata. סוודרים וטרולים.', cost: 400, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
+                    { time: '13:00', title: 'Polaria', desc: 'אקווריום ארקטי.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: 'האכלת כלבי ים ב-12:30', sourceUrl: 'https://polaria.no/' },
+                    { time: '19:00', title: 'Fiskekompaniet', desc: 'ארוחת ערב חגיגית. פירות ים.', cost: 800, booked: false, info: '', distance: 'על הנמל', warning: 'להזמין מקום שבוע מראש', type: 'food', note: 'יקר אבל שווה' }
                 ] },
                 { id: 8, date: '20/1 (ג\')', title: 'טיסה ל-AMS', note: '', timeline: [
-                    { time: '10:00', title: 'החזרת רכב', desc: 'בשדה התעופה TOS. למלא דלק בתחנה ליד השדה.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'car', note: 'דלק' },
-                    { time: '18:00', title: 'מלון בשדה', desc: 'CitizenM Schiphol. הליכה ברגל מהטרמינל.', cost: 900, booked: true, info: '', distance: '', warning: '', type: 'home', note: '' }
+                    { time: '10:00', title: 'החזרת רכב', desc: 'בשדה התעופה TOS. למלא דלק.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'car', note: 'דלק' },
+                    { time: '18:00', title: 'מלון בשדה', desc: 'CitizenM Schiphol. הליכה מהטרמינל.', cost: 900, booked: true, info: '', distance: '', warning: '', type: 'home', note: '' }
                 ] }
             ],
             logistics: {
-                flights: [
-                    { id: 'f1', title: 'טיסות (אופציות)', options: [
-                        { id: 'o1', name: 'SAS + Norwegian', desc: 'הלוך 13/1, חזור 20/1. קונקשיין באוסלו.', cost: 3500, booked: true, info: 'הוזמן', link: 'https://www.skyscanner.co.il/' }
-                    ], selectedId: 'o1' }
-                ],
-                housing: [
-                    { id: 'h1', title: 'טרומסו (ימים 1-3)', date:'2026-01-13', options: [
-                        { id: 'opt1', name: 'Airbnb Ersfjord', desc: 'בקתה מומלצת לזוהר', cost: 3200, booked: true, info: '', link: 'https://airbnb.com' },
-                        { id: 'opt2', name: 'Clarion The Edge', desc: 'מלון יוקרה במרכז', cost: 4500, booked: false, info: '', link: 'https://www.nordicchoicehotels.com/' }
-                    ], selectedId: 'opt1' },
-                    { id: 'h2', title: 'סניה (ימים 4-5)', date:'2026-01-16', options: [
-                        { id: 'opt1', name: 'Mefjord Brygge', desc: 'דירה בפיורד', cost: 2400, booked: false, info: '', link: 'https://www.mefjordbrygge.no/' }
-                    ], selectedId: 'opt1' }
-                ],
-                cars: [
-                    { id: 'c1', title: 'רכב לכל התקופה', options: [
-                        { id: 'o1', name: 'Hertz (בשדה)', desc: 'Toyota RAV4 4x4 חדשה', cost: 4500, booked: false, info: '', link: 'https://www.rentalcars.com/' },
-                        { id: 'o2', name: 'Rent-A-Wreck', desc: 'רכב משומש, זול משמעותית. צריך מונית לסניף.', cost: 2800, booked: false, info: '', link: 'https://www.rent-a-wreck.no/' }
-                    ], selectedId: 'o1' }
-                ],
-                markets: [
-                    { id: 'm1', title: 'סופרמרקט', options: [{id:'o1', name:'REMA 1000', desc:'הכי זול', cost:800, booked:false}], selectedId:'o1' }
-                ]
+                flights: [{ id: 'f1', title: 'טיסות', options: [{id:'o1', name:'SAS/Norwegian', desc:'13/1-20/1', cost:3500, booked:true, info:'הוזמן'}], selectedId:'o1' }],
+                housing: [{ id: 'h1', title: 'טרומסו', options: [{id:'o1', name:'Airbnb Ersfjord', cost:3200, booked:true}], selectedId:'o1' }, { id: 'h2', title: 'סניה', options: [{id:'o1', name:'Mefjord Brygge', cost:2400, booked:false}], selectedId:'o1' }],
+                cars: [{ id: 'c1', title: 'רכב', options: [{id:'o1', name:'Hertz (שדה)', cost:4500, booked:false}, {id:'o2', name:'Rent-A-Wreck', cost:2800, booked:false}], selectedId:'o1' }],
+                markets: [{ id: 'm1', title: 'סופר', options: [{id:'o1', name:'REMA 1000', cost:800}], selectedId:'o1' }]
             },
             checklist: [
-                { id: 1, text: 'ביגוד תרמי (מרינו)', source: 'דקטלון/למטייל', cost: 400, gotIt: true },
-                { id: 2, text: 'קרמפונים (דוקרנים)', source: 'אמזון', cost: 100, gotIt: false },
+                { id: 1, text: 'ביגוד תרמי (מרינו)', source: 'דקטלון', cost: 400, gotIt: true },
+                { id: 2, text: 'קרמפונים', source: 'אמזון', cost: 100, gotIt: false },
                 { id: 3, text: 'שקיות חימום', source: 'ריקושט', cost: 50, gotIt: false }
             ]
         };
 
-        // Declare appData here so it's available globally in the module scope
+        // Initialize state with default, then overwrite with DB
         let appData = defaultData;
-
         let isEditMode = false;
         let currentCurrency = 'ILS';
         let currentOpenDayIndex = -1;
-        let modalEditMode = false; // New local state for modal
+        let modalEditMode = false;
         const EUR_RATE = 4;
-        const CACHE_KEY = 'tromso_v9_cache';
 
-        // --- CORE FUNCTIONS ---
+        // --- FUNCTIONS & RENDERERS ---
         const formatPrice = (ils) => currentCurrency === 'ILS' ? `₪${parseInt(ils||0).toLocaleString()}` : `€${(parseInt(ils||0)/EUR_RATE).toFixed(0)}`;
         
-        window.toggleModalEdit = () => {
-            modalEditMode = !modalEditMode;
-            const modal = document.getElementById('modal-inner');
-            if (modalEditMode) {
-                modal.classList.add('modal-edit-mode');
-                modal.classList.remove('modal-view-mode');
-                document.getElementById('modal-edit-toggle').textContent = 'ביטול עריכה';
-            } else {
-                modal.classList.remove('modal-edit-mode');
-                modal.classList.add('modal-view-mode');
-                document.getElementById('modal-edit-toggle').textContent = '✏️ ערוך יום';
-            }
+        function updateSyncStatus(text, color) {
+            document.getElementById('sync-text').textContent = text;
+            document.getElementById('sync-dot').className = `w-2 h-2 rounded-full bg-${color}-500`;
+        }
+
+        async function saveData() {
+            updateSyncStatus('שומר...', 'yellow');
+            try { 
+                await updateDoc(tripRef, appData); 
+                localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
+                updateSyncStatus('מסונכרן', 'green');
+            } catch(e) { console.error(e); }
+        }
+
+        // Global functions for HTML interaction
+        window.renderAll = () => {
+            renderGrid();
+            renderLogisticsGroup('flights', 'flights-container');
+            renderLogisticsGroup('housing', 'housing-container');
+            renderLogisticsGroup('cars', 'cars-container');
+            renderLogisticsGroup('markets', 'markets-container');
+            renderChecklist();
+            renderBudget();
         };
 
-        // --- RENDERERS ---
+        // Render Grid
         function renderGrid() {
             const container = document.getElementById('days-grid');
             container.innerHTML = '';
@@ -469,7 +470,7 @@
                     <div>
                         <div class="text-indigo-500 font-bold text-xs uppercase mb-1 tracking-wide">${day.date}</div>
                         <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">${day.title}</h3>
-                        <p class="text-sm text-gray-500 line-clamp-3 leading-relaxed">${day.note || 'אין הערות מיוחדות'}</p>
+                        <p class="text-sm text-gray-500 line-clamp-3 leading-relaxed">${day.note || 'אין הערות'}</p>
                     </div>
                     <div class="border-t pt-3 mt-auto flex justify-between items-end">
                         <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-medium">${day.timeline.length} פעילויות</span>
@@ -480,25 +481,91 @@
             });
         }
 
+        // Render Modal Timeline
+        function renderModalTimeline() {
+            const container = document.getElementById('modal-timeline');
+            container.innerHTML = '';
+            const day = appData.days[currentOpenDayIndex];
+
+            day.timeline.forEach((item, tIdx) => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                
+                const icons = { flight: '✈️', car: '🚗', food: '🍔', home: '🏠', star: '✨', attraction: '📷', market: '🛒' };
+                const icon = icons[item.type] || '📍';
+                const bookedBadge = item.booked ? `<span class="booked-badge">הוזמן</span>` : '';
+                const sourceLink = item.sourceUrl ? `<a href="${item.sourceUrl}" target="_blank" class="source-link">🔗 למקור ההמלצה</a>` : '';
+
+                div.innerHTML = `
+                    <div class="timeline-icon">${icon}</div>
+                    
+                    <!-- View -->
+                    <div class="view-field pl-2">
+                        <div class="flex items-baseline gap-3 mb-1">
+                            <span class="text-lg font-bold text-indigo-900 w-14 shrink-0">${item.time}</span>
+                            <h4 class="text-lg font-bold text-gray-800">${item.title}</h4>
+                        </div>
+                        <p class="text-gray-600 mb-2 text-sm leading-relaxed">${item.desc}</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            ${item.cost > 0 ? `<span class="info-chip chip-price">${formatPrice(item.cost)}</span>` : ''}
+                            ${item.distance ? `<span class="info-chip chip-dist">🚗 ${item.distance}</span>` : ''}
+                            ${bookedBadge}
+                        </div>
+                        ${item.warning ? `<div class="info-chip chip-warn w-full mb-1">⚠️ ${item.warning}</div>` : ''}
+                        ${item.info ? `<div class="text-xs bg-blue-50 text-blue-700 p-2 rounded border border-blue-100 mb-1">ℹ️ הזמנה: ${item.info}</div>` : ''}
+                        ${item.note ? `<div class="sticky-note">${item.note}<div class="sticky-source">מקור: מחקר/למטייל</div>${sourceLink}</div>` : ''}
+                    </div>
+
+                    <!-- Edit -->
+                    <div class="edit-field bg-white border border-gray-200 p-4 rounded-xl shadow-sm space-y-3 relative">
+                        <button onclick="deleteTimelineItem(${tIdx})" class="absolute top-2 left-2 text-red-400 text-xs">🗑️</button>
+                        <div class="flex gap-2">
+                            <input type="time" value="${item.time}" class="w-24 font-bold" onchange="updateItem(${tIdx}, 'time', this.value)">
+                            <input type="text" value="${item.title}" class="font-bold flex-1" onchange="updateItem(${tIdx}, 'title', this.value)">
+                            <select class="w-12" onchange="updateItem(${tIdx}, 'type', this.value)">
+                                <option value="place" ${item.type==='place'?'selected':''}>📍</option>
+                                <option value="flight" ${item.type==='flight'?'selected':''}>✈️</option>
+                                <option value="car" ${item.type==='car'?'selected':''}>🚗</option>
+                                <option value="food" ${item.type==='food'?'selected':''}>🍔</option>
+                                <option value="home" ${item.type==='home'?'selected':''}>🏠</option>
+                                <option value="star" ${item.type==='star'?'selected':''}>✨</option>
+                                <option value="attraction" ${item.type==='attraction'?'selected':''}>📷</option>
+                            </select>
+                        </div>
+                        <textarea rows="2" class="text-sm" onchange="updateItem(${tIdx}, 'desc', this.value)">${item.desc}</textarea>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" value="${item.cost}" placeholder="עלות" class="text-sm" onchange="updateItem(${tIdx}, 'cost', this.value)">
+                            <input type="text" value="${item.distance}" placeholder="זמן נסיעה" class="text-sm" onchange="updateItem(${tIdx}, 'distance', this.value)">
+                        </div>
+                        <input type="text" value="${item.warning}" placeholder="⚠️ אזהרה" class="text-sm text-red-600 bg-red-50 border-red-100" onchange="updateItem(${tIdx}, 'warning', this.value)">
+                        <textarea rows="2" class="text-sm bg-yellow-50" placeholder="📝 פתקית" onchange="updateItem(${tIdx}, 'note', this.value)">${item.note || ''}</textarea>
+                        <input type="text" value="${item.sourceUrl || ''}" placeholder="🔗 לינק למקור" class="text-xs" onchange="updateItem(${tIdx}, 'sourceUrl', this.value)">
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded">
+                            <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateItem(${tIdx}, 'booked', this.checked)">
+                            <span class="text-xs font-bold">הוזמן?</span>
+                            <input type="text" value="${item.info}" placeholder="פרטי הזמנה" class="flex-1 text-xs" onchange="updateItem(${tIdx}, 'info', this.value)">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Modal Helpers
         window.openDayModal = (idx) => {
             currentOpenDayIndex = idx;
             const day = appData.days[idx];
-            modalEditMode = false; // Reset
-            const modal = document.getElementById('modal-inner');
-            modal.classList.remove('modal-edit-mode');
-            modal.classList.add('modal-view-mode');
+            modalEditMode = false;
+            document.getElementById('modal-inner').classList.remove('modal-edit-mode');
+            document.getElementById('modal-inner').classList.add('modal-view-mode');
             document.getElementById('modal-edit-toggle').textContent = '✏️ ערוך יום';
 
-            // Populate View
             document.getElementById('view-day-title').textContent = day.title;
             document.getElementById('view-day-date').textContent = day.date;
             document.getElementById('view-day-note').textContent = day.note;
-            
-            // Calculate Total for header
             let total = 0; day.timeline.forEach(t => total += parseInt(t.cost||0));
             document.getElementById('view-day-cost').textContent = formatPrice(total);
 
-            // Populate Edit Inputs
             document.getElementById('edit-day-title').value = day.title;
             document.getElementById('edit-day-date').value = day.date;
             document.getElementById('edit-day-note').value = day.note || '';
@@ -516,102 +583,17 @@
             currentOpenDayIndex = -1;
         };
 
-        function renderModalTimeline() {
-            const container = document.getElementById('modal-timeline');
-            container.innerHTML = '';
-            const day = appData.days[currentOpenDayIndex];
-
-            day.timeline.forEach((item, tIdx) => {
-                const div = document.createElement('div');
-                div.className = 'timeline-item';
-                
-                // Icon Map
-                const icons = { flight: '✈️', car: '🚗', food: '🍔', home: '🏠', star: '✨', attraction: '📷', market: '🛒' };
-                const icon = icons[item.type] || '📍';
-
-                const bookedBadge = item.booked ? `<span class="booked-badge">הוזמן</span>` : '';
-                const sourceLink = item.sourceUrl ? `<a href="${item.sourceUrl}" target="_blank" class="source-link">🔗 למקור ההמלצה</a>` : '';
-
-                div.innerHTML = `
-                    <div class="timeline-icon">${icon}</div>
-                    
-                    <!-- View Mode -->
-                    <div class="view-field pl-2">
-                        <div class="flex items-baseline gap-3 mb-1">
-                            <span class="text-lg font-bold text-indigo-900 w-14 shrink-0">${item.time}</span>
-                            <h4 class="text-lg font-bold text-gray-800">${item.title}</h4>
-                        </div>
-                        <p class="text-gray-600 mb-2 text-sm leading-relaxed">${item.desc}</p>
-                        
-                        <div class="flex flex-wrap gap-2 mb-3">
-                            ${item.cost > 0 ? `<span class="info-chip chip-price">${formatPrice(item.cost)}</span>` : ''}
-                            ${item.distance ? `<span class="info-chip chip-dist">🚗 ${item.distance}</span>` : ''}
-                            ${bookedBadge}
-                        </div>
-
-                        ${item.warning ? `<div class="info-chip chip-warn w-full mb-1">⚠️ ${item.warning}</div>` : ''}
-                        ${item.info ? `<div class="text-xs bg-blue-50 text-blue-700 p-2 rounded border border-blue-100 mb-1">ℹ️ הזמנה: ${item.info}</div>` : ''}
-                        ${item.note ? `<div class="sticky-note">${item.note}<div class="sticky-source">מקור: מחקר/למטייל</div>${sourceLink}</div>` : ''}
-                    </div>
-
-                    <!-- Edit Mode -->
-                    <div class="edit-field bg-white border border-gray-200 p-4 rounded-xl shadow-sm space-y-3 relative">
-                        <button onclick="deleteTimelineItem(${tIdx})" class="absolute top-2 left-2 text-red-400 hover:text-red-600 text-xs">🗑️ מחק</button>
-                        <div class="flex gap-2">
-                            <input type="time" value="${item.time}" class="w-24 font-bold" onchange="updateItem(${tIdx}, 'time', this.value)">
-                            <input type="text" value="${item.title}" class="font-bold flex-1" placeholder="כותרת" onchange="updateItem(${tIdx}, 'title', this.value)">
-                            <select class="w-12" onchange="updateItem(${tIdx}, 'type', this.value)">
-                                <option value="place" ${item.type==='place'?'selected':''}>📍</option>
-                                <option value="flight" ${item.type==='flight'?'selected':''}>✈️</option>
-                                <option value="car" ${item.type==='car'?'selected':''}>🚗</option>
-                                <option value="food" ${item.type==='food'?'selected':''}>🍔</option>
-                                <option value="home" ${item.type==='home'?'selected':''}>🏠</option>
-                                <option value="star" ${item.type==='star'?'selected':''}>✨</option>
-                                <option value="attraction" ${item.type==='attraction'?'selected':''}>📷</option>
-                            </select>
-                        </div>
-                        <textarea rows="2" class="text-sm" placeholder="תיאור" onchange="updateItem(${tIdx}, 'desc', this.value)">${item.desc}</textarea>
-                        <div class="grid grid-cols-2 gap-3">
-                            <input type="number" value="${item.cost}" placeholder="עלות" class="text-sm" onchange="updateItem(${tIdx}, 'cost', this.value)">
-                            <input type="text" value="${item.distance}" placeholder="זמן נסיעה/מרחק" class="text-sm" onchange="updateItem(${tIdx}, 'distance', this.value)">
-                        </div>
-                        <input type="text" value="${item.warning}" placeholder="⚠️ אזהרה" class="text-sm text-red-600 bg-red-50 border-red-100" onchange="updateItem(${tIdx}, 'warning', this.value)">
-                        <textarea rows="2" class="text-sm bg-yellow-50 border-yellow-200" placeholder="📝 פתקית/טיפ" onchange="updateItem(${tIdx}, 'note', this.value)">${item.note || ''}</textarea>
-                        <input type="text" value="${item.sourceUrl || ''}" placeholder="🔗 קישור למקור/המלצה" class="text-xs" onchange="updateItem(${tIdx}, 'sourceUrl', this.value)">
-                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border">
-                            <input type="checkbox" class="w-4 h-4" ${item.booked ? 'checked' : ''} onchange="updateItem(${tIdx}, 'booked', this.checked)">
-                            <span class="text-xs font-bold">הוזמן?</span>
-                            <input type="text" value="${item.info}" placeholder="פרטי הזמנה" class="flex-1 text-xs" onchange="updateItem(${tIdx}, 'info', this.value)">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // Save logic for Modal
-        window.updateItem = (tIdx, field, val) => {
-            appData.days[currentOpenDayIndex].timeline[tIdx][field] = val;
-        };
-
-        window.addTimelineItemToModal = () => {
-            appData.days[currentOpenDayIndex].timeline.push({time:'12:00', title:'פעילות חדשה', type:'place', cost:0});
-            renderModalTimeline();
-        };
-
-        window.deleteTimelineItem = (tIdx) => {
-            if(confirm('למחוק?')) {
-                appData.days[currentOpenDayIndex].timeline.splice(tIdx, 1);
-                renderModalTimeline();
-            }
-        };
-
-        window.deleteCurrentDay = () => {
-            if(confirm('למחוק את כל היום הזה?')) {
-                appData.days.splice(currentOpenDayIndex, 1);
-                saveData();
-                closeDayModal();
-                renderGrid();
+        window.toggleModalEdit = () => {
+            modalEditMode = !modalEditMode;
+            const modal = document.getElementById('modal-inner');
+            if (modalEditMode) {
+                modal.classList.add('modal-edit-mode');
+                modal.classList.remove('modal-view-mode');
+                document.getElementById('modal-edit-toggle').textContent = 'ביטול עריכה';
+            } else {
+                modal.classList.remove('modal-edit-mode');
+                modal.classList.add('modal-view-mode');
+                document.getElementById('modal-edit-toggle').textContent = '✏️ ערוך יום';
             }
         };
 
@@ -621,85 +603,49 @@
             day.date = document.getElementById('edit-day-date').value;
             day.note = document.getElementById('edit-day-note').value;
             saveData();
-            
-            // Switch back to view mode locally without closing
-            toggleModalEdit();
-            
-            // Update View Fields immediately
-            document.getElementById('view-day-title').textContent = day.title;
-            document.getElementById('view-day-date').textContent = day.date;
-            document.getElementById('view-day-note').textContent = day.note;
-            let total = 0; day.timeline.forEach(t => total += parseInt(t.cost||0));
-            document.getElementById('view-day-cost').textContent = formatPrice(total);
-            
-            renderGrid(); // Update background grid
-            renderModalTimeline(); // Re-render timeline (to remove inputs)
+            window.toggleModalEdit();
+            window.openDayModal(currentOpenDayIndex); // Refresh view
+            renderGrid();
         };
 
-        // --- OTHER TAB RENDERERS (Keep existing logic but cleaner) ---
+        window.updateItem = (tIdx, field, val) => { appData.days[currentOpenDayIndex].timeline[tIdx][field] = val; };
+        window.addTimelineItemToModal = () => { appData.days[currentOpenDayIndex].timeline.push({time:'12:00', title:'פעילות חדשה', type:'place', cost:0}); renderModalTimeline(); };
+        window.deleteTimelineItem = (tIdx) => { if(confirm('למחוק?')) { appData.days[currentOpenDayIndex].timeline.splice(tIdx, 1); renderModalTimeline(); } };
+        window.deleteCurrentDay = () => { if(confirm('למחוק יום?')) { appData.days.splice(currentOpenDayIndex, 1); saveData(); closeDayModal(); renderGrid(); } };
+
+        // Other Renderers (Logistics, Checklist, Budget)
         function renderLogisticsGroup(type, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            const groups = appData.logistics[type] || [];
-            
-            groups.forEach((group, gIdx) => {
+            (appData.logistics[type]||[]).forEach((group, gIdx) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white border border-gray-200 rounded-xl p-4 mb-3 relative group';
-                
-                // Only show delete in Global Edit Mode
-                const deleteBtn = isEditMode ? `<button onclick="deleteGroup('${type}', ${gIdx})" class="absolute top-2 left-2 text-red-400 hover:text-red-600">🗑️</button>` : '';
-                
+                const deleteBtn = isEditMode ? `<button onclick="deleteGroup('${type}', ${gIdx})" class="absolute top-2 left-2 text-red-400">🗑️</button>` : '';
                 let optionsHtml = '';
                 group.options.forEach((opt, oIdx) => {
                     const selected = group.selectedId === opt.id;
                     const selectClass = selected ? 'selected' : '';
-                    const linkDisplay = opt.link ? `<a href="${opt.link}" target="_blank" class="text-xs text-blue-500 ml-2">🔗 לינק</a>` : '';
-                    
-                    // If NOT edit mode, allow clicking to select. If edit mode, show full inputs
+                    const linkDisplay = opt.link ? `<a href="${opt.link}" target="_blank" class="text-xs text-blue-500 ml-2">🔗</a>` : '';
                     if (isEditMode) {
-                        optionsHtml += `
-                            <div class="option-card ${selectClass} p-3 space-y-2">
-                                <div class="flex gap-2 items-center">
-                                    <input type="radio" name="grp-${type}-${gIdx}" ${selected ? 'checked' : ''} onchange="selectOption('${type}', ${gIdx}, '${opt.id}')">
-                                    <input class="font-bold text-sm flex-1" value="${opt.name}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'name', this.value)">
-                                    <button class="text-red-400 text-xs" onclick="deleteOption('${type}', ${gIdx}, ${oIdx})">x</button>
-                                </div>
-                                <input class="text-xs" placeholder="תיאור" value="${opt.desc}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'desc', this.value)">
-                                <input class="text-xs" placeholder="לינק" value="${opt.link || ''}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'link', this.value)">
-                                <input type="number" class="text-xs w-20" placeholder="מחיר" value="${opt.cost}" onchange="updateOption('${type}', ${gIdx}, ${oIdx}, 'cost', this.value)">
-                            </div>
-                        `;
+                        optionsHtml += `<div class="option-card ${selectClass} p-3 space-y-2">
+                            <div class="flex gap-2 items-center"><input type="radio" name="grp-${type}-${gIdx}" ${selected?'checked':''} onchange="selectOption('${type}',${gIdx},'${opt.id}')"><input class="font-bold text-sm flex-1" value="${opt.name}" onchange="updateOption('${type}',${gIdx},${oIdx},'name',this.value)"><button class="text-red-400 text-xs" onclick="deleteOption('${type}',${gIdx},${oIdx})">x</button></div>
+                            <input class="text-xs" placeholder="תיאור" value="${opt.desc}" onchange="updateOption('${type}',${gIdx},${oIdx},'desc',this.value)">
+                            <input type="number" class="text-xs w-20" placeholder="מחיר" value="${opt.cost}" onchange="updateOption('${type}',${gIdx},${oIdx},'cost',this.value)">
+                        </div>`;
                     } else {
-                        optionsHtml += `
-                            <div class="option-card ${selectClass} flex justify-between items-center p-3 cursor-pointer hover:bg-gray-50" onclick="selectOption('${type}', ${gIdx}, '${opt.id}')">
-                                <div>
-                                    <div class="font-bold text-sm flex items-center gap-2">
-                                        ${opt.name} 
-                                        ${opt.booked ? '<span class="booked-badge">הוזמן</span>' : ''}
-                                        ${selected ? '<span class="text-xs text-indigo-600 bg-indigo-50 px-2 rounded border border-indigo-100">נבחר</span>' : ''}
-                                    </div>
-                                    <div class="text-xs text-gray-500">${opt.desc} ${linkDisplay}</div>
-                                </div>
-                                <div class="font-bold text-indigo-600">${formatPrice(opt.cost)}</div>
-                            </div>
-                        `;
+                        optionsHtml += `<div class="option-card ${selectClass} flex justify-between items-center p-3 cursor-pointer" onclick="selectOption('${type}',${gIdx},'${opt.id}')">
+                            <div><div class="font-bold text-sm flex items-center gap-2">${opt.name} ${opt.booked?'<span class="booked-badge">הוזמן</span>':''} ${selected?'<span class="text-xs text-indigo-600 bg-indigo-50 px-2 rounded">נבחר</span>':''}</div><div class="text-xs text-gray-500">${opt.desc} ${linkDisplay}</div></div>
+                            <div class="font-bold text-indigo-600">${formatPrice(opt.cost)}</div>
+                        </div>`;
                     }
                 });
-
-                card.innerHTML = `
-                    ${deleteBtn}
-                    <div class="flex justify-between items-center mb-2">
-                        ${isEditMode ? `<input class="font-bold text-lg w-full" value="${group.title}" onchange="updateGroup('${type}', ${gIdx}, 'title', this.value)">` : `<h3 class="font-bold text-lg text-gray-800">${group.title} <span class="text-xs font-normal text-gray-400">${group.date||''}</span></h3>`}
-                    </div>
-                    <div class="space-y-2">${optionsHtml}</div>
-                    ${isEditMode ? `<button class="text-xs border border-dashed p-1 mt-2 w-full text-gray-400" onclick="addOption('${type}', ${gIdx})">+ אופציה</button>` : ''}
-                `;
+                card.innerHTML = `${deleteBtn}<div class="flex justify-between items-center mb-2">${isEditMode?`<input class="font-bold text-lg w-full" value="${group.title}" onchange="updateGroup('${type}',${gIdx},'title',this.value)">`:`<h3 class="font-bold text-lg text-gray-800">${group.title} <span class="text-xs font-normal text-gray-400">${group.date||''}</span></h3>`}</div><div class="space-y-2">${optionsHtml}</div>${isEditMode?`<button class="text-xs border border-dashed p-1 mt-2 w-full text-gray-400" onclick="addOption('${type}',${gIdx})">+ אופציה</button>`:''}`;
                 container.appendChild(card);
             });
         }
 
-        // --- BOILERPLATE & HELPERS ---
-        window.addDay = () => { appData.days.push({id:Date.now(), date:'תאריך', title:'יום חדש', timeline:[]}); saveData(); renderGrid(); }
+        // Logic Helpers
+        window.addDay = () => { appData.days.push({id:Date.now(), date:'תאריך', title:'יום חדש', timeline:[]}); saveData(); renderGrid(); };
         window.updateGroup = (t, i, f, v) => { appData.logistics[t][i][f] = v; saveData(); };
         window.deleteGroup = (t, i) => { if(confirm('?')) { appData.logistics[t].splice(i,1); saveData(); renderAll(); } };
         window.addGroup = (t) => { if(!appData.logistics[t]) appData.logistics[t]=[]; appData.logistics[t].push({id:Date.now(), title:'חדש', options:[{id:'o'+Date.now(), name:'אופציה 1', cost:0}], selectedId:'o'+Date.now()}); saveData(); renderAll(); };
@@ -711,17 +657,10 @@
         window.updateChecklist = (i,f,v) => { appData.checklist[i][f]=v; saveData(); renderAll(); };
         window.deleteChecklist = (i) => { appData.checklist.splice(i,1); saveData(); renderAll(); };
 
-        // Budget & Checklist Renderers (Simplified for brevity, similar to previous versions)
         function renderChecklist() {
             const t = document.getElementById('checklist-table-body'); t.innerHTML='';
             appData.checklist.forEach((c,i) => {
-                t.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="px-4 py-3"><input type="checkbox" ${c.gotIt?'checked':''} onchange="updateChecklist(${i},'gotIt',this.checked)" class="w-5 h-5 accent-indigo-600"></td>
-                    <td class="px-4 py-3">${isEditMode?`<input value="${c.text}" onchange="updateChecklist(${i},'text',this.value)">`:c.text}</td>
-                    <td class="px-4 py-3 text-xs">${isEditMode?`<input value="${c.source||''}" onchange="updateChecklist(${i},'source',this.value)">`:c.source||'-'}</td>
-                    <td class="px-4 py-3 font-bold text-indigo-600">${isEditMode?`<input type="number" class="w-20" value="${c.cost}" onchange="updateChecklist(${i},'cost',this.value)">`:formatPrice(c.cost)}</td>
-                    <td class="px-4 py-3">${isEditMode?`<button class="text-red-400" onclick="deleteChecklist(${i})">🗑️</button>`:''}</td>
-                </tr>`
+                t.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-3"><input type="checkbox" ${c.gotIt?'checked':''} onchange="updateChecklist(${i},'gotIt',this.checked)" class="w-5 h-5 accent-indigo-600"></td><td class="px-4 py-3">${isEditMode?`<input value="${c.text}" onchange="updateChecklist(${i},'text',this.value)">`:c.text}</td><td class="px-4 py-3 text-xs">${isEditMode?`<input value="${c.source||''}" onchange="updateChecklist(${i},'source',this.value)">`:c.source||'-'}</td><td class="px-4 py-3 font-bold text-indigo-600">${isEditMode?`<input type="number" class="w-20" value="${c.cost}" onchange="updateChecklist(${i},'cost',this.value)">`:formatPrice(c.cost)}</td><td class="px-4 py-3">${isEditMode?`<button class="text-red-400" onclick="deleteChecklist(${i})">🗑️</button>`:''}</td></tr>`
             });
         }
 
@@ -729,61 +668,16 @@
             let paid=0, future=0;
             const sum = (c,b) => b ? paid+=parseInt(c||0) : future+=parseInt(c||0);
             appData.days.forEach(d=>d.timeline.forEach(t=>sum(t.cost,t.booked)));
-            ['flights','housing','cars','markets'].forEach(t=>(appData.logistics[t]||[]).forEach(g=>{
-                const s=g.options.find(o=>o.id===g.selectedId);
-                if(s) sum(s.cost,s.booked);
-            }));
+            ['flights','housing','cars','markets'].forEach(t=>(appData.logistics[t]||[]).forEach(g=>{ const s=g.options.find(o=>o.id===g.selectedId); if(s) sum(s.cost,s.booked); }));
             appData.checklist.forEach(c=>sum(c.cost,c.gotIt));
-            
             document.getElementById('total-paid').textContent=formatPrice(paid);
             document.getElementById('total-future').textContent=formatPrice(future);
             document.getElementById('total-sum').textContent=formatPrice(paid+future);
             document.getElementById('chart-total').textContent=formatPrice(paid+future);
-
             const ctx = document.getElementById('budgetChart').getContext('2d');
             if(window.myChart) window.myChart.destroy();
-            window.myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: ['שולם','עתידי'], datasets: [{ data: [paid, future], backgroundColor: ['#22c55e', '#e5e7eb'], borderWidth:0 }] },
-                options: { responsive:true, maintainAspectRatio:false, cutout: '70%', plugins: { legend: {display:false} } }
-            });
+            window.myChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['שולם','עתידי'], datasets: [{ data: [paid, future], backgroundColor: ['#22c55e', '#e5e7eb'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout: '70%', plugins: { legend: {display:false} } } });
         }
-
-        // --- INIT ---
-        
-        async function saveData() {
-            document.getElementById('sync-text').textContent = 'שומר...';
-            document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-yellow-400';
-            try { 
-                await updateDoc(tripRef, appData); 
-                localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
-                document.getElementById('sync-text').textContent = 'מסונכרן';
-                document.getElementById('sync-dot').className = 'w-2 h-2 rounded-full bg-green-500';
-            } catch(e) { console.error(e); }
-        }
-
-        window.renderAll = () => {
-            renderGrid();
-            renderLogisticsGroup('flights', 'flights-container');
-            renderLogisticsGroup('housing', 'housing-container');
-            renderLogisticsGroup('cars', 'cars-container');
-            renderLogisticsGroup('markets', 'markets-container');
-            renderChecklist();
-            renderBudget();
-        }
-
-        window.switchTab = (tabId) => {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        };
-
-        window.toggleCurrency = () => {
-            currentCurrency = currentCurrency === 'ILS' ? 'EUR' : 'ILS';
-            document.getElementById('currency-btn').innerHTML = currentCurrency === 'ILS' ? '₪ | €' : '₪ | <b>€</b>';
-            renderAll();
-        };
 
         window.toggleEditMode = () => {
             isEditMode = !isEditMode;
@@ -791,33 +685,31 @@
             document.getElementById('edit-btn').innerHTML = isEditMode ? '✅ סיום' : '✏️ עריכה';
             renderAll();
         };
+        window.toggleCurrency = () => {
+            currentCurrency = currentCurrency === 'ILS' ? 'EUR' : 'ILS';
+            document.getElementById('currency-btn').innerHTML = currentCurrency === 'ILS' ? '₪ | €' : '₪ | <b>€</b>';
+            renderAll();
+        };
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        };
 
-        // Auth
+        const CORRECT_CODE = '8989';
         if (localStorage.getItem('isLoggedIn') === 'true') {
             document.getElementById('login-screen').style.display = 'none';
-            const cached = localStorage.getItem(CACHE_KEY);
-            if(cached) { appData = JSON.parse(cached); renderAll(); }
-            onSnapshot(tripRef, (s) => {
-                document.getElementById('loading-screen').style.display = 'none';
-                if(s.exists()) { 
-                    appData = s.data(); 
-                    if(!appData.logistics) appData.logistics = {flights:[],housing:[],cars:[],markets:[]};
-                    localStorage.setItem(CACHE_KEY, JSON.stringify(appData)); 
-                    renderAll(); 
-                } else { setDoc(tripRef, appData); }
-            });
+            initAuthAndSync();
         } else {
             document.getElementById('loading-screen').style.display = 'none';
         }
 
         document.getElementById('login-btn').onclick = () => {
-            if(document.getElementById('passcode-input').value === '8989') {
+            if(document.getElementById('passcode-input').value === CORRECT_CODE) {
                 localStorage.setItem('isLoggedIn', 'true');
                 document.getElementById('login-screen').style.display = 'none';
-                onSnapshot(tripRef, (s) => {
-                    if(s.exists()) appData = s.data();
-                    renderAll();
-                });
+                initAuthAndSync();
             } else document.getElementById('login-error').classList.remove('hidden');
         };
     </script>
