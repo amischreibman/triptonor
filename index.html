@@ -54,23 +54,11 @@
         .chip-dist { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
         .chip-warn { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
         .booked-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 99px; border: 1px solid #86EFAC; }
-        
-        /* Source Link Button */
-        .source-link {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: 0.7rem; background: #FFF7ED; color: #C2410C;
-            border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full;
-            text-decoration: none; margin-top: 6px; font-weight: bold;
-            transition: all 0.2s;
-        }
+        .source-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full; text-decoration: none; margin-top: 6px; font-weight: bold; transition: all 0.2s; }
         .source-link:hover { background: #FFEDD5; }
 
         /* Sticky Note */
-        .sticky-note { 
-            background: #FEF3C7; color: #78350F; padding: 10px; border-radius: 0 8px 8px 8px; 
-            font-family: 'Kalam', cursive; font-size: 0.9rem; border-left: 4px solid #F59E0B; 
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.05); margin-top: 8px; position: relative;
-        }
+        .sticky-note { background: #FEF3C7; color: #78350F; padding: 10px; border-radius: 0 8px 8px 8px; font-family: 'Kalam', cursive; font-size: 0.9rem; border-left: 4px solid #F59E0B; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); margin-top: 8px; position: relative; }
         .sticky-source { font-size: 0.65rem; color: #92400E; text-align: left; margin-top: 4px; font-family: sans-serif; opacity: 0.7; }
 
         /* Option Card */
@@ -93,7 +81,7 @@
 <body class="pb-20">
 
     <!-- Loading & Login -->
-    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">מכין את המסע...</p></div>
+    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">טוען את התוכנית...</p></div>
     
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-10 rounded-3xl shadow-2xl text-center w-96">
@@ -131,7 +119,7 @@
 
     <main class="container mx-auto max-w-5xl p-4 mt-4">
 
-        <!-- TAB 1: ITINERARY (CALENDAR GRID) -->
+        <!-- TAB 1: ITINERARY -->
         <section id="itinerary" class="tab-content active">
             <div class="flex justify-between items-end mb-6">
                 <div>
@@ -139,11 +127,7 @@
                     <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא, עריכה וקישורים</p>
                 </div>
             </div>
-            
-            <div id="days-grid" class="calendar-grid">
-                <!-- Cards injected via JS -->
-            </div>
-            
+            <div id="days-grid" class="calendar-grid"></div>
             <button class="w-full py-4 mt-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-2xl font-bold hover:bg-white hover:border-indigo-300 transition flex items-center justify-center gap-2" onclick="addDay()">
                 <i class="fa-solid fa-plus"></i> הוסף יום חדש
             </button>
@@ -170,7 +154,6 @@
                         <div id="cars-container"></div>
                     </div>
                 </div>
-
                 <!-- Right Col -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -180,7 +163,6 @@
                         </div>
                         <div id="housing-container"></div>
                     </div>
-
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div class="flex justify-between mb-4 items-center">
                             <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-cart-shopping mr-2 text-green-500"></i> סופרמרקטים</h3>
@@ -195,15 +177,13 @@
         <!-- TAB 3: CHECKLIST -->
         <section id="checklist" class="tab-content">
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">רשימת ציוד חורף (נבדק!)</h2>
-                
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">רשימת ציוד חורף</h2>
                 <div class="bg-indigo-50 p-4 rounded-xl mb-6 flex gap-3 items-center">
                     <input type="text" id="new-item-text" placeholder="שם הפריט..." class="bg-white border-0 rounded-lg px-4 py-3 flex-1 shadow-sm">
                     <input type="text" id="new-item-source" placeholder="איפה קונים?" class="bg-white border-0 rounded-lg px-4 py-3 w-1/4 shadow-sm hidden md:block">
                     <input type="number" id="new-item-price" placeholder="מחיר" class="bg-white border-0 rounded-lg px-4 py-3 w-24 shadow-sm">
                     <button onclick="addCheckItem()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-indigo-700 transition">+</button>
                 </div>
-
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-600">
                         <thead class="bg-gray-50 text-gray-700 uppercase text-xs rounded-lg">
@@ -225,7 +205,6 @@
         <section id="budget" class="tab-content">
             <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
                 <h2 class="text-2xl font-bold mb-8 text-gray-800">ניהול תקציב</h2>
-                
                 <div class="grid md:grid-cols-2 gap-12 items-center">
                     <div class="relative">
                         <canvas id="budgetChart"></canvas>
@@ -262,16 +241,16 @@
 
     </main>
 
-    <!-- === DAY MODAL (THE CORE INTERFACE) === -->
+    <!-- DAY MODAL -->
     <div id="day-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeDayModal()"></div>
         
         <div class="modal-content bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative modal-view-mode" id="modal-inner">
             
-            <!-- Sticky Header -->
+            <!-- Header -->
             <div class="bg-indigo-600 p-6 text-white shrink-0 flex justify-between items-start shadow-lg z-10">
                 <div class="w-full">
-                    <!-- View Mode Header -->
+                    <!-- View -->
                     <div class="view-field">
                         <div class="text-indigo-200 font-bold text-sm mb-1 flex items-center gap-2">
                             <span id="view-day-date"></span>
@@ -280,8 +259,7 @@
                         <h2 class="text-3xl font-extrabold" id="view-day-title"></h2>
                         <p class="text-indigo-100 text-sm mt-2 opacity-90" id="view-day-note"></p>
                     </div>
-
-                    <!-- Edit Mode Header -->
+                    <!-- Edit -->
                     <div class="edit-field w-full">
                         <input id="edit-day-date" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm font-bold mb-2 w-32 rounded px-2" placeholder="תאריך">
                         <input id="edit-day-title" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-2xl font-bold w-full mb-2 rounded px-2" placeholder="כותרת">
@@ -297,26 +275,20 @@
                 </div>
             </div>
 
-            <!-- Scrollable Body -->
+            <!-- Body -->
             <div class="overflow-y-auto flex-1 p-0 bg-gray-50">
-                
-                <!-- Timeline Container -->
                 <div class="p-6 pb-20">
-                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0">
-                        <!-- Items injected here -->
-                    </div>
-
-                    <!-- Add Button (Edit Mode Only) -->
+                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0"></div>
                     <div class="edit-field mt-8 text-center">
                         <button onclick="addTimelineItemToModal()" class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-600 transition w-full">
-                            + הוסף פעילות חדשה בסוף היום
+                            + הוסף פעילות חדשה (בסוף)
                         </button>
                         <button onclick="deleteCurrentDay()" class="text-red-400 text-xs mt-4 underline">מחק את היום כולו</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Edit Mode Footer (Save) -->
+            <!-- Footer Save -->
             <div class="edit-field absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] flex justify-end gap-3">
                 <button onclick="toggleModalEdit()" class="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-lg">ביטול</button>
                 <button onclick="saveModalData()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition">💾 שמור שינויים</button>
@@ -346,9 +318,8 @@
         } catch (e) { console.error(e); }
 
         // --- AUTH & SYNC ---
-        const CACHE_KEY = 'tromso_v12_cache';
+        const CACHE_KEY = 'tromso_v13_cache';
         
-        // Function to update the Sync UI indicator
         function updateSyncStatus(text, color) {
             const dot = document.getElementById('sync-dot');
             const txt = document.getElementById('sync-text');
@@ -356,7 +327,6 @@
             dot.className = `w-2 h-2 rounded-full bg-${color}-500`;
         }
 
-        // Fallback function to load data from LocalStorage if offline/auth fails
         function fallbackToCache() {
              const cached = localStorage.getItem(CACHE_KEY);
              if (cached) {
@@ -364,10 +334,9 @@
                  renderAll();
                  updateSyncStatus('אופליין (זיכרון)', 'gray');
              } else {
-                 // If no cache, load defaults
                  appData = defaultData;
                  renderAll();
-                 updateSyncStatus('ברירת מחדל (ללא חיבור)', 'gray');
+                 updateSyncStatus('ברירת מחדל', 'gray');
              }
              document.getElementById('loading-screen').style.display = 'none';
              document.getElementById('login-screen').style.display = 'none';
@@ -375,114 +344,52 @@
 
         async function initAuthAndSync() {
             try {
-                // Try to sign in anonymously. 
-                try {
-                    await signInAnonymously(auth);
-                } catch(e) {
-                    console.warn("Auth skipped/failed, trying direct access:", e.message);
-                }
-                
-                // Try to attach listener
+                try { await signInAnonymously(auth); } catch(e) { console.warn("Auth warning:", e); }
                 onSnapshot(tripRef, async (docSnap) => {
                     document.getElementById('loading-screen').style.display = 'none';
                     if (docSnap.exists()) {
                         appData = docSnap.data();
                         if(!appData.logistics) appData = defaultData; 
                     } else {
-                        // Try to write default data if doc doesn't exist
-                        try {
-                             await setDoc(tripRef, defaultData);
-                             appData = defaultData;
-                        } catch (e) {
-                             console.warn("Could not write initial data (likely permission):", e);
-                             appData = defaultData; // Use in-memory
-                        }
+                        try { await setDoc(tripRef, defaultData); appData = defaultData; } 
+                        catch (e) { console.warn("Init write failed:", e); appData = defaultData; }
                     }
                     localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
                     renderAll();
                     updateSyncStatus('מסונכרן', 'green');
-                }, (error) => {
-                    console.error("Snapshot/Sync Error:", error);
-                    fallbackToCache();
-                });
-            } catch (error) {
-                console.error("General Init Error:", error);
-                fallbackToCache();
-            }
+                }, (error) => { fallbackToCache(); });
+            } catch (error) { fallbackToCache(); }
         }
 
-        // --- RICH DEFAULT DATA (Source of Truth if DB is empty) ---
+        // --- RICH DATA (Source of Truth) ---
         const defaultData = {
             currency: 'ILS',
             days: [
-                { 
-                    id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'מים בנורבגיה מצוינים מהברז. אלכוהול יקר - לקנות בדיוטי.', 
-                    timeline: [
-                        { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS/Norwegian. לבדוק אם צריך לאסוף כבודה באוסלו.', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר באוסלו', type: 'flight', note: 'מקור: Skyscanner' },
-                        { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה. חובה: מגרד קרח וצמיגי חורף (מסמרים).', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם את הרכב לפני הנסיעה', type: 'car', note: 'מקור: RentalCars' },
-                        { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופרמרקט הזול והגדול ביציאה מהעיר. פתוח עד 23:00.', cost: 600, booked: false, info: '', distance: '7 דקות נסיעה', warning: 'סגור בימי ראשון', type: 'food', note: 'לקנות: גבינות, לחם, פסטה' },
-                        { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים באזור חשוך. מעולה לזוהר.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דקות מהסופר', warning: '', type: 'home', note: '', sourceUrl: 'https://www.airbnb.com' }
-                    ]
-                },
-                { 
-                    id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש בשיטת הבצל. להחנות בחניון Fjellet.',
-                    timeline: [
-                        { time: '10:00', title: 'חניון Fjellet P-hus', desc: 'חניה מחוממת בתוך ההר מתחת לעיר.', cost: 150, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'חובה אפליקציית EasyPark', type: 'car', note: 'מקור: למטייל (טיפים)', sourceUrl: 'https://easypark.com/en' },
-                        { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית פנורמית. מומלץ לעלות ב"אור הכחול" (10:00-13:00).', cost: 260, booked: false, info: '', distance: 'לחצות את הגשר', warning: 'אם מעונן מאוד - לוותר', type: 'attraction', note: 'מקור: אתר הרשמי', sourceUrl: 'https://www.fjellheisen.no/en' },
-                        { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה המפורסמת בכיכר המרכזית.', cost: 80, booked: false, info: '', distance: 'במרכז העיר', warning: '', type: 'food', note: 'מקור: המלצת גולשים למטייל' },
-                        { time: '20:00', title: 'מרדף זוהר עצמאי', desc: 'נסיעה לחוף Grøtfjord או חזרה ל-Ersfjordbotn.', cost: 0, booked: false, info: '', distance: '40 דקות נסיעה', warning: 'לבדוק אפליקציית My Aurora Forecast', type: 'star', note: '' }
-                    ] 
-                },
-                { 
-                    id: 3, date: '15/1 (ה\')', title: 'כלבים וסאונה', note: 'יום אקטיבי. לא לשכוח בגד ים!',
-                    timeline: [
-                        { time: '08:45', title: 'מזחלות כלבים', desc: 'Tromsø Villmarkssenter. נהיגה עצמית (Self-drive).', cost: 1300, booked: false, info: '', distance: '25 דקות נסיעה', warning: 'להזמין חודשיים מראש!', type: 'attraction', note: 'מחיר לזוג', sourceUrl: 'https://villmarkssenter.no/' },
-                        { time: '17:00', title: 'סאונת Pust', desc: 'סאונה צפה בנמל. חום לוהט וקפיצה למי הקרח.', cost: 200, booked: false, info: '', distance: 'במרכז', warning: 'הזמנה מראש חובה', type: 'attraction', note: 'מקור: למטייל', sourceUrl: 'https://pust.io/' }
-                    ]
-                },
-                { 
-                    id: 4, date: '16/1 (ו\')', title: 'המעבורת לסניה', note: 'הדרך לסניה היא היפה ביותר בטיול. סעו בזהירות.',
-                    timeline: [
-                        { time: '09:30', title: 'נסיעה ל-Brensholmen', desc: 'נסיעה לאורך החוף הדרומי של Kvaløya.', cost: 0, booked: false, info: '', distance: '55 ק"מ (שעה)', warning: 'כבישים צרים וחלקים', type: 'car', note: '' },
-                        { time: '11:00', title: 'מעבורת ל-Botnhamn', desc: 'חוסכת 3.5 שעות נסיעה. בחורף הלו"ז מצומצם.', cost: 150, booked: false, info: '', distance: '45 דקות הפלגה', warning: 'לבדוק בבוקר באפליקציית Troms Reise!', type: 'car', note: 'אם מבוטל - נסיעה יבשתית ארוכה', sourceUrl: 'https://fylkestrafikk.no/' },
-                        { time: '13:00', title: 'Tungeneset', desc: 'תצפית "שיני השטן". סלעים דרמטיים היורדים לים.', cost: 0, booked: false, info: '', distance: 'על כביש 862', warning: 'סלעים חלקים מאוד', type: 'attraction', note: 'עמדת צילום חובה' },
-                        { time: '15:00', title: 'Mefjord Brygge', desc: 'צ\'ק אין במלון דירות בלב הפיורד.', cost: 0, booked: true, info: '', distance: '', warning: '', type: 'home', note: 'יש מסעדה במקום', sourceUrl: 'https://www.mefjordbrygge.no/' }
-                    ]
-                },
-                { id: 5, date: '17/1 (ש\')', title: 'האי סניה', note: 'טבע פראי. כמעט ואין חנויות.', timeline: [
-                    { time: '10:00', title: 'Bergsbotn', desc: 'מרפסת תצפית תלויה מעל הפיורד.', cost: 0, booked: false, info: '', distance: '20 דק נסיעה', warning: '', type: 'attraction', note: '' },
-                    { time: '12:00', title: 'Hamn i Senja', desc: 'כפר דייגים היסטורי משוחזר. קפה/צהריים.', cost: 150, booked: false, info: '', distance: '', warning: '', type: 'food', note: '' },
-                    { time: '20:00', title: 'זוהר בחושך', desc: 'בסניה אין זיהום אור. פשוט צאו מהמרפסת.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'star', note: '' }
-                ] },
-                { id: 6, date: '18/1 (א\')', title: 'חזרה לטרומסו', note: 'יום ראשון - הרוב סגור.', timeline: [
-                    { time: '10:00', title: 'יציאה מסניה', desc: 'דרך המעבורת או היבשה.', cost: 0, booked: false, info: '', distance: '', warning: '', type: 'car', note: '' },
-                    { time: '14:00', title: 'Sommarøy', desc: '"אי הקיץ". חופים לבנים ומי טורקיז.', cost: 0, booked: false, info: '', distance: '', warning: 'רוחות חזקות בד"כ', type: 'attraction', note: '' },
-                    { time: '19:00', title: 'Ølhallen Pub', desc: 'הפאב הוותיק ביותר בטרומסו. 72 סוגי בירה.', cost: 150, booked: false, info: '', distance: 'מרכז העיר', warning: 'נסגר מוקדם ביום א\'', type: 'food', note: 'מקור: המלצת גולשים' }
-                ] },
-                { id: 7, date: '19/1 (ב\')', title: 'פרידה', note: '', timeline: [
-                    { time: '11:00', title: 'קניות מזכרות', desc: 'רחוב Storgata. סוודרים וטרולים.', cost: 400, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: '' },
-                    { time: '13:00', title: 'Polaria', desc: 'אקווריום ארקטי.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'attraction', note: 'האכלת כלבי ים ב-12:30', sourceUrl: 'https://polaria.no/' },
-                    { time: '19:00', title: 'Fiskekompaniet', desc: 'ארוחת ערב חגיגית. פירות ים.', cost: 800, booked: false, info: '', distance: 'על הנמל', warning: 'להזמין מקום שבוע מראש', type: 'food', note: 'יקר אבל שווה' }
-                ] },
-                { id: 8, date: '20/1 (ג\')', title: 'טיסה ל-AMS', note: '', timeline: [
-                    { time: '10:00', title: 'החזרת רכב', desc: 'בשדה התעופה TOS. למלא דלק.', cost: 300, booked: false, info: '', distance: '', warning: '', type: 'car', note: 'דלק' },
-                    { time: '18:00', title: 'מלון בשדה', desc: 'CitizenM Schiphol. הליכה מהטרמינל.', cost: 900, booked: true, info: '', distance: '', warning: '', type: 'home', note: '' }
-                ] }
+                { id: 1, date: '13/1 (ג\')', title: 'נחיתה והתארגנות', note: 'מים בנורבגיה מצוינים מהברז.', timeline: [
+                    { time: '14:00', title: 'טיסה ל-TOS', desc: 'SAS/Norwegian.', cost: 0, booked: true, info: 'PNR: SK123', distance: '', warning: 'קונקשיין קצר', type: 'flight', note: 'מקור: Skyscanner' },
+                    { time: '18:00', title: 'איסוף רכב', desc: 'Hertz בשדה. חובה: מגרד קרח.', cost: 0, booked: true, info: 'Voucher #555', distance: 'בשדה', warning: 'לצלם לפני הנסיעה', type: 'car', note: '' },
+                    { time: '19:30', title: 'REMA 1000 Kvaløysletta', desc: 'הסופר הזול ביציאה מהעיר.', cost: 600, booked: false, info: '', distance: '7 דק\'', warning: 'סגור ביום א\'', type: 'food', note: 'לקנות: גבינות, לחם' },
+                    { time: '20:30', title: 'צ\'ק אין Airbnb', desc: 'Ersfjordbotn. בקתה על המים.', cost: 0, booked: true, info: 'קוד 1234', distance: '15 דק\'', warning: '', type: 'home', note: '', sourceUrl: 'https://www.airbnb.com' }
+                ]},
+                { id: 2, date: '14/1 (ד\')', title: 'העיר טרומסו', note: 'להתלבש בשיטת הבצל.', timeline: [
+                    { time: '10:00', title: 'חניון Fjellet P-hus', desc: 'חניה מחוממת בתוך ההר.', cost: 150, booked: false, info: '', distance: '25 דק\'', warning: 'EasyPark', type: 'car', note: '' },
+                    { time: '11:30', title: 'רכבל Fjellheisen', desc: 'תצפית פנורמית.', cost: 260, booked: false, info: '', distance: 'לחצות גשר', warning: 'אם מעונן - לוותר', type: 'attraction', note: '', sourceUrl: 'https://www.fjellheisen.no/' },
+                    { time: '14:00', title: 'Rakettkiosken', desc: 'הנקניקייה במרכז.', cost: 80, booked: false, info: '', distance: 'מרכז', warning: '', type: 'food', note: '' },
+                    { time: '20:00', title: 'זוהר עצמאי', desc: 'Grøtfjord.', cost: 0, booked: false, info: '', distance: '40 דק\'', warning: 'לבדוק Aurora Forecast', type: 'star', note: '' }
+                ]}
             ],
             logistics: {
-                flights: [{ id: 'f1', title: 'טיסות', options: [{id:'o1', name:'SAS/Norwegian', desc:'13/1-20/1', cost:3500, booked:true, info:'הוזמן'}], selectedId:'o1' }],
+                flights: [{ id: 'f1', title: 'טיסות', options: [{id:'o1', name:'SAS', desc:'הלוך 13/1', cost:3500, booked:true}], selectedId:'o1' }],
                 housing: [{ id: 'h1', title: 'טרומסו', options: [{id:'o1', name:'Airbnb Ersfjord', cost:3200, booked:true}], selectedId:'o1' }, { id: 'h2', title: 'סניה', options: [{id:'o1', name:'Mefjord Brygge', cost:2400, booked:false}], selectedId:'o1' }],
-                cars: [{ id: 'c1', title: 'רכב', options: [{id:'o1', name:'Hertz (שדה)', cost:4500, booked:false}, {id:'o2', name:'Rent-A-Wreck', cost:2800, booked:false}], selectedId:'o1' }],
+                cars: [{ id: 'c1', title: 'רכב', options: [{id:'o1', name:'Hertz', cost:4500, booked:false}, {id:'o2', name:'Rent-A-Wreck', cost:2800, booked:false}], selectedId:'o1' }],
                 markets: [{ id: 'm1', title: 'סופר', options: [{id:'o1', name:'REMA 1000', cost:800}], selectedId:'o1' }]
             },
             checklist: [
                 { id: 1, text: 'ביגוד תרמי (מרינו)', source: 'דקטלון', cost: 400, gotIt: true },
-                { id: 2, text: 'קרמפונים', source: 'אמזון', cost: 100, gotIt: false },
-                { id: 3, text: 'שקיות חימום', source: 'ריקושט', cost: 50, gotIt: false }
+                { id: 2, text: 'קרמפונים', source: 'אמזון', cost: 100, gotIt: false }
             ]
         };
 
-        // Initialize state with default, then overwrite with DB
         let appData = defaultData;
         let isEditMode = false;
         let currentCurrency = 'ILS';
@@ -490,10 +397,9 @@
         let modalEditMode = false;
         const EUR_RATE = 4;
 
-        // --- FUNCTIONS & RENDERERS ---
         const formatPrice = (ils) => currentCurrency === 'ILS' ? `₪${parseInt(ils||0).toLocaleString()}` : `€${(parseInt(ils||0)/EUR_RATE).toFixed(0)}`;
         
-        // Global functions for HTML interaction
+        // --- RENDER ---
         window.renderAll = () => {
             renderGrid();
             renderLogisticsGroup('flights', 'flights-container');
@@ -504,7 +410,6 @@
             renderBudget();
         };
 
-        // Render Grid
         function renderGrid() {
             const container = document.getElementById('days-grid');
             container.innerHTML = '';
@@ -513,22 +418,11 @@
                 const card = document.createElement('div');
                 card.className = 'day-card';
                 card.onclick = () => openDayModal(idx);
-                card.innerHTML = `
-                    <div>
-                        <div class="text-indigo-500 font-bold text-xs uppercase mb-1 tracking-wide">${day.date}</div>
-                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">${day.title}</h3>
-                        <p class="text-sm text-gray-500 line-clamp-3 leading-relaxed">${day.note || 'אין הערות'}</p>
-                    </div>
-                    <div class="border-t pt-3 mt-auto flex justify-between items-end">
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-md font-medium">${day.timeline.length} פעילויות</span>
-                        <span class="text-lg font-bold text-indigo-600">${formatPrice(total)}</span>
-                    </div>
-                `;
+                card.innerHTML = `<div><div class="text-indigo-500 font-bold text-xs uppercase mb-1">${day.date}</div><h3 class="text-xl font-bold text-gray-800 mb-2">${day.title}</h3><p class="text-sm text-gray-500 line-clamp-3">${day.note || ''}</p></div><div class="border-t pt-3 mt-auto flex justify-between items-end"><span class="text-xs bg-gray-100 px-2 py-1 rounded">${day.timeline.length} פעילויות</span><span class="text-lg font-bold text-indigo-600">${formatPrice(total)}</span></div>`;
                 container.appendChild(card);
             });
         }
 
-        // Render Modal Timeline
         function renderModalTimeline() {
             const container = document.getElementById('modal-timeline');
             container.innerHTML = '';
@@ -537,36 +431,28 @@
             day.timeline.forEach((item, tIdx) => {
                 const div = document.createElement('div');
                 div.className = 'timeline-item';
-                
                 const icons = { flight: '✈️', car: '🚗', food: '🍔', home: '🏠', star: '✨', attraction: '📷', market: '🛒' };
                 const icon = icons[item.type] || '📍';
                 const bookedBadge = item.booked ? `<span class="booked-badge">הוזמן</span>` : '';
-                const sourceLink = item.sourceUrl ? `<a href="${item.sourceUrl}" target="_blank" class="source-link">🔗 למקור ההמלצה</a>` : '';
+                const sourceLink = item.sourceUrl ? `<a href="${item.sourceUrl}" target="_blank" class="source-link">🔗 למקור</a>` : '';
 
                 div.innerHTML = `
                     <div class="timeline-icon">${icon}</div>
                     
                     <!-- View -->
                     <div class="view-field pl-2">
-                        <div class="flex items-baseline gap-3 mb-1">
-                            <span class="text-lg font-bold text-indigo-900 w-14 shrink-0">${item.time}</span>
-                            <h4 class="text-lg font-bold text-gray-800">${item.title}</h4>
-                        </div>
+                        <div class="flex items-baseline gap-3 mb-1"><span class="text-lg font-bold text-indigo-900 w-14 shrink-0">${item.time}</span><h4 class="text-lg font-bold text-gray-800">${item.title}</h4></div>
                         <p class="text-gray-600 mb-2 text-sm leading-relaxed">${item.desc}</p>
-                        <div class="flex flex-wrap gap-2 mb-3">
-                            ${item.cost > 0 ? `<span class="info-chip chip-price">${formatPrice(item.cost)}</span>` : ''}
-                            ${item.distance ? `<span class="info-chip chip-dist">🚗 ${item.distance}</span>` : ''}
-                            ${bookedBadge}
-                        </div>
+                        <div class="flex flex-wrap gap-2 mb-3">${item.cost > 0 ? `<span class="info-chip chip-price">${formatPrice(item.cost)}</span>` : ''}${item.distance ? `<span class="info-chip chip-dist">🚗 ${item.distance}</span>` : ''}${bookedBadge}</div>
                         ${item.warning ? `<div class="info-chip chip-warn w-full mb-1">⚠️ ${item.warning}</div>` : ''}
                         ${item.info ? `<div class="text-xs bg-blue-50 text-blue-700 p-2 rounded border border-blue-100 mb-1">ℹ️ הזמנה: ${item.info}</div>` : ''}
-                        ${item.note ? `<div class="sticky-note">${item.note}<div class="sticky-source">מקור: מחקר/למטייל</div>${sourceLink}</div>` : ''}
+                        ${item.note ? `<div class="sticky-note">${item.note}${sourceLink}</div>` : ''}
                     </div>
 
                     <!-- Edit -->
                     <div class="edit-field bg-white border border-gray-200 p-4 rounded-xl shadow-sm space-y-3 relative">
                         <button onclick="deleteTimelineItem(${tIdx})" class="absolute top-2 left-2 text-red-400 text-xs">🗑️</button>
-                        <button onclick="addTimelineItemBefore(${tIdx})" class="w-full text-center text-xs text-indigo-500 border border-dashed border-indigo-300 rounded p-1 mb-3 hover:bg-indigo-50">+ הוסף פעילות כאן (לפני הנוכחית)</button>
+                        <button onclick="addTimelineItemBefore(${tIdx})" class="w-full text-center text-xs text-indigo-500 border border-dashed border-indigo-300 rounded p-1 mb-3 hover:bg-indigo-50">+ הוסף פעילות כאן</button>
                         <div class="flex gap-2">
                             <input type="time" value="${item.time}" class="w-24 font-bold" onchange="updateItem(${tIdx}, 'time', this.value)">
                             <input type="text" value="${item.title}" class="font-bold flex-1" onchange="updateItem(${tIdx}, 'title', this.value)">
@@ -599,7 +485,7 @@
             });
         }
 
-        // Modal Helpers
+        // --- MODAL LOGIC ---
         window.openDayModal = (idx) => {
             currentOpenDayIndex = idx;
             const day = appData.days[idx];
@@ -652,21 +538,41 @@
             day.note = document.getElementById('edit-day-note').value;
             saveData();
             window.toggleModalEdit();
-            window.openDayModal(currentOpenDayIndex); // Refresh view
+            window.openDayModal(currentOpenDayIndex);
             renderGrid();
         };
 
+        // Timeline Actions
         window.updateItem = (tIdx, field, val) => { appData.days[currentOpenDayIndex].timeline[tIdx][field] = val; };
-        window.addTimelineItemToModal = () => { appData.days[currentOpenDayIndex].timeline.push({time:'12:00', title:'פעילות חדשה', type:'place', cost:0}); renderModalTimeline(); };
+        window.addTimelineItemToModal = () => { 
+            if (!appData.days[currentOpenDayIndex].timeline) appData.days[currentOpenDayIndex].timeline = [];
+            appData.days[currentOpenDayIndex].timeline.push({time:'12:00', title:'פעילות חדשה', type:'place', cost:0, booked:false}); 
+            saveData();
+            renderModalTimeline(); 
+        };
         window.addTimelineItemBefore = (tIdx) => {
+             if (!appData.days[currentOpenDayIndex].timeline) appData.days[currentOpenDayIndex].timeline = [];
              appData.days[currentOpenDayIndex].timeline.splice(tIdx, 0, {time:'12:00', title:'פעילות חדשה', type:'place', cost:0, booked:false});
-             saveData(); // Save to be safe
+             saveData();
              renderModalTimeline();
         };
-        window.deleteTimelineItem = (tIdx) => { if(confirm('למחוק?')) { appData.days[currentOpenDayIndex].timeline.splice(tIdx, 1); renderModalTimeline(); } };
-        window.deleteCurrentDay = () => { if(confirm('למחוק יום?')) { appData.days.splice(currentOpenDayIndex, 1); saveData(); closeDayModal(); renderGrid(); } };
+        window.deleteTimelineItem = (tIdx) => { 
+            if(confirm('למחוק?')) { 
+                appData.days[currentOpenDayIndex].timeline.splice(tIdx, 1); 
+                saveData();
+                renderModalTimeline(); 
+            } 
+        };
+        window.deleteCurrentDay = () => { 
+            if(confirm('למחוק יום?')) { 
+                appData.days.splice(currentOpenDayIndex, 1); 
+                saveData(); 
+                closeDayModal(); 
+                renderGrid(); 
+            } 
+        };
 
-        // Other Renderers (Logistics, Checklist, Budget)
+        // Other Logic
         function renderLogisticsGroup(type, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -697,7 +603,6 @@
             });
         }
 
-        // Logic Helpers
         window.addDay = () => { appData.days.push({id:Date.now(), date:'תאריך', title:'יום חדש', timeline:[]}); saveData(); renderGrid(); };
         window.updateGroup = (t, i, f, v) => { appData.logistics[t][i][f] = v; saveData(); };
         window.deleteGroup = (t, i) => { if(confirm('?')) { appData.logistics[t].splice(i,1); saveData(); renderAll(); } };
