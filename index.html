@@ -12,24 +12,24 @@
     <style>
         body { font-family: 'Assistant', sans-serif; background-color: #F0F2F5; color: #1F2937; -webkit-tap-highlight-color: transparent; }
         
-        /* Animations */
-        #day-modal { transition: opacity 0.2s ease; opacity: 0; pointer-events: none; }
+        /* Modal & Overlay Animations */
+        #day-modal { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
         #day-modal.open { opacity: 1; pointer-events: auto; }
-        .modal-content { transform: scale(0.95); transition: transform 0.2s ease; }
-        #day-modal.open .modal-content { transform: scale(1); }
+        .modal-content { transform: translateY(20px); transition: transform 0.3s ease; }
+        #day-modal.open .modal-content { transform: translateY(0); }
 
-        /* Mode Visibility */
-        body:not(.editing) .edit-only { display: none !important; }
-        body.editing .view-only { display: none !important; }
+        /* Mode Visibility inside Modal */
+        .modal-view-mode .edit-field { display: none !important; }
+        .modal-edit-mode .view-field { display: none !important; }
         
         /* Inputs */
         input, textarea, select { background: transparent; border: 1px solid transparent; border-bottom: 1px solid #D1D5DB; outline: none; transition: all 0.2s; width: 100%; border-radius: 4px; }
-        body.editing input, body.editing textarea, body.editing select { 
+        .modal-edit-mode input, .modal-edit-mode textarea, .modal-edit-mode select { 
             background: #F9FAFB; border: 1px solid #D1D5DB; padding: 4px 8px; 
         }
-        body.editing input:focus, body.editing textarea:focus { border-color: #4F46E5; ring: 2px solid #E0E7FF; }
+        .modal-edit-mode input:focus, .modal-edit-mode textarea:focus { border-color: #4F46E5; ring: 2px solid #E0E7FF; }
 
-        /* Grid & Cards */
+        /* Calendar Grid */
         .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .day-card { 
             background: white; border-radius: 16px; padding: 20px; 
@@ -39,7 +39,7 @@
         .day-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #818CF8; }
         .day-card::after { content:''; position: absolute; bottom:0; right:0; width: 100%; height: 4px; background: linear-gradient(90deg, #4F46E5, #A5B4FC); }
 
-        /* Timeline */
+        /* Detailed Timeline */
         .timeline-item { position: relative; padding-right: 40px; padding-bottom: 30px; border-right: 2px solid #E5E7EB; }
         .timeline-item:last-child { border-right: transparent; }
         .timeline-icon { 
@@ -48,13 +48,22 @@
             display: flex; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Chips */
+        /* Chips & Badges */
         .info-chip { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px; }
         .chip-price { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
         .chip-dist { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
         .chip-warn { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
         .booked-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 99px; border: 1px solid #86EFAC; }
-        .source-link { font-size: 0.7rem; background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full; text-decoration: none; margin-top: 6px; font-weight: bold; display: inline-block;}
+        
+        /* Source Link Button */
+        .source-link {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.7rem; background: #FFF7ED; color: #C2410C;
+            border: 1px solid #FFEDD5; padding: 2px 8px; rounded-full;
+            text-decoration: none; margin-top: 6px; font-weight: bold;
+            transition: all 0.2s;
+        }
+        .source-link:hover { background: #FFEDD5; }
 
         /* Sticky Note */
         .sticky-note { 
@@ -62,6 +71,7 @@
             font-family: 'Kalam', cursive; font-size: 0.9rem; border-left: 4px solid #F59E0B; 
             box-shadow: 2px 2px 5px rgba(0,0,0,0.05); margin-top: 8px; position: relative;
         }
+        .sticky-source { font-size: 0.65rem; color: #92400E; text-align: left; margin-top: 4px; font-family: sans-serif; opacity: 0.7; }
 
         /* Option Card */
         .option-card { border: 1px solid #E5E7EB; padding: 12px; border-radius: 10px; margin-bottom: 10px; transition: 0.2s; background: #fff; position: relative; }
@@ -83,7 +93,7 @@
 <body class="pb-20">
 
     <!-- Loading & Login -->
-    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">מתחבר לענן...</p></div>
+    <div id="loading-screen"><div class="loader mb-4"></div><p class="text-gray-600 font-bold">מכין את המסע...</p></div>
     
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-10 rounded-3xl shadow-2xl text-center w-96">
@@ -126,11 +136,13 @@
             <div class="flex justify-between items-end mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">סקירה יומית</h2>
-                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא ועריכה</p>
+                    <p class="text-sm text-gray-500">לחצו על יום לפירוט מלא, עריכה וקישורים</p>
                 </div>
             </div>
             
-            <div id="days-grid" class="calendar-grid"></div>
+            <div id="days-grid" class="calendar-grid">
+                <!-- Cards injected via JS -->
+            </div>
             
             <button class="w-full py-4 mt-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-2xl font-bold hover:bg-white hover:border-indigo-300 transition flex items-center justify-center gap-2" onclick="addDay()">
                 <i class="fa-solid fa-plus"></i> הוסף יום חדש
@@ -140,6 +152,7 @@
         <!-- TAB 2: LOGISTICS -->
         <section id="logistics" class="tab-content">
             <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Left Col -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div class="flex justify-between mb-4 items-center">
@@ -158,6 +171,7 @@
                     </div>
                 </div>
 
+                <!-- Right Col -->
                 <div class="space-y-6">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div class="flex justify-between mb-4 items-center">
@@ -248,14 +262,16 @@
 
     </main>
 
-    <!-- === DAY MODAL === -->
+    <!-- === DAY MODAL (THE CORE INTERFACE) === -->
     <div id="day-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeDayModal()"></div>
         
         <div class="modal-content bg-white w-full max-w-3xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative modal-view-mode" id="modal-inner">
             
+            <!-- Sticky Header -->
             <div class="bg-indigo-600 p-6 text-white shrink-0 flex justify-between items-start shadow-lg z-10">
                 <div class="w-full">
+                    <!-- View Mode Header -->
                     <div class="view-field">
                         <div class="text-indigo-200 font-bold text-sm mb-1 flex items-center gap-2">
                             <span id="view-day-date"></span>
@@ -264,10 +280,12 @@
                         <h2 class="text-3xl font-extrabold" id="view-day-title"></h2>
                         <p class="text-indigo-100 text-sm mt-2 opacity-90" id="view-day-note"></p>
                     </div>
+
+                    <!-- Edit Mode Header -->
                     <div class="edit-field w-full">
-                        <input id="edit-day-date" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm font-bold mb-2 w-32 rounded px-2">
-                        <input id="edit-day-title" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-2xl font-bold w-full mb-2 rounded px-2">
-                        <textarea id="edit-day-note" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm w-full rounded px-2 h-16"></textarea>
+                        <input id="edit-day-date" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm font-bold mb-2 w-32 rounded px-2" placeholder="תאריך">
+                        <input id="edit-day-title" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-2xl font-bold w-full mb-2 rounded px-2" placeholder="כותרת">
+                        <textarea id="edit-day-note" class="bg-indigo-700/50 text-white placeholder-indigo-300 text-sm w-full rounded px-2 h-16" placeholder="סיכום יומי..."></textarea>
                     </div>
                 </div>
                 
@@ -279,9 +297,16 @@
                 </div>
             </div>
 
+            <!-- Scrollable Body -->
             <div class="overflow-y-auto flex-1 p-0 bg-gray-50">
+                
+                <!-- Timeline Container -->
                 <div class="p-6 pb-20">
-                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0"></div>
+                    <div id="modal-timeline" class="space-y-0 relative pl-4 border-l-0">
+                        <!-- Items injected here -->
+                    </div>
+
+                    <!-- Add Button (Edit Mode Only) -->
                     <div class="edit-field mt-8 text-center">
                         <button onclick="addTimelineItemToModal()" class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-600 transition w-full">
                             + הוסף פעילות חדשה
@@ -291,6 +316,7 @@
                 </div>
             </div>
 
+            <!-- Edit Mode Footer (Save) -->
             <div class="edit-field absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] flex justify-end gap-3">
                 <button onclick="toggleModalEdit()" class="px-4 py-2 text-gray-500 font-bold hover:bg-gray-100 rounded-lg">ביטול</button>
                 <button onclick="saveModalData()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition">💾 שמור שינויים</button>
@@ -299,7 +325,7 @@
     </div>
 
     <div id="sync-indicator" class="fixed bottom-4 left-4 bg-white shadow-lg border border-gray-100 px-4 py-2 rounded-full text-xs font-bold text-gray-500 z-50 flex items-center gap-2 transition-all">
-        <div class="w-2 h-2 rounded-full bg-gray-300" id="sync-dot"></div>
+        <div class="w-2 h-2 rounded-full bg-gray-300 animate-pulse" id="sync-dot"></div>
         <span id="sync-text">ממתין...</span>
     </div>
 
@@ -316,37 +342,73 @@
             app = initializeApp(firebaseConfig); 
             auth = getAuth(app);
             db = getFirestore(app); 
-            tripRef = doc(db, "trips", "main_plan_final"); 
+            tripRef = doc(db, "trips", "main_plan_final_v10"); 
         } catch (e) { console.error(e); }
 
         // --- AUTH & SYNC ---
-        const CACHE_KEY = 'tromso_v10_cache';
+        const CACHE_KEY = 'tromso_v11_cache';
         
+        // Function to update the Sync UI indicator
+        function updateSyncStatus(text, color) {
+            const dot = document.getElementById('sync-dot');
+            const txt = document.getElementById('sync-text');
+            txt.textContent = text;
+            dot.className = `w-2 h-2 rounded-full bg-${color}-500`;
+        }
+
+        // Fallback function to load data from LocalStorage if offline/auth fails
+        function fallbackToCache() {
+             const cached = localStorage.getItem(CACHE_KEY);
+             if (cached) {
+                 appData = JSON.parse(cached);
+                 renderAll();
+                 updateSyncStatus('אופליין (זיכרון)', 'gray');
+             } else {
+                 // If no cache, load defaults
+                 appData = defaultData;
+                 renderAll();
+                 updateSyncStatus('ברירת מחדל (ללא חיבור)', 'gray');
+             }
+             document.getElementById('loading-screen').style.display = 'none';
+             document.getElementById('login-screen').style.display = 'none';
+        }
+
         async function initAuthAndSync() {
             try {
-                await signInAnonymously(auth); // Ensure we are authenticated
+                // Try to sign in anonymously. 
+                // Note: If this fails (e.g. project config issue), we catch it.
+                try {
+                    await signInAnonymously(auth);
+                } catch(e) {
+                    console.warn("Auth skipped/failed, trying direct access:", e.message);
+                }
+                
+                // Try to attach listener
                 onSnapshot(tripRef, async (docSnap) => {
                     document.getElementById('loading-screen').style.display = 'none';
                     if (docSnap.exists()) {
                         appData = docSnap.data();
-                        // Version check / Merge logic could go here
                         if(!appData.logistics) appData = defaultData; 
                     } else {
-                        // First time run or empty DB -> Upload default data
-                        await setDoc(tripRef, defaultData);
-                        appData = defaultData;
+                        // Try to write default data if doc doesn't exist
+                        try {
+                             await setDoc(tripRef, defaultData);
+                             appData = defaultData;
+                        } catch (e) {
+                             console.warn("Could not write initial data (likely permission):", e);
+                             appData = defaultData; // Use in-memory
+                        }
                     }
                     localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
                     renderAll();
                     updateSyncStatus('מסונכרן', 'green');
+                }, (error) => {
+                    console.error("Snapshot/Sync Error:", error);
+                    fallbackToCache();
                 });
             } catch (error) {
-                console.error("Auth/Sync Error:", error);
-                // Fallback to cache if offline/error
-                const cached = localStorage.getItem(CACHE_KEY);
-                if(cached) { appData = JSON.parse(cached); renderAll(); }
-                document.getElementById('loading-screen').style.display = 'none';
-                updateSyncStatus('אופליין (זיכרון)', 'gray');
+                console.error("General Init Error:", error);
+                fallbackToCache();
             }
         }
 
@@ -432,20 +494,6 @@
         // --- FUNCTIONS & RENDERERS ---
         const formatPrice = (ils) => currentCurrency === 'ILS' ? `₪${parseInt(ils||0).toLocaleString()}` : `€${(parseInt(ils||0)/EUR_RATE).toFixed(0)}`;
         
-        function updateSyncStatus(text, color) {
-            document.getElementById('sync-text').textContent = text;
-            document.getElementById('sync-dot').className = `w-2 h-2 rounded-full bg-${color}-500`;
-        }
-
-        async function saveData() {
-            updateSyncStatus('שומר...', 'yellow');
-            try { 
-                await updateDoc(tripRef, appData); 
-                localStorage.setItem(CACHE_KEY, JSON.stringify(appData));
-                updateSyncStatus('מסונכרן', 'green');
-            } catch(e) { console.error(e); }
-        }
-
         // Global functions for HTML interaction
         window.renderAll = () => {
             renderGrid();
